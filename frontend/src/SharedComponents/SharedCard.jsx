@@ -45,7 +45,6 @@ const finalChangeColors = changeColors || DEFAULT_CHANGE_COLORS;
       `}
     >
       <div className="flex items-center justify-between">
-        {/* Partie gauche: Titre et Valeur */}
         <div className="flex-1">
           <p className="text-sm text-gray-600 mb-2">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mb-2">{value}</p>
@@ -56,8 +55,6 @@ const finalChangeColors = changeColors || DEFAULT_CHANGE_COLORS;
             </p>
           )}
         </div>
-
-        {/* Partie droite: Icône */}
         {Icon && (
           <div
             className={`

@@ -1,64 +1,49 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import SharedButton from "../SharedComponents/SharedButton";
-import { useAuth } from "../context/AuthContext"; // ✅ import AuthContext
+import SharedInput from "../SharedComponents/SharedInput";
+import { useAuth } from "../context/AuthContext";
 
 const EmailVerificationPage = () => {
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const { verifyEmail } = useAuth(); // ✅ utilise verifyEmail du context
-
-  const handleChange = (index, value) => {
-    const newCode = [...code];
-    if (value.length > 1) {
-      const pastedCode = value.slice(0, 6).split("");
-      for (let i = 0; i < 6; i++) newCode[i] = pastedCode[i] || "";
-      setCode(newCode);
-      const lastFilledIndex = newCode.findLastIndex((digit) => digit !== "");
-      const focusIndex = lastFilledIndex < 5 ? lastFilledIndex + 1 : 5;
-      inputRefs.current[focusIndex]?.focus();
-    } else {
-      newCode[index] = value;
-      setCode(newCode);
-      if (value && index < 5) inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
+  const { verifyEmail } = useAuth();
 
   const handleSubmit = async (e) => {
-    e?.preventDefault();
-    const verificationCode = code.join("");
+    e.preventDefault();
+    if (code.length !== 6) {
+      setError("Le code doit contenir 6 chiffres.");
+    
+      return;
+
+    }
+    
+
     setIsLoading(true);
     setError(null);
     try {
-      await verifyEmail(verificationCode); // ✅ utilise la fonction du context
+      await verifyEmail(code);
       toast.success("Email vérifié avec succès !");
       navigate("/");
     } catch (err) {
-      const message = err.response?.data?.message || "Code invalide. Réessayez.";
-      setError(message);
+      setError(err.response?.data?.message || "Code invalide. Réessayez.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (code.every((digit) => digit !== "")) {
-      handleSubmit();
-    }
-  }, [code]);
-
+/*onChange={(e) => {
+  const valeur = e.target.value;
+  // replace() supprime tout ce qui n'est pas un chiffre
+  if (/^\d*$/.test(valeur)) {
+    setCode(valeur);
+  }
+}*/
   return (
     <div className="max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden">
       <motion.div
@@ -76,28 +61,23 @@ const EmailVerificationPage = () => {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex justify-between">
-            {code.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
-                type="text"
-                maxLength="6"
-                value={digit}
-                onChange={(e) => handleChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-2xl font-bold
-                bg-white/5 text-white border-2 border-white/15 rounded-lg
-                focus:border-[#D7A4A6] focus:outline-none focus:ring-2 focus:ring-[#D7A4A6]/25"
-              />
-            ))}
-          </div>
+          <SharedInput
+            type="text"
+            maxLength="6"
+            placeholder="123456"
+            value={code}
+            onChange={(e) => {
+              const valeur = e.target.value;
+              if (/^\d*$/.test(valeur)) setCode(valeur);
+            }}
+            className="text-center text-2xl font-bold tracking-[1rem] bg-white/5 text-white border-white/15"
+          />
 
           {error && <p className="text-red-300 font-semibold mt-2">{error}</p>}
 
           <SharedButton
             type="submit"
-            disabled={isLoading || code.some((digit) => !digit)}
+            disabled={isLoading || code.length !== 6}
             isLoading={isLoading}
             loadingText="Vérification..."
           >

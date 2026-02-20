@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import SharedButton from "../SharedComponents/SharedButton";
+import SharedInput from "../SharedComponents/SharedInput";
 import { useAuth } from "../context/AuthContext"; // ✅
 
 const ResetPasswordPage = () => {
@@ -52,7 +53,7 @@ const ResetPasswordPage = () => {
 				{message && <p className="text-[#f2c6c9] text-sm mb-4">{message}</p>}
 
 				<form onSubmit={handleSubmit}>
-					<Input
+					<SharedInput
 						icon={Lock}
 						type="password"
 						placeholder="Nouveau mot de passe"
@@ -61,7 +62,7 @@ const ResetPasswordPage = () => {
 						required
 					/>
 
-					<Input
+					<SharedInput
 						icon={Lock}
 						type="password"
 						placeholder="Confirmer le mot de passe"

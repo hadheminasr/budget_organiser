@@ -53,19 +53,11 @@ export const AuthController = {
   async logout(req, res) {
     res.clearCookie("token", {
         httpOnly: true,
-        sameSite: "lax", // ou "strict" selon ton choix
-        secure: false,   // true seulement en https
+        sameSite: "lax", 
+        secure: false,   
     });
     return res.status(200).json({ success: true, message: "logged out successfully" });
     },
-
-    /*try {
-      const data = await AuthService.logout(res);
-      return res.status(200).json({ success: true, message: data.message });
-    } catch (error) {
-      return res.status(500).json({ success: false, message: error.message });
-    }
-  },*/
 
   async forgotPassword(req, res) {
     try {

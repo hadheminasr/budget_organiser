@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
-import Input from "../SharedComponents/SharedInput";
+import SharedInput from "../SharedComponents/SharedInput";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -36,28 +36,6 @@ const LoginPage = () => {
     }
   };
 
-	/*const handleLogin = async (e) => {
-    e.preventDefault(); 
-    try {
-      const response = await axios.post(`${API_URL}/login`, { email, password },
-  	{ withCredentials: true }
-);
-      console.log("logged in with sucess", response.data.user);
-      //navigih l dash mtaao
-    } catch (err) {
-      const message = err.response?.data?.message || "login failed. Try again.";
-      setError(message);
-
-    } finally {
-      setIsLoading(false);
-    }
-  };*/
-	/*const { login, isLoading, error } = useAuthStore();
-
-	const handleLogin = async (e) => {
-		e.preventDefault();
-		await login(email, password);
-	};*/
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -71,7 +49,7 @@ const LoginPage = () => {
 				</h2>
 
 				<form onSubmit={handleLogin}>
-					<Input
+					<SharedInput
 						icon={Mail}
 						type='email'
 						placeholder='Adresse email'
@@ -79,7 +57,7 @@ const LoginPage = () => {
 						onChange={(e) => setEmail(e.target.value)}
 					/>
 
-					<Input
+					<SharedInput
 						icon={Lock}
 						type='password'
 						placeholder='Mot de passe'

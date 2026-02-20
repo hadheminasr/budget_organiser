@@ -71,13 +71,10 @@ export function AuthProvider({ children }) {
 }, { withCredentials: true });
     return res.data; // {success, message, user?}
   };
-
-  // =========================
   // 5) VERIFY EMAIL
-  // =========================
-  const verifyEmail = async (email) => {
+  const verifyEmail = async (code) => {
     setError(null);
-    const res = await axios.post(`${API_URL}/forgot-password`, { email });
+    const res = await axios.post(`${API_URL}/verify-email`, { code });
     if (res.data?.user) {
       setUser(res.data.user);
       setIsAuthenticated(true);

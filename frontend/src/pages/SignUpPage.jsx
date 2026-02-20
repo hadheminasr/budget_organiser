@@ -5,6 +5,7 @@ import { User as UserIcon, Lock, Mail } from "lucide-react";
 
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import SharedButton from "../SharedComponents/SharedButton";
+import SharedInput from "../SharedComponents/SharedInput";
 import { useAuth } from "../context/AuthContext";
 
 export default function SignUpPage() {
@@ -71,9 +72,8 @@ export default function SignUpPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs text-neutral-600 mb-1">Nom</label>
-              <input
-                className="w-full rounded-xl bg-white border border-black/10 px-4 py-3 text-neutral-800 outline-none
-                           focus:border-[#D7A4A6] focus:ring-2 focus:ring-[#D7A4A6]/25 transition"
+              <SharedInput
+                label="Nom"
                 placeholder="Votre nom"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -83,40 +83,37 @@ export default function SignUpPage() {
 
             <div>
               <label className="block text-xs text-neutral-600 mb-1">Prénom</label>
-              <input
-                className="w-full rounded-xl bg-white border border-black/10 px-4 py-3 text-neutral-800 outline-none
-                           focus:border-[#D7A4A6] focus:ring-2 focus:ring-[#D7A4A6]/25 transition"
-                placeholder="Votre prénom"
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
-                autoComplete="given-name"
-              />
+                <SharedInput
+                  label="Prénom"
+                  placeholder="Votre prénom"
+                  value={prenom}
+                  onChange={(e) => setPrenom(e.target.value)}
+                  autoComplete="given-name"
+                />
             </div>
 
             <div>
               <label className="block text-xs text-neutral-600 mb-1">Email</label>
-              <input
-                className="w-full rounded-xl bg-white border border-black/10 px-4 py-3 text-neutral-800 outline-none
-                           focus:border-[#D7A4A6] focus:ring-2 focus:ring-[#D7A4A6]/25 transition"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                type="email"
-              />
+                <SharedInput
+                  label="Email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
             </div>
 
             <div>
               <label className="block text-xs text-neutral-600 mb-1">Mot de passe</label>
-              <input
-                className="w-full rounded-xl bg-white border border-black/10 px-4 py-3 text-neutral-800 outline-none
-                           focus:border-[#D7A4A6] focus:ring-2 focus:ring-[#D7A4A6]/25 transition"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                type="password"
-              />
+                <SharedInput
+                  label="Mot de passe"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
               <div className="mt-2">
                 <PasswordStrengthMeter password={password} />
               </div>
@@ -124,15 +121,14 @@ export default function SignUpPage() {
 
             <div>
               <label className="block text-xs text-neutral-600 mb-1">Confirmer</label>
-              <input
-                className="w-full rounded-xl bg-white border border-black/10 px-4 py-3 text-neutral-800 outline-none
-                           focus:border-[#D7A4A6] focus:ring-2 focus:ring-[#D7A4A6]/25 transition"
-                placeholder="Confirmer le mot de passe"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                autoComplete="new-password"
-                type="password"
-              />
+               <SharedInput
+                  label="Confirmer"
+                  type="password"
+                  placeholder="Confirmer le mot de passe"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
+                />
             </div>
 
             {confirmError && (

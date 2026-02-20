@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import SharedButton from "../SharedComponents/SharedButton";
-import { useAuth } from "../context/AuthContext"; // ✅
+import { useAuth } from "../context/AuthContext"; 
 import SharedInput from "../SharedComponents/SharedInput";
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");

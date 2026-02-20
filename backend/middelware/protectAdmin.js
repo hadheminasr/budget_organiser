@@ -1,10 +1,9 @@
-// middleware/protectAdmin.js
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";
 
 export const protectAdmin = async (req, res, next) => {
   try {
-    const token = req.cookies?.token; // ou "accessToken" selon ton cookie
+    const token = req.cookies?.token; 
 
     if (!token) {
       return res.status(401).json({ success: false, message: "Not authenticated" });

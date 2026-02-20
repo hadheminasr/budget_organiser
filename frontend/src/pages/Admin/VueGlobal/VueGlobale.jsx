@@ -7,7 +7,7 @@ import { useMemo, useEffect, useState } from "react";
 import axios from "axios";
 import { Users, Wallet, ShieldCheck, ShieldOff, Share2, Target } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "../../../context/AuthContext"; // adapte le chemin
+import { useAuth } from "../../../context/AuthContext"; 
 import { useNavigate } from "react-router-dom";
 
 export default function VueGlobal() {

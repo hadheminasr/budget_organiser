@@ -9,19 +9,10 @@ import {
   sendWelcomeEmail,
   sendVerificationEmail,
   sendResetPasswordEmail,
-  sendResetSucessEmail, // si tu l’utilises
 } from "../mailtrap/emails.js";
-
-function sanitizeUser(userDoc) {
-  if (!userDoc) return null;
-  const u = userDoc.toObject ? userDoc.toObject() : userDoc;
-  delete u.password;
-  return u;
-}
 
 export const AuthService = {
   async signup({ email, password, name, familyName, role, sharedCode }, res) {
-    // ✅ Validations simples
     if (!email || !password || !name || !familyName) {
       const err = new Error("all fields are required");
       err.status = 400;
@@ -48,7 +39,7 @@ export const AuthService = {
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
-    // ✅ Join shared account OR create personal account
+    // A vereifier dans le sprint 3 cette if
     const code = sharedCode?.trim();
     let account = null;
 
@@ -64,19 +55,13 @@ export const AuthService = {
         err.status = 403;
         throw err;
       }
-
-      // addToSet pour éviter doublon
       await Account.updateOne(
         { _id: account._id },
         { $addToSet: { Users: newUser._id } }
       );
-
-      // recalcul nbUsers proprement (simple & safe)
       const updated = await Account.findById(account._id).select("Users nbUsers");
       updated.nbUsers = updated.Users.length;
       await updated.save();
-
-      account = await Account.findById(account._id); // refresh (optionnel)
     } else {
       const accountName = `Account of ${newUser.name}`;
       account = await Account.create({
@@ -88,15 +73,13 @@ export const AuthService = {
         createdBy: newUser._id,
       });
     }
-
-    // ✅ JWT + email
     generateTokenAndSetCookie(res, newUser._id);
     await sendVerificationEmail(newUser.email, verificationToken);
 
     const safeUser = await User.findById(newUser._id).select("-password");
 
     return {
-      user: sanitizeUser(safeUser),
+      user: safeUser,
       account,
       message: "Signup successful + account created",
     };
@@ -118,10 +101,9 @@ export const AuthService = {
     user.verificationToken = undefined;
     user.verificationTokenExpiresAt = undefined;
     await user.save();
-
     await sendWelcomeEmail(user.email, user.name);
 
-    return { user: sanitizeUser(user), message: "Email verified successfully" };
+    return { user: user, message: "Email verified successfully" };
   },
 
   async login({ email, password }, res) {
@@ -150,7 +132,7 @@ export const AuthService = {
     user.lastLogin = new Date();
     await user.save();
 
-    return { user: sanitizeUser(user), message: "logged in successfully" };
+    return { user: user, message: "logged in successfully" };
   },
 
   async logout(res) {
@@ -175,9 +157,9 @@ export const AuthService = {
     const resetToken = crypto.randomBytes(20).toString("hex");
     const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000;
 
-    // ⚠️ IMPORTANT: harmonise ton champ dans le model : resetPasswordExpiresAt (sans faute)
+    
     user.resetPasswordToken = resetToken;
-    user.resetPasswordeExpriresAt = resetTokenExpiresAt; // garde ton nom actuel si ton schema est comme ça
+    user.resetPasswordeExpriresAt = resetTokenExpiresAt; 
     await user.save();
 
     await sendResetPasswordEmail(
@@ -197,7 +179,7 @@ export const AuthService = {
 
     const user = await User.findOne({
       resetPasswordToken: token,
-      resetPasswordeExpriresAt: { $gt: Date.now() }, // idem: selon ton schema
+      resetPasswordeExpriresAt: { $gt: Date.now() }, 
     });
 
     if (!user) {
@@ -213,9 +195,6 @@ export const AuthService = {
     user.resetPasswordeExpriresAt = undefined;
     await user.save();
 
-    // optionnel
-    // await sendResetSucessEmail(user.email);
-
     return { message: "Password has been reset successfully" };
   },
 
@@ -226,6 +205,6 @@ export const AuthService = {
       err.status = 400;
       throw err;
     }
-    return { user: sanitizeUser(user) };
+    return { user: user };
   },
 };
