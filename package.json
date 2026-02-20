@@ -1,0 +1,39 @@
+{
+  "name": "budget_organiser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backend/index.js",
+  "scripts": {
+    "dev": "nodemon backend/index.js",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hadheminasr/budget_organiser.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/hadheminasr/budget_organiser/issues"
+  },
+  "homepage": "https://github.com/hadheminasr/budget_organiser#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "joi": "^18.0.2",
+    "joie": "^1.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mailtrap": "^4.4.0",
+    "mongoose": "^9.1.5",
+    "nodemailer": "^7.0.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
