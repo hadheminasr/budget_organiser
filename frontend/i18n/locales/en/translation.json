@@ -1,0 +1,41 @@
+{
+  "common": {
+    "serverError": "Server error"
+  },
+
+  "auth": {
+    "welcomeBack": "Welcome back 👋",
+    "createAccount": "Create an account",
+    "subtitle": "A clear space to track your budget 🌷",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "familyName": "Family name",
+    "login": "Log in",
+    "logout": "Log out",
+    "signup": "Sign up",
+    "noAccount": "No account yet?",
+    "alreadyAccount": "Already have an account?",
+    "goSignup": "Sign up",
+    "goLogin": "Log in",
+    "verifyEmailTitle": "Verify your email",
+    "verifyEmailSubtitle": "Enter the 6-digit code sent to your email address.",
+    "verify": "Verify",
+    "verifyEmailSuccess": "Email verified successfully!",
+    "resetPassword": "Reset password",
+    "resetSuccess": "Password updated! Redirecting...",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordDesc": "Enter your email and we'll send you a reset link.",
+    "forgotPasswordSuccess": "If an account exists for {{email}}, you will receive a reset link shortly.",
+    "sendResetLink": "Send reset link",
+    "backToLogin": "Back to login",
+    "errors": {
+      "loginFailed": "Login failed. Try again.",
+      "signupFailed": "Signup failed. Try again.",
+      "passwordNotMatch": "Password confirmation does not match.",
+      "invalidCode": "The code must contain 6 digits.",
+      "invalidOrExpiredCode": "Invalid or expired code. Please try again."
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "common": {
+    "serverError": "Erreur serveur"
+  },
+
+  "auth": {
+    "welcomeBack": "Bon retour 👋",
+    "createAccount": "Créer un compte",
+    "subtitle": "Un espace clair pour suivre ton budget 🌷",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "name": "Nom",
+    "familyName": "Prénom",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "signup": "S'inscrire",
+    "noAccount": "Pas encore de compte ?",
+    "alreadyAccount": "Déjà un compte ?",
+    "goSignup": "S'inscrire",
+    "goLogin": "Se connecter",
+    "verifyEmailTitle": "Vérifier votre email",
+    "verifyEmailSubtitle": "Saisissez le code à 6 chiffres envoyé à votre adresse email.",
+    "verify": "Vérifier",
+    "verifyEmailSuccess": "Email vérifié avec succès !",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "resetSuccess": "Mot de passe modifié ! Redirection...",
+    "forgotPassword": "Mot de passe oublié ?",
+    "forgotPasswordDesc": "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    "forgotPasswordSuccess": "Si un compte existe pour {{email}}, vous recevrez un lien de réinitialisation dans quelques instants.",
+    "sendResetLink": "Envoyer le lien",
+    "backToLogin": "Retour à la connexion",
+    "errors": {
+      "loginFailed": "Échec de connexion. Réessayez.",
+      "signupFailed": "Échec d'inscription. Réessayez.",
+      "passwordNotMatch": "La confirmation du mot de passe ne correspond pas.",
+      "invalidCode": "Le code doit contenir 6 chiffres.",
+      "invalidOrExpiredCode": "Code invalide ou expiré. Réessayez."
+    }
+  }
+}

@@ -4,10 +4,10 @@
   "description": "",
   "main": "backend/index.js",
   "scripts": {
-  "dev": "concurrently \"nodemon backend/index.js\" \"npm run dev --prefix frontend\"",
-  "start": "node backend/index.js",
-  "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
-},
+    "dev": "concurrently \"nodemon backend/index.js\" \"npm run dev --prefix frontend\"",
+    "start": "node backend/index.js",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hadheminasr/budget_organiser.git"
@@ -25,6 +25,8 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "crypto": "^1.0.1",
+    "devextreme": "^25.2.4",
+    "devextreme-react": "^25.2.4",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "joi": "^18.0.2",
@@ -35,6 +37,7 @@
     "nodemailer": "^7.0.13"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.11"
   }
 }
