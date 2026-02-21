@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import SharedInput from "../SharedComponents/SharedInput";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
+import {useTranslation} from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import SharedButton from "../SharedComponents/SharedButton";
 
 
@@ -16,23 +17,23 @@ const LoginPage = () => {
 	const [isLoading, setIsLoading] = useState(false); 
 	const [error, setError]  = useState(null); 
 	const API_URL="http://localhost:5000/api/auth";
-	
-  const { login } = useAuth();
+	const {t}=useTranslation();
+	const { login } = useAuth();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+	const handleLogin = async (e) => {
+		e.preventDefault();
+		setIsLoading(true);
+		setError(null);
 
-    try {
-      await login(email, password);
-      navigate("/", { replace: true }); //  RoleHome décide /admin ou /user
-    } catch (err) {
-      setError(err.response?.data?.message || "login failed. Try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+		try {
+		await login(email, password);
+		navigate("/", { replace: true }); //  RoleHome décide /admin ou /user
+		} catch (err) {
+		setError(err.response?.data?.message || t('auth.errors.loginFailed'));
+		} finally {
+		setIsLoading(false);
+		}
+	};
 
 	return (
 		<motion.div
@@ -42,15 +43,18 @@ const LoginPage = () => {
 			className='max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'
 		>
 			<div className='p-8'>
+				<div className="flex justify-end mb-4">
+					<LanguageSwitcher/>
+				</div>
 				<h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-pink-300 to-rose-200 text-transparent bg-clip-text'>
-					Bon retour 👋
+					{t('auth.welcomeBack')}
 				</h2>
 
 				<form onSubmit={handleLogin}>
 					<SharedInput
 						icon={Mail}
 						type='email'
-						placeholder='Adresse email'
+						placeholder={t('auth.email')}
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
 					/>
@@ -58,14 +62,14 @@ const LoginPage = () => {
 					<SharedInput
 						icon={Lock}
 						type='password'
-						placeholder='Mot de passe'
+						placeholder={t('auth.password')}
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
 
 					<div className='flex items-center mb-6'>
 						<Link to='/forgot-password' className='text-sm text-rose-200 hover:underline'>
-							Mot de passe oublié ?
+							{t('auth.forgotPassword')}
 						</Link>
 					</div>
 
@@ -73,7 +77,7 @@ const LoginPage = () => {
 
 					
 					<SharedButton type="submit" loading={isLoading} className="mt-2">
-					Se connecter
+						{t('auth.login')}
 					</SharedButton>
 
 
@@ -82,9 +86,9 @@ const LoginPage = () => {
 
 			<div className='px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center'>
 				<p className='text-sm text-gray-300'>
-					Pas encore de compte ?{" "}
+					{t('auth.noAccount')}{" "}
 					<Link to='/signup' className='text-rose-200 hover:underline font-semibold'>
-						S’inscrire
+						{t('auth.goSignup')}
 					</Link>
 				</p>
 			</div>

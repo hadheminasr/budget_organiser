@@ -6,6 +6,7 @@ import axios from "axios";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import "../i18n/i18n.js";
 
 axios.defaults.withCredentials = true;
 
