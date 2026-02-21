@@ -16,14 +16,13 @@ import UserDash from "./pages/User/UserDash";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./context/AuthContext";
 
-// ✅ SAME AS YOUR RoleHome BUT USING CONTEXT
 const RoleHome = () => {
   const { user } = useAuth();
   if (user?.role === "admin") return <Navigate to="/admin" replace />;
   return <Navigate to="/user" replace />;
 };
 
-// ✅ SAME AS YOUR ProtectedRoute BUT USING CONTEXT
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
@@ -33,7 +32,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// ✅ SAME AS YOUR AdminRoute BUT USING CONTEXT
+
 const AdminRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
@@ -43,7 +42,7 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-// ✅ SAME AS YOUR RedirectAuthenticatedUser BUT USING CONTEXT
+
 const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
@@ -56,11 +55,6 @@ const RedirectAuthenticatedUser = ({ children }) => {
 
 function App() {
   const { isCheckingAuth } = useAuth();
-
-  // ✅ IMPORTANT:
-  // In context version, checkAuth() runs inside AuthProvider useEffect already.
-  // So App.jsx doesn't need useEffect(checkAuth) anymore.
-  // (If you want it here, you can— but you must avoid double calls.)
 
   if (isCheckingAuth) return <LoadingSpinner />;
 
@@ -164,7 +158,7 @@ function App() {
 		/>
 
 
-        {/* catch all */}
+       
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

@@ -6,10 +6,8 @@ import SharedInput from "../SharedComponents/SharedInput";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-
-//import { useAuthStore } from "../store/authStore";
 import SharedButton from "../SharedComponents/SharedButton";
-import axios from "axios";
+
 
 const LoginPage = () => {
 	const navigate = useNavigate();
@@ -28,7 +26,7 @@ const LoginPage = () => {
 
     try {
       await login(email, password);
-      navigate("/", { replace: true }); // -> RoleHome décide /admin ou /user
+      navigate("/", { replace: true }); //  RoleHome décide /admin ou /user
     } catch (err) {
       setError(err.response?.data?.message || "login failed. Try again.");
     } finally {

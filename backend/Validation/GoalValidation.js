@@ -27,9 +27,6 @@ export const addGoalSchema = Joi.object({
     StartDate: Joi.date().iso().optional(),
     
 
-    // Optionnel: tu peux autoriser StartDate si tu veux la fournir, sinon tu la laisses default
-    // StartDate: Joi.date().iso().optional(),
-
     isActive: Joi.boolean().optional(),
     isAchieved: Joi.boolean().optional(),
   })
