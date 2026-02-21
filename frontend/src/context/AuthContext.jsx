@@ -1,14 +1,11 @@
-// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
-// ✅ Base URL (simple, pas besoin de MODE)
 const API_URL = "http://localhost:5000/api/auth";
 
-// Optionnel mais pratique: toutes les requêtes axios envoient les cookies
 axios.defaults.withCredentials = true;
 
 export function AuthProvider({ children }) {
@@ -16,7 +13,7 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [error, setError] = useState(null);
-  // 1) CHECK AUTH AU DÉMARRAGE
+  //  CHECK AUTH AU DÉMARRAGE
   const checkAuth = async () => {
     setIsCheckingAuth(true);
     setError(null);
@@ -26,7 +23,6 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
       return res.data.user;
     } catch (err) {
-      // 401 normal si pas connecté
       setUser(null);
       setIsAuthenticated(false);
       return null;
@@ -37,9 +33,9 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
-  // 2) LOGIN
+  // LOGIN
   const login = async (email, password) => {
     setError(null);
     const res = await axios.post(`${API_URL}/login`, { email, password });
@@ -47,31 +43,28 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(true);
     return res.data.user;
   };
-  // 3) LOGOUT
+  // LOGOUT
   const logout = async () => {
     setError(null);
     try {
-      // ⚠️ body {} obligatoire pour axios.post + config
       await axios.post(`${API_URL}/logout`, {});
     } finally {
       setUser(null);
       setIsAuthenticated(false);
     }
   };
-  // 4) SIGNUP
+  // SIGNUP
   const signup = async ({ name, prenom, email, password }) => {
     setError(null);
-    // Si ton backend NE connecte pas directement après signup, c'est ok.
-    // Tu rediriges vers /verify-email comme tu fais.
     const res = await axios.post(`${API_URL}/signup`, {
-  name: prenom,        // prénom → first name
-  familyName: name,    // nom → family name
-  email,
-  password,
-}, { withCredentials: true });
-    return res.data; // {success, message, user?}
+      name: prenom,        
+      familyName: name,    
+      email,
+      password,
+    }, { withCredentials: true });
+    return res.data; 
   };
-  // 5) VERIFY EMAIL
+  //  VERIFY EMAIL
   const verifyEmail = async (code) => {
     setError(null);
     const res = await axios.post(`${API_URL}/verify-email`, { code });
@@ -81,19 +74,13 @@ export function AuthProvider({ children }) {
     }
     return res.data;
   };
-
-  // =========================
-  // 6) FORGOT PASSWORD
-  // =========================
+  // FORGOT PASSWORD
   const forgotPassword = async (email) => {
     setError(null);
     const res = await axios.post(`${API_URL}/forgot-password`, { email });
-    return res.data; // message
+    return res.data; 
   };
-
-  // =========================
-  // 7) RESET PASSWORD
-  // =========================
+  //  RESET PASSWORD
   const resetPassword = async (token, password) => {
     setError(null);
     const res = await axios.post(`${API_URL}/reset-password/${token}`, {
@@ -101,17 +88,10 @@ export function AuthProvider({ children }) {
     });
     return res.data;
   };
-
-  // =========================
-  // 8) HELPER: HOME ROUTE SELON ROLE
-  // =========================
-  // (Pratique pour faire navigate("/"))
   const roleHome = (u = user) => {
     if (!u) return "/login";
     return u.role === "admin" ? "/admin" : "/user";
   };
-
-  // Value memo pour éviter re-render excessif
   const value = useMemo(
     () => ({
       user,
@@ -121,7 +101,6 @@ export function AuthProvider({ children }) {
       isCheckingAuth,
       error,
       setError,
-
       checkAuth,
       login,
       logout,
@@ -129,7 +108,6 @@ export function AuthProvider({ children }) {
       verifyEmail,
       forgotPassword,
       resetPassword,
-
       roleHome,
     }),
     [user, isAuthenticated, isCheckingAuth, error]

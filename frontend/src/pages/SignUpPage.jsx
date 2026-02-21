@@ -122,13 +122,13 @@ export default function SignUpPage() {
             <div>
               <label className="block text-xs text-neutral-600 mb-1">Confirmer</label>
                <SharedInput
-                  label="Confirmer"
-                  type="password"
-                  placeholder="Confirmer le mot de passe"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  autoComplete="new-password"
-                />
+                label="Confirmer"
+                type="password"
+                placeholder="Confirmer le mot de passe"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                autoComplete="new-password"
+              />
             </div>
 
             {confirmError && (

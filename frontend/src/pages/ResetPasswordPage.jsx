@@ -5,7 +5,7 @@ import { Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import SharedButton from "../SharedComponents/SharedButton";
 import SharedInput from "../SharedComponents/SharedInput";
-import { useAuth } from "../context/AuthContext"; // ✅
+import { useAuth } from "../context/AuthContext"; 
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -13,7 +13,7 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { resetPassword } = useAuth(); // ✅
+  const { resetPassword } = useAuth(); 
   const { token } = useParams();
   const navigate = useNavigate();
 
@@ -28,7 +28,7 @@ const ResetPasswordPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await resetPassword(token, password); // ✅
+      await resetPassword(token, password); 
       toast.success("Mot de passe modifié ! Redirection...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
