@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import SharedCard from "../../../SharedComponents/SharedCard";
+import SharedCard from "../../SharedComponents/SharedCard.jsx";
 import { TrendingDown, TrendingUp, Tags, Wallet, Percent } from "lucide-react";
 import ParetoTopCategories from "./paretoCategories";
 import DepenseVsRevenuTimeline from "./DepenseVsRevenuTimeline.jsx";

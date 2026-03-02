@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const   AccountSchema = new mongoose.Schema(
   {
     nameAccount: { type: String },
+    type:{type:String,enum:["shared","personal"],default:"personal"},
     solde: { type: Number, default: 0 },
     Sharingcode: { type: String, unique: true, sparse: true },
     nbUsers: { type: Number, default: 1 },

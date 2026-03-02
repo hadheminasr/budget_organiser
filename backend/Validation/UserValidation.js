@@ -1,5 +1,6 @@
 import Joi from "joi";
 export const addUserSchema = Joi.object({
+  body: Joi.object({
   email: Joi.string().email().required(),
   name: Joi.string().trim().min(2).max(50).required(),
   familyName: Joi.string().trim().min(2).max(50).required(),
@@ -16,6 +17,7 @@ export const addUserSchema = Joi.object({
     "string.pattern.name": "Contains {#name}",
     "any.required": "Password is required",
   }),
+})
 }).required();
 
 // update

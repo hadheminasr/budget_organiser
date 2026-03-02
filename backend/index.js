@@ -19,7 +19,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// ICI tu montes toutes tes routes sous /api
+
 app.use("/api", apiRoutes);
 
 const Port = process.env.Port || 5000;

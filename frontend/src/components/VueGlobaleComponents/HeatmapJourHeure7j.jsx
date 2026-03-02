@@ -1,60 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { useMemo } from "react";  // ← supprimer useEffect, useState, axios
 
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-export default function HeatmapJourHeure() {
-  const [rows, setRows] = useState([]); // [{day,hour,count}]
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export default function HeatmapJourHeure({ data = [] }) {  // ← accolades
+  const safeData = Array.isArray(data) ? data : [];        // ← variable simple
 
-  useEffect(() => {
-    const fetchHeatmap = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        const res = await axios.get(
-          "http://localhost:5000/api/admin/vue-globale/heatmapJourHeure7j",
-          { withCredentials: true }
-        );
-
-        const data = res.data?.heatmapJourHeure7j ?? [];
-        setRows(
-          data.map((r) => ({
-            day: Number(r.day),
-            hour: Number(r.hour),
-            count: Number(r.count ?? 0),
-          }))
-        );
-      } catch (e) {
-        setError(e?.response?.data?.message || e.message || "Erreur serveur");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHeatmap();
-  }, []);
-
-  // Transforme en matrix 7x24
   const { matrix, maxCount } = useMemo(() => {
     const m = Array.from({ length: 7 }, () => Array(24).fill(0));
     let max = 0;
 
-    for (const r of rows) {
-      if (r.day >= 0 && r.day <= 6 && r.hour >= 0 && r.hour <= 23) {
-        m[r.day][r.hour] = r.count;
-        if (r.count > max) max = r.count;
+    for (const r of safeData) {                            // ← safeData
+      const day = Number(r.day);
+      const hour = Number(r.hour);
+      const count = Number(r.count ?? 0);
+      if (day >= 0 && day <= 6 && hour >= 0 && hour <= 23) {
+        m[day][hour] = count;
+        if (count > max) max = count;
       }
     }
 
     return { matrix: m, maxCount: max };
-  }, [rows]);
+  }, [safeData]);                                          // ← safeData
 
-  if (loading) return <div>Loading heatmap...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (!safeData.length) return <div>Aucune donnée (7j).</div>;  // ← plus de loading/error
+
+ 
+
 
   return (
     <div style={styles.card}>

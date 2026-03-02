@@ -1,6 +1,9 @@
 {
   "common": {
-    "serverError": "Erreur serveur"
+    "serverError": "Erreur serveur",
+    "loading": "Chargement...",
+    "cancel": "Annuler",
+    "locale": "fr-FR"
   },
 
   "auth": {
@@ -36,6 +39,49 @@
       "passwordNotMatch": "La confirmation du mot de passe ne correspond pas.",
       "invalidCode": "Le code doit contenir 6 chiffres.",
       "invalidOrExpiredCode": "Code invalide ou expiré. Réessayez."
+    }
+  },
+
+  "account": {
+    "rename": "Renommer",
+    "createdAt": "Créé le",
+    "shareCode": "Code de partage",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "status": {
+      "active": "Actif",
+      "blocked": "Bloqué"
+    },
+    "health": {
+      "excellent": "Excellent",
+      "good": "Bon",
+      "improve": "À améliorer"
+    },
+    "kpi": {
+      "balance": "Solde",
+      "members": "Membres",
+      "operations": "Opérations",
+      "health": "Santé"
+    },
+    "members": {
+      "title": "Membres",
+      "count": "membre(s)",
+      "owner": "Owner👑",
+      "member": "Membre",
+      "remove": "Retirer",
+      "confirmRemove": "Retirer ce membre ?"
+    },
+    "danger": {
+      "title": "Zone de danger",
+      "subtitle": "Suppression irréversible de toutes les données.",
+      "deleteBtn": "Supprimer ce compte",
+      "confirmText": "Tapez",
+      "confirmBtn": "Supprimer définitivement"
+    },
+    "errors": {
+      "rename": "Erreur renommage",
+      "remove": "Erreur",
+      "delete": "Erreur suppression"
     }
   }
 }

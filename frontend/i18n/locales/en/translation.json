@@ -1,6 +1,9 @@
 {
   "common": {
-    "serverError": "Server error"
+    "serverError": "Server error",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "locale": "en-US"
   },
 
   "auth": {
@@ -36,6 +39,48 @@
       "passwordNotMatch": "Password confirmation does not match.",
       "invalidCode": "The code must contain 6 digits.",
       "invalidOrExpiredCode": "Invalid or expired code. Please try again."
+    }
+  },
+  "account": {
+    "rename": "Rename",
+    "createdAt": "Created on",
+    "shareCode": "Share code",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "status": {
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "health": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "improve": "Needs work"
+    },
+    "kpi": {
+      "balance": "Balance",
+      "members": "Members",
+      "operations": "Operations",
+      "health": "Health"
+    },
+    "members": {
+      "title": "Members",
+      "count": "member(s)",
+      "owner": "Owner👑",
+      "member": "Member",
+      "remove": "Remove",
+      "confirmRemove": "Remove this member?"
+    },
+    "danger": {
+      "title": "Danger zone",
+      "subtitle": "Irreversible deletion of all data.",
+      "deleteBtn": "Delete this account",
+      "confirmText": "Type",
+      "confirmBtn": "Delete permanently"
+    },
+    "errors": {
+      "rename": "Rename error",
+      "remove": "Error",
+      "delete": "Delete error"
     }
   }
 }

@@ -36,10 +36,16 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    accountId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Account",
+      default: null,
+      index: true,
+    },
     resetPasswordToken : String , 
     resetPasswordeExpriresAt : Date,
     verificationToken: String,
     verificationTokenExpiresAt:Date,
 
-},{timestamp : true});
+},{timestamps : true});
 export const User = mongoose.model('User',userSchema);

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Organizer — Maquette</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf4f8;
+  --surface: #ffffff;
+  --surface2: #fef0f6;
+  --border: #f0d9ea;
+  --pink: #e8699a;
+  --pink-light: #f4a7c3;
+  --pink-pale: #fde8f3;
+  --lavender: #c4a8e0;
+  --lavender-pale: #f0e8fa;
+  --peach: #f4b8a0;
+  --peach-pale: #fef0ea;
+  --mint: #a8d8c8;
+  --mint-pale: #e8f8f4;
+  --lilac: #d4a8d4;
+  --lilac-pale: #f8eef8;
+  --butter: #f0d898;
+  --butter-pale: #fdf8e8;
+  --text: #3d2438;
+  --text2: #9a7a8e;
+  --text3: #c4a8bc;
+  --radius: 16px;
+  --sidebar-w: 228px;
+  --shadow: 0 4px 24px rgba(232,105,154,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; overflow:hidden; }
+
+/* SIDEBAR */
+.sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1.5px solid var(--border); display:flex; flex-direction:column; padding:24px 0; flex-shrink:0; box-shadow:var(--shadow); z-index:20; }
+.logo { padding:0 20px 24px; border-bottom:1.5px solid var(--border); display:flex; align-items:center; gap:10px; }
+.logo-icon { width:36px; height:36px; background:linear-gradient(135deg,var(--pink),var(--lavender)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.logo-mark { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; letter-spacing:-0.3px; }
+.logo-mark span { color:var(--pink); }
+.logo-sub { font-size:9px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; }
+.nav { padding:18px 12px; flex:1; overflow-y:auto; }
+.nav-label { font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--text3); padding:0 8px; margin-bottom:6px; margin-top:16px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; cursor:pointer; font-size:13.5px; font-weight:500; color:var(--text2); transition:all 0.18s; margin-bottom:2px; border:1.5px solid transparent; }
+.nav-item:hover { background:var(--pink-pale); color:var(--pink); }
+.nav-item.active { background:linear-gradient(135deg,var(--pink-pale),var(--lavender-pale)); color:var(--pink); border-color:rgba(232,105,154,0.2); }
+.nav-icon { font-size:15px; width:20px; text-align:center; }
+.badge { margin-left:auto; background:var(--pink); color:#fff; font-size:9px; font-weight:700; padding:2px 7px; border-radius:20px; }
+.sidebar-bottom { padding:14px 12px 0; border-top:1.5px solid var(--border); }
+.user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; cursor:pointer; background:var(--pink-pale); border:1.5px solid rgba(232,105,154,0.15); }
+.avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--pink),var(--lavender)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+.user-name { font-size:12.5px; font-weight:600; }
+.user-role { font-size:10px; color:var(--text3); }
+
+/* MAIN */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; background:var(--surface); border-bottom:1.5px solid var(--border); box-shadow:0 2px 12px rgba(232,105,154,0.06); }
+.page-title { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+.page-sub { font-size:11.5px; color:var(--text3); margin-top:1px; }
+.topbar-right { display:flex; align-items:center; gap:10px; }
+.period-select { background:var(--pink-pale); border:1.5px solid var(--border); color:var(--text); padding:7px 14px; border-radius:10px; font-size:12.5px; font-family:'DM Sans',sans-serif; cursor:pointer; }
+.notif-btn { width:36px; height:36px; background:var(--pink-pale); border:1.5px solid var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; position:relative; }
+.notif-dot { position:absolute; top:6px; right:7px; width:6px; height:6px; background:var(--pink); border-radius:50%; }
+
+/* PAGES */
+.page { display:none; flex:1; overflow-y:auto; padding:22px 28px; flex-direction:column; gap:18px; }
+.page.active { display:flex; animation:fadein 0.22s ease; }
+.page::-webkit-scrollbar { width:4px; }
+.page::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+@keyframes fadein { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* CARDS */
+.card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.card-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
+.card-action { font-size:11.5px; color:var(--pink); cursor:pointer; background:var(--pink-pale); padding:4px 10px; border-radius:8px; border:1.5px solid rgba(232,105,154,0.2); font-weight:500; }
+.btn-add { width:30px; height:30px; background:var(--pink-pale); border:1.5px solid rgba(232,105,154,0.3); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--pink); font-size:18px; font-weight:300; transition:all 0.2s; }
+.btn-add:hover { background:var(--pink); color:#fff; }
+.btn-primary { padding:8px 18px; background:linear-gradient(135deg,var(--pink),var(--lavender)); color:#fff; border-radius:10px; font-size:12.5px; font-weight:600; cursor:pointer; border:none; display:flex; align-items:center; gap:6px; font-family:'DM Sans',sans-serif; }
+
+/* KPI */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.kpi-card { border-radius:var(--radius); padding:18px 20px; position:relative; overflow:hidden; border:1.5px solid transparent; }
+.kpi-card.k1 { background:linear-gradient(135deg,#fde8f3,#fef4f9); border-color:#f4c8e0; }
+.kpi-card.k2 { background:linear-gradient(135deg,var(--mint-pale),#f0faf8); border-color:#c0e8d8; }
+.kpi-card.k3 { background:linear-gradient(135deg,var(--lavender-pale),#f8f0ff); border-color:#d8c0f0; }
+.kpi-card.k4 { background:linear-gradient(135deg,var(--butter-pale),#fffdf0); border-color:#e8d8a0; }
+.kpi-label { font-size:10.5px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:500; }
+.kpi-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; line-height:1; }
+.kpi-value.k1{color:var(--pink);} .kpi-value.k2{color:#5db898;} .kpi-value.k3{color:#9a68d0;} .kpi-value.k4{color:#c8a028;}
+.kpi-delta { font-size:11px; color:var(--text2); margin-top:6px; }
+.up{color:#5db898;font-weight:600;} .dn{color:var(--pink);font-weight:600;}
+.kpi-icon { position:absolute; top:16px; right:16px; font-size:22px; opacity:0.18; }
+.grid-2 { display:grid; grid-template-columns:1.4fr 1fr; gap:14px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+/* CHART */
+.chart-area { height:130px; }
+.chart-svg { width:100%; height:100%; }
+.months { display:flex; justify-content:space-between; padding:0 2px; margin-top:4px; }
+.month-label { font-size:9px; color:var(--text3); }
+
+/* PIE */
+.pie-wrap { display:flex; align-items:center; gap:18px; }
+.pie-svg { width:120px; height:120px; flex-shrink:0; }
+.pie-legend { flex:1; display:flex; flex-direction:column; gap:9px; }
+.pie-legend-item { display:flex; align-items:center; gap:8px; font-size:12px; }
+.legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.legend-name { flex:1; color:var(--text2); }
+.legend-pct { font-weight:700; font-size:12px; }
+
+/* TX */
+.tx-list { display:flex; flex-direction:column; gap:9px; }
+.tx-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--surface2); border-radius:12px; border:1.5px solid var(--border); }
+.tx-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.tx-info { flex:1; }
+.tx-name { font-size:13px; font-weight:500; }
+.tx-cat { font-size:11px; color:var(--text3); }
+.tx-amount { font-weight:700; font-size:14px; }
+.pos{color:#5db898;} .neg{color:var(--pink);}
+
+/* OBJ MINI */
+.obj-list { display:flex; flex-direction:column; gap:13px; }
+.obj-header2 { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.obj-name2 { font-size:13px; font-weight:500; }
+.obj-pct2 { font-size:11.5px; color:var(--text2); font-weight:600; }
+.obj-bar { height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+.obj-fill { height:100%; border-radius:99px; }
+.obj-footer { display:flex; justify-content:space-between; margin-top:4px; font-size:11px; color:var(--text3); }
+
+/* SUBS */
+.sub-list { display:flex; flex-direction:column; gap:8px; }
+.sub-item { display:flex; align-items:center; gap:10px; padding:9px 11px; background:var(--surface2); border-radius:10px; border:1.5px solid var(--border); }
+.sub-logo { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.sub-name { flex:1; font-size:12.5px; font-weight:500; }
+.sub-next { font-size:10px; color:var(--text3); }
+.sub-price { font-size:13px; font-weight:700; color:var(--pink); }
+.alert-dot { width:7px; height:7px; background:var(--pink); border-radius:50%; flex-shrink:0; }
+
+/* COACH MINI */
+.coach-card { background:linear-gradient(135deg,#fde8f3,#f0e8fa); border:1.5px solid rgba(232,105,154,0.2); border-radius:var(--radius); padding:18px 20px; display:flex; gap:14px; align-items:flex-start; cursor:pointer; }
+.coach-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--pink); margin-bottom:5px; }
+.coach-text { font-size:12.5px; color:var(--text2); line-height:1.6; }
+.coach-chips { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.chip { background:rgba(232,105,154,0.12); border:1.5px solid rgba(232,105,154,0.25); color:var(--pink); font-size:10.5px; padding:3px 10px; border-radius:20px; cursor:pointer; }
+
+/* OPERATIONS PAGE */
+.filter-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.filter-chip { padding:7px 16px; border-radius:20px; font-size:12px; font-weight:500; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--text2); transition:all 0.18s; }
+.filter-chip.active,.filter-chip:hover { background:var(--pink); color:#fff; border-color:var(--pink); }
+.search-input { flex:1; padding:8px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font-size:12.5px; font-family:'DM Sans',sans-serif; outline:none; min-width:180px; }
+.search-input::placeholder { color:var(--text3); }
+.form-select { padding:8px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font-size:12.5px; font-family:'DM Sans',sans-serif; outline:none; }
+.ops-table { width:100%; border-collapse:collapse; }
+.ops-table th { text-align:left; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text3); padding:14px 14px 10px; }
+.ops-table td { padding:11px 14px; font-size:13px; border-bottom:1.5px solid var(--border); }
+.ops-table tr:last-child td { border-bottom:none; }
+.ops-table tbody tr:hover td { background:var(--pink-pale); }
+.cat-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+.action-btn { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; border:1.5px solid var(--border); background:var(--surface2); color:var(--text2); transition:all 0.18s; }
+.action-btn:hover { background:var(--pink-pale); border-color:var(--pink); color:var(--pink); }
+
+/* CATEGORIES PAGE */
+.cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.cat-card { border-radius:14px; padding:16px 18px; cursor:pointer; transition:all 0.2s; border:1.5px solid transparent; display:flex; flex-direction:column; gap:10px; }
+.cat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(232,105,154,0.12); }
+.cat-card-top { display:flex; align-items:center; justify-content:space-between; }
+.cat-badge { font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; }
+.cat-name { font-family:'Syne',sans-serif; font-size:13.5px; font-weight:700; }
+.cat-stats { font-size:11px; color:var(--text2); }
+.mini-bar { height:4px; border-radius:99px; background:var(--border); overflow:hidden; }
+.add-cat-card { border-radius:14px; padding:16px 18px; border:2px dashed var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; gap:8px; min-height:120px; transition:all 0.2s; }
+.add-cat-card:hover { border-color:var(--pink); background:var(--pink-pale); }
+
+/* OBJECTIFS FULL */
+.obj-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.obj-full-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+.obj-full-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+.obj-status-pill { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.obj-big-bar { height:8px; background:var(--border); border-radius:99px; overflow:hidden; margin:12px 0 8px; }
+.obj-big-fill { height:100%; border-radius:99px; }
+.obj-stats-row { display:flex; justify-content:space-between; font-size:11px; color:var(--text2); }
+.obj-stat-val { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-top:3px; color:var(--text); }
+.obj-action-row { display:flex; gap:8px; margin-top:14px; }
+.obj-btn { flex:1; padding:8px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; text-align:center; border:1.5px solid var(--border); background:var(--surface2); color:var(--text2); transition:all 0.18s; }
+.obj-btn:hover { background:var(--pink-pale); border-color:var(--pink); color:var(--pink); }
+.obj-btn.primary { background:linear-gradient(135deg,var(--pink),var(--lavender)); color:#fff; border-color:transparent; }
+.obj-btn.primary:hover { opacity:0.9; }
+
+/* COACH PAGE */
+.coach-hero { background:linear-gradient(135deg,#fde8f3,#f0e8fa,#e8f8f4); border:1.5px solid rgba(232,105,154,0.2); border-radius:20px; padding:26px 30px; display:flex; align-items:center; gap:22px; }
+.coach-hero-emoji { font-size:52px; }
+.coach-hero-title { font-family:'Syne',sans-serif; font-size:21px; font-weight:800; margin-bottom:5px; }
+.coach-hero-sub { font-size:13px; color:var(--text2); line-height:1.6; }
+.coach-score { margin-left:auto; text-align:center; flex-shrink:0; background:var(--surface); border-radius:16px; padding:16px 22px; border:1.5px solid var(--border); }
+.coach-score-num { font-family:'Syne',sans-serif; font-size:34px; font-weight:800; color:var(--pink); line-height:1; }
+.coach-score-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.coach-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.advice-card { border-radius:14px; padding:18px 20px; border:1.5px solid transparent; }
+.advice-icon { font-size:22px; margin-bottom:10px; }
+.advice-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:5px; }
+.advice-text { font-size:12px; color:var(--text2); line-height:1.6; }
+.advice-impact { display:inline-flex; align-items:center; gap:4px; margin-top:10px; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.forecast-bar { height:10px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:12px; }
+.forecast-fill { height:100%; border-radius:99px; }
+.forecast-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text2); margin-bottom:5px; }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(61,36,56,0.32); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border-radius:20px; padding:28px; width:420px; max-width:95vw; box-shadow:0 20px 60px rgba(232,105,154,0.18); border:1.5px solid var(--border); animation:modalIn 0.24s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes modalIn { from{opacity:0;transform:scale(0.88)} to{opacity:1;transform:scale(1)} }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.modal-title { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; }
+.modal-close { width:30px; height:30px; border-radius:8px; background:var(--pink-pale); border:1.5px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--text2); }
+.form-group { margin-bottom:14px; }
+.form-label { font-size:11px; font-weight:600; color:var(--text2); margin-bottom:5px; display:block; text-transform:uppercase; letter-spacing:0.5px; }
+.form-input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface2); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.18s; }
+.form-input:focus { border-color:var(--pink); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-select-modal { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface2); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; }
+.type-toggle { display:flex; gap:8px; }
+.type-btn { flex:1; padding:9px; border-radius:10px; font-size:12.5px; font-weight:600; cursor:pointer; text-align:center; border:1.5px solid var(--border); background:var(--surface2); color:var(--text2); transition:all 0.18s; }
+.type-btn.active-dep { background:#fde8f3; border-color:var(--pink); color:var(--pink); }
+.type-btn.active-rev { background:var(--mint-pale); border-color:var(--mint); color:#5db898; }
+.form-footer { display:flex; gap:10px; margin-top:20px; }
+.btn-cancel { flex:1; padding:11px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--surface2); color:var(--text2); font-family:'DM Sans',sans-serif; }
+.btn-submit { flex:2; padding:11px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; border:none; background:linear-gradient(135deg,var(--pink),var(--lavender)); color:#fff; font-family:'DM Sans',sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🌸</div>
+    <div>
+      <div class="logo-mark">Budget<span>.</span>Org</div>
+      <div class="logo-sub">Personal Finance</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="showPage('operations',this)"><span class="nav-icon">↕️</span> Opérations</div>
+    <div class="nav-item" onclick="showPage('categories',this)"><span class="nav-icon">🏷️</span> Catégories</div>
+    <div class="nav-item" onclick="showPage('objectifs',this)"><span class="nav-icon">🎯</span> Objectifs</div>
+    <div class="nav-label">Automatisation</div>
+    <div class="nav-item"><span class="nav-icon">🔄</span> Abonnements <span class="badge">3</span></div>
+    <div class="nav-item" onclick="showPage('coach',this)"><span class="nav-icon">🤖</span> Coach Budget</div>
+    <div class="nav-item"><span class="nav-icon">🔔</span> Alertes <span class="badge">2</span></div>
+    <div class="nav-label">Compte</div>
+    <div class="nav-item" onclick="showPage('compte',this)"><span class="nav-icon">👤</span> Mon Compte</div>
+    <div class="nav-item" onclick="showPage('partage',this)"><span class="nav-icon">👥</span> Partage</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar">SA</div>
+      <div><div class="user-name">Sara A.</div><div class="user-role">Utilisateur</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="topbar-title">Tableau de bord</div>
+      <div class="page-sub">Lundi 23 Février 2026 · Compte Personnel</div>
+    </div>
+    <div class="topbar-right">
+      <select class="period-select"><option>Février 2026</option><option>Janvier 2026</option><option>3 derniers mois</option></select>
+      <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- ════ DASHBOARD ════ -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-row">
+      <div class="kpi-card k1"><div class="kpi-icon">💰</div><div class="kpi-label">Solde actuel</div><div class="kpi-value k1">3 240 €</div><div class="kpi-delta"><span class="up">▲ +8.2%</span> vs mois dernier</div></div>
+      <div class="kpi-card k2"><div class="kpi-icon">📥</div><div class="kpi-label">Revenus du mois</div><div class="kpi-value k2">2 800 €</div><div class="kpi-delta"><span class="up">▲ +200 €</span> vs janvier</div></div>
+      <div class="kpi-card k3"><div class="kpi-icon">📤</div><div class="kpi-label">Dépenses du mois</div><div class="kpi-value k3">1 456 €</div><div class="kpi-delta"><span class="up">▼ -5.1%</span> vs janvier</div></div>
+      <div class="kpi-card k4"><div class="kpi-icon">🎯</div><div class="kpi-label">Épargne nette</div><div class="kpi-value k4">1 344 €</div><div class="kpi-delta"><span class="up">▲ 48%</span> du revenu</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Évolution du solde</div><span class="card-action" onclick="showPage('operations',navEl('operations'))">Voir tout →</span></div>
+        <div class="chart-area">
+          <svg class="chart-svg" viewBox="0 0 400 130" preserveAspectRatio="none">
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8699a" stop-opacity="0.22"/><stop offset="100%" stop-color="#e8699a" stop-opacity="0"/></linearGradient></defs>
+            <line x1="0" y1="30" x2="400" y2="30" stroke="#f0d9ea" stroke-width="1"/>
+            <line x1="0" y1="65" x2="400" y2="65" stroke="#f0d9ea" stroke-width="1"/>
+            <line x1="0" y1="100" x2="400" y2="100" stroke="#f0d9ea" stroke-width="1"/>
+            <path d="M0,95 C40,85 70,100 110,75 C150,52 175,65 210,48 C245,32 270,55 305,38 C340,22 370,30 400,18 L400,130 L0,130 Z" fill="url(#g1)"/>
+            <path d="M0,95 C40,85 70,100 110,75 C150,52 175,65 210,48 C245,32 270,55 305,38 C340,22 370,30 400,18" fill="none" stroke="#e8699a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="400" cy="18" r="5" fill="#e8699a"/><circle cx="400" cy="18" r="9" fill="#e8699a" opacity="0.2"/>
+          </svg>
+        </div>
+        <div class="months"><span class="month-label">Sep</span><span class="month-label">Oct</span><span class="month-label">Nov</span><span class="month-label">Déc</span><span class="month-label">Jan</span><span class="month-label">Fév</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Répartition par catégorie</div><span class="card-action" onclick="showPage('categories',navEl('categories'))">Détails →</span></div>
+        <div class="pie-wrap">
+          <svg class="pie-svg" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#f0d9ea" stroke-width="18"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#e8699a" stroke-width="18" stroke-dasharray="109.96 204.2" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#c4a8e0" stroke-width="18" stroke-dasharray="87.96 226.2" stroke-dashoffset="-109.96" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#f0d898" stroke-width="18" stroke-dasharray="56.55 257.6" stroke-dashoffset="-197.92" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#a8d8c8" stroke-width="18" stroke-dasharray="59.69 254.4" stroke-dashoffset="-254.47" transform="rotate(-90 60 60)"/>
+            <text x="60" y="56" text-anchor="middle" fill="#3d2438" font-size="13" font-weight="700" font-family="Syne">35%</text>
+            <text x="60" y="70" text-anchor="middle" fill="#9a7a8e" font-size="8">principal</text>
+          </svg>
+          <div class="pie-legend">
+            <div class="pie-legend-item"><div class="legend-dot" style="background:#e8699a"></div><span class="legend-name">Alimentation</span><span class="legend-pct">35%</span></div>
+            <div class="pie-legend-item"><div class="legend-dot" style="background:#c4a8e0"></div><span class="legend-name">Logement</span><span class="legend-pct">28%</span></div>
+            <div class="pie-legend-item"><div class="legend-dot" style="background:#f0d898"></div><span class="legend-name">Transport</span><span class="legend-pct">18%</span></div>
+            <div class="pie-legend-item"><div class="legend-dot" style="background:#a8d8c8"></div><span class="legend-name">Loisirs</span><span class="legend-pct">19%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Dernières opérations</div><div style="display:flex;gap:8px;align-items:center"><div class="btn-add" onclick="openModal('modal-op')">+</div><span class="card-action" onclick="showPage('operations',navEl('operations'))">Tout voir →</span></div></div>
+        <div class="tx-list">
+          <div class="tx-item"><div class="tx-icon" style="background:#e8f8f4">💼</div><div class="tx-info"><div class="tx-name">Salaire</div><div class="tx-cat">Revenu · 20 Fév</div></div><div class="tx-amount pos">+2 800 €</div></div>
+          <div class="tx-item"><div class="tx-icon" style="background:#fde8f3">🛒</div><div class="tx-info"><div class="tx-name">Carrefour</div><div class="tx-cat">Alimentation · 19 Fév</div></div><div class="tx-amount neg">-87 €</div></div>
+          <div class="tx-item"><div class="tx-icon" style="background:#fdf8e8">🚌</div><div class="tx-info"><div class="tx-name">Pass Navigo</div><div class="tx-cat">Transport · 18 Fév</div></div><div class="tx-amount neg">-86 €</div></div>
+          <div class="tx-item"><div class="tx-icon" style="background:#f0e8fa">🍕</div><div class="tx-info"><div class="tx-name">Uber Eats</div><div class="tx-cat">Alimentation · 17 Fév</div></div><div class="tx-amount neg">-32 €</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Objectifs d'épargne</div><div style="display:flex;gap:8px;align-items:center"><div class="btn-add" onclick="openModal('modal-obj')">+</div><span class="card-action" onclick="showPage('objectifs',navEl('objectifs'))">Tout voir →</span></div></div>
+        <div class="obj-list">
+          <div><div class="obj-header2"><div class="obj-name2">✈️ Voyage Japon</div><div class="obj-pct2">68%</div></div><div class="obj-bar"><div class="obj-fill" style="width:68%;background:linear-gradient(90deg,#e8699a,#c4a8e0)"></div></div><div class="obj-footer"><span>1 360 € / 2 000 €</span><span>Juin 2026</span></div></div>
+          <div><div class="obj-header2"><div class="obj-name2">🚗 Voiture</div><div class="obj-pct2">42%</div></div><div class="obj-bar"><div class="obj-fill" style="width:42%;background:linear-gradient(90deg,#a8d8c8,#84c4b0)"></div></div><div class="obj-footer"><span>5 040 € / 12 000 €</span><span>Déc 2026</span></div></div>
+          <div><div class="obj-header2"><div class="obj-name2">💻 MacBook Pro</div><div class="obj-pct2">89%</div></div><div class="obj-bar"><div class="obj-fill" style="width:89%;background:linear-gradient(90deg,#f0d898,#e0c070)"></div></div><div class="obj-footer"><span>2 225 € / 2 500 €</span><span>Mars 2026</span></div></div>
+          <div><div class="obj-header2"><div class="obj-name2">🏠 Apport</div><div class="obj-pct2">15%</div></div><div class="obj-bar"><div class="obj-fill" style="width:15%;background:linear-gradient(90deg,#d4a8d4,#b898c8)"></div></div><div class="obj-footer"><span>3 000 € / 20 000 €</span><span>2028</span></div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Abonnements</div><div class="btn-add">+</div></div>
+          <div class="sub-list">
+            <div class="sub-item"><div class="sub-logo" style="background:#fde8f3">🎵</div><div><div class="sub-name">Spotify</div><div class="sub-next">Dans 2 jours</div></div><div class="alert-dot"></div><div class="sub-price">9,99 €</div></div>
+            <div class="sub-item"><div class="sub-logo" style="background:#fff0f0">🎬</div><div><div class="sub-name">Netflix</div><div class="sub-next">15 Mars 2026</div></div><div class="sub-price">17,99 €</div></div>
+            <div class="sub-item"><div class="sub-logo" style="background:#f0e8fa">☁️</div><div><div class="sub-name">iCloud</div><div class="sub-next">1 Mars 2026</div></div><div class="sub-price">2,99 €</div></div>
+          </div>
+        </div>
+        <div class="coach-card" onclick="showPage('coach',navEl('coach'))">
+          <div style="font-size:26px;">🤖</div>
+          <div>
+            <div class="coach-title">Coach Budget — Conseil du jour</div>
+            <div class="coach-text">Vos dépenses alimentaires ↑22% ce mois. Économisez ~60 €/mois en cuisinant davantage.</div>
+            <div class="coach-chips"><span class="chip">💡 Voir analyse →</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ OPERATIONS ════ -->
+  <div class="page" id="page-operations">
+    <div class="filter-bar">
+      <div class="filter-chip active">Tout</div>
+      <div class="filter-chip">Dépenses</div>
+      <div class="filter-chip">Revenus</div>
+      <input class="search-input" placeholder="🔍  Rechercher…">
+      <select class="form-select"><option>Toutes catégories</option><option>🍎 Alimentation</option><option>🚗 Transport</option><option>🎮 Loisirs</option></select>
+      <button class="btn-primary" onclick="openModal('modal-op')">＋ Ajouter</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="ops-table">
+        <thead style="background:var(--surface2);">
+          <tr><th>Description</th><th>Catégorie</th><th>Date</th><th>Montant</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px;"><div style="font-size:18px;">💼</div><div><div style="font-weight:600;">Salaire</div><div style="font-size:11px;color:var(--text3)">Revenu mensuel</div></div></div></td>
+            <td><span class="cat-pill" style="background:#e8f8f4;color:#5db898;">💼 Revenu</span></td>
+            <td style="color:var(--text2);font-size:12px;">20 Fév 2026</td>
+            <td class="tx-amount pos">+2 800,00 €</td>
+            <td><div style="display:flex;gap:6px;"><div class="action-btn">✏️</div><div class="action-btn">🗑️</div></div></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px;"><div style="font-size:18px;">🛒</div><div><div style="font-weight:600;">Carrefour Market</div><div style="font-size:11px;color:var(--text3)">Courses hebdo</div></div></div></td>
+            <td><span class="cat-pill" style="background:#fde8f3;color:#e8699a;">🍎 Alimentation</span></td>
+            <td style="color:var(--text2);font-size:12px;">19 Fév 2026</td>
+            <td class="tx-amount neg">-87,40 €</td>
+            <td><div style="display:flex;gap:6px;"><div class="action-btn">✏️</div><div class="action-btn">🗑️</div></div></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px;"><div style="font-size:18px;">🚌</div><div><div style="font-weight:600;">Pass Navigo</div><div style="font-size:11px;color:var(--text3)">Mensuel</div></div></div></td>
+            <td><span class="cat-pill" style="background:#fdf8e8;color:#c8a028;">🚗 Transport</span></td>
+            <td style="color:var(--text2);font-size:12px;">18 Fév 2026</td>
+            <td class="tx-amount neg">-86,00 €</td>
+            <td><div style="display:flex;gap:6px;"><div class="action-btn">✏️</div><div class="action-btn">🗑️</div></div></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px;"><div style="font-size:18px;">🍕</div><div><div style="font-weight:600;">Uber Eats</div><div style="font-size:11px;color:var(--text3)">Commande du soir</div></div></div></td>
+            <td><span class="cat-pill" style="background:#fde8f3;color:#e8699a;">🍎 Alimentation</span></td>
+            <td style="color:var(--text2);font-size:12px;">17 Fév 2026</td>
+            <td class="tx-amount neg">-32,50 €</td>
+            <td><div style="display:flex;gap:6px;"><div class="action-btn">✏️</div><div class="action-btn">🗑️</div></div></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px;"><div style="font-size:18px;">🎬</div><div><div style="font-weight:600;">Netflix</div><div style="font-size:11px;color:var(--text3)">Abonnement</div></div></div></td>
+            <td><span class="cat-pill" style="background:#f0e8fa;color:#9a68d0;">🎮 Loisirs</span></td>
+            <td style="color:var(--text2);font-size:12px;">15 Fév 2026</td>
+            <td class="tx-amount neg">-17,99 €</td>
+            <td><div style="display:flex;gap:6px;"><div class="action-btn">✏️</div><div class="action-btn">🗑️</div></div></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px;"><div style="font-size:18px;">💡</div><div><div style="font-weight:600;">EDF — Électricité</div><div style="font-size:11px;color:var(--text3)">Facture mensuelle</div></div></div></td>
+            <td><span class="cat-pill" style="background:#e8f0fa;color:#5878d0;">🏠 Logement</span></td>
+            <td style="color:var(--text2);font-size:12px;">14 Fév 2026</td>
+            <td class="tx-amount neg">-65,00 €</td>
+            <td><div style="display:flex;gap:6px;"><div class="action-btn">✏️</div><div class="action-btn">🗑️</div></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:12px;color:var(--text3)">Affichage 1–6 sur 42 opérations</div>
+      <div style="display:flex;gap:6px;"><div class="filter-chip">← Préc.</div><div class="filter-chip active">1</div><div class="filter-chip">2</div><div class="filter-chip">3</div><div class="filter-chip">Suiv. →</div></div>
+    </div>
+  </div>
+
+  <!-- ════ CATEGORIES ════ -->
+  <div class="page" id="page-categories">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;color:var(--text2);">12 catégories · 8 par défaut · 4 personnalisées</div>
+      <button class="btn-primary" onclick="openModal('modal-cat')">＋ Nouvelle catégorie</button>
+    </div>
+    <div class="card" style="padding:16px 18px 14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:12px;">Par défaut</div>
+      <div class="cat-grid">
+        <div class="cat-card" style="background:linear-gradient(135deg,#fde8f3,#fef4f9);border-color:#f4c8e0;">
+          <div class="cat-card-top"><div style="font-size:22px;">🍎</div><div class="cat-badge" style="background:#fde8f3;color:#e8699a;">Défaut</div></div>
+          <div class="cat-name">Alimentation</div><div class="cat-stats">509 € ce mois · 23 opérations</div>
+          <div class="mini-bar"><div style="width:35%;height:100%;background:linear-gradient(90deg,#e8699a,#f4a7c3);border-radius:99px;"></div></div>
+        </div>
+        <div class="cat-card" style="background:linear-gradient(135deg,#e8f0fa,#f0f4ff);border-color:#c0c8e8;">
+          <div class="cat-card-top"><div style="font-size:22px;">🏠</div><div class="cat-badge" style="background:#e8f0fa;color:#5878d0;">Défaut</div></div>
+          <div class="cat-name">Logement</div><div class="cat-stats">408 € ce mois · 5 opérations</div>
+          <div class="mini-bar"><div style="width:28%;height:100%;background:linear-gradient(90deg,#7898e0,#a8b8f0);border-radius:99px;"></div></div>
+        </div>
+        <div class="cat-card" style="background:linear-gradient(135deg,#fdf8e8,#fffdf0);border-color:#e8d8a0;">
+          <div class="cat-card-top"><div style="font-size:22px;">🚗</div><div class="cat-badge" style="background:#fdf8e8;color:#c8a028;">Défaut</div></div>
+          <div class="cat-name">Transport</div><div class="cat-stats">262 € ce mois · 8 opérations</div>
+          <div class="mini-bar"><div style="width:18%;height:100%;background:linear-gradient(90deg,#f0d898,#e0c070);border-radius:99px;"></div></div>
+        </div>
+        <div class="cat-card" style="background:linear-gradient(135deg,#f0e8fa,#f8f0ff);border-color:#d8c0f0;">
+          <div class="cat-card-top"><div style="font-size:22px;">🎮</div><div class="cat-badge" style="background:#f0e8fa;color:#9a68d0;">Défaut</div></div>
+          <div class="cat-name">Loisirs</div><div class="cat-stats">277 € ce mois · 11 opérations</div>
+          <div class="mini-bar"><div style="width:19%;height:100%;background:linear-gradient(90deg,#c4a8e0,#d4b8f0);border-radius:99px;"></div></div>
+        </div>
+        <div class="cat-card" style="background:linear-gradient(135deg,#e8f8f4,#f0faf8);border-color:#c0e8d8;">
+          <div class="cat-card-top"><div style="font-size:22px;">💊</div><div class="cat-badge" style="background:#e8f8f4;color:#5db898;">Défaut</div></div>
+          <div class="cat-name">Santé</div><div class="cat-stats">0 € ce mois · 0 opérations</div>
+          <div class="mini-bar"><div style="width:0%;height:100%;border-radius:99px;"></div></div>
+        </div>
+        <div class="cat-card" style="background:linear-gradient(135deg,#fef0ea,#fff4f0);border-color:#f4c8a8;">
+          <div class="cat-card-top"><div style="font-size:22px;">📚</div><div class="cat-badge" style="background:#fef0ea;color:#d07848;">Défaut</div></div>
+          <div class="cat-name">Éducation</div><div class="cat-stats">0 € ce mois · 0 opérations</div>
+          <div class="mini-bar"><div style="width:0%;height:100%;border-radius:99px;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:16px 18px 14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:12px;">Personnalisées</div>
+      <div class="cat-grid">
+        <div class="cat-card" style="background:linear-gradient(135deg,#fef0f6,#fff4f8);border-color:#f0d8e8;">
+          <div class="cat-card-top"><div style="font-size:22px;">🐾</div><div class="cat-badge" style="background:#fde8f3;color:#e8699a;">Perso</div></div>
+          <div class="cat-name">Animaux</div><div class="cat-stats">45 € ce mois · 2 opérations</div>
+          <div class="mini-bar"><div style="width:8%;height:100%;background:linear-gradient(90deg,#f4a7c3,#e8699a);border-radius:99px;"></div></div>
+        </div>
+        <div class="cat-card" style="background:linear-gradient(135deg,#f8eef8,#fdf4fd);border-color:#e8d0e8;">
+          <div class="cat-card-top"><div style="font-size:22px;">✂️</div><div class="cat-badge" style="background:#f8eef8;color:#b878b8;">Perso</div></div>
+          <div class="cat-name">Beauté & Soin</div><div class="cat-stats">60 € ce mois · 3 opérations</div>
+          <div class="mini-bar"><div style="width:10%;height:100%;background:linear-gradient(90deg,#d4a8d4,#c898c8);border-radius:99px;"></div></div>
+        </div>
+        <div class="add-cat-card" onclick="openModal('modal-cat')">
+          <div style="font-size:28px;color:var(--text3);">＋</div>
+          <div style="font-size:12px;color:var(--text3);font-weight:500;">Créer une catégorie</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ OBJECTIFS ════ -->
+  <div class="page" id="page-objectifs">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;color:var(--text2);">4 objectifs actifs · Total épargné : 11 625 €</div>
+      <button class="btn-primary" onclick="openModal('modal-obj')">＋ Nouvel objectif</button>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-full-card">
+        <div class="obj-full-top"><div><div style="font-size:30px;margin-bottom:6px;">✈️</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">Voyage au Japon</div></div><div class="obj-status-pill" style="background:#e8f8f4;color:#5db898;">En cours</div></div>
+        <div style="font-size:12px;color:var(--text2);">Montant cible</div><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--pink);margin-top:2px;">2 000 €</div>
+        <div class="obj-big-bar"><div class="obj-big-fill" style="width:68%;background:linear-gradient(90deg,#e8699a,#c4a8e0);"></div></div>
+        <div class="obj-stats-row"><div><div>Épargné</div><div class="obj-stat-val">1 360 €</div></div><div style="text-align:center"><div>Progression</div><div class="obj-stat-val" style="color:var(--pink);">68%</div></div><div style="text-align:right"><div>Échéance</div><div class="obj-stat-val">Juin 2026</div></div></div>
+        <div class="obj-action-row"><div class="obj-btn">⏸ Désactiver</div><div class="obj-btn">✏️ Modifier</div><div class="obj-btn primary">➕ Alimenter</div></div>
+      </div>
+      <div class="obj-full-card">
+        <div class="obj-full-top"><div><div style="font-size:30px;margin-bottom:6px;">🚗</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">Achat Voiture</div></div><div class="obj-status-pill" style="background:#e8f8f4;color:#5db898;">En cours</div></div>
+        <div style="font-size:12px;color:var(--text2);">Montant cible</div><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#9a68d0;margin-top:2px;">12 000 €</div>
+        <div class="obj-big-bar"><div class="obj-big-fill" style="width:42%;background:linear-gradient(90deg,#a8d8c8,#84c4b0);"></div></div>
+        <div class="obj-stats-row"><div><div>Épargné</div><div class="obj-stat-val">5 040 €</div></div><div style="text-align:center"><div>Progression</div><div class="obj-stat-val" style="color:#5db898;">42%</div></div><div style="text-align:right"><div>Échéance</div><div class="obj-stat-val">Déc 2026</div></div></div>
+        <div class="obj-action-row"><div class="obj-btn">⏸ Désactiver</div><div class="obj-btn">✏️ Modifier</div><div class="obj-btn primary">➕ Alimenter</div></div>
+      </div>
+      <div class="obj-full-card" style="border-color:#f0d898;background:linear-gradient(135deg,#fffdf0,#fdf8e8);">
+        <div class="obj-full-top"><div><div style="font-size:30px;margin-bottom:6px;">💻</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">MacBook Pro</div></div><div class="obj-status-pill" style="background:#fdf8e8;color:#c8a028;">⚡ Presque atteint !</div></div>
+        <div style="font-size:12px;color:var(--text2);">Montant cible</div><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#c8a028;margin-top:2px;">2 500 €</div>
+        <div class="obj-big-bar"><div class="obj-big-fill" style="width:89%;background:linear-gradient(90deg,#f0d898,#e0c070);"></div></div>
+        <div class="obj-stats-row"><div><div>Épargné</div><div class="obj-stat-val">2 225 €</div></div><div style="text-align:center"><div>Progression</div><div class="obj-stat-val" style="color:#c8a028;">89%</div></div><div style="text-align:right"><div>Échéance</div><div class="obj-stat-val">Mars 2026</div></div></div>
+        <div class="obj-action-row"><div class="obj-btn">✅ Marquer atteint</div><div class="obj-btn primary">➕ Dernier effort !</div></div>
+      </div>
+      <div class="obj-full-card">
+        <div class="obj-full-top"><div><div style="font-size:30px;margin-bottom:6px;">🏠</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">Apport Logement</div></div><div class="obj-status-pill" style="background:#fde8f3;color:#e8699a;">Long terme</div></div>
+        <div style="font-size:12px;color:var(--text2);">Montant cible</div><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#b878b8;margin-top:2px;">20 000 €</div>
+        <div class="obj-big-bar"><div class="obj-big-fill" style="width:15%;background:linear-gradient(90deg,#d4a8d4,#b898c8);"></div></div>
+        <div class="obj-stats-row"><div><div>Épargné</div><div class="obj-stat-val">3 000 €</div></div><div style="text-align:center"><div>Progression</div><div class="obj-stat-val" style="color:#b878b8;">15%</div></div><div style="text-align:right"><div>Échéance</div><div class="obj-stat-val">2028</div></div></div>
+        <div class="obj-action-row"><div class="obj-btn">⏸ Désactiver</div><div class="obj-btn">✏️ Modifier</div><div class="obj-btn primary">➕ Alimenter</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ COACH ════ -->
+  <div class="page" id="page-coach">
+    <div class="coach-hero">
+      <div class="coach-hero-emoji">🤖</div>
+      <div>
+        <div class="coach-hero-title">Votre Coach Budget Personnel</div>
+        <div class="coach-hero-sub">42 opérations analysées ce mois · 4 conseils personnalisés · Prévision disponible pour fin février 2026</div>
+      </div>
+      <div class="coach-score">
+        <div class="coach-score-num">74</div>
+        <div style="font-size:18px;margin:2px 0;">🌸</div>
+        <div class="coach-score-label">Score budget</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Prévision de fin de mois</div></div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Projection basée sur vos habitudes actuelles pour le 28 février 2026 :</div>
+      <div class="forecast-label"><span>🍎 Alimentation (~600 €)</span><span style="color:var(--pink);font-weight:600;">+91 € vs mois dernier</span></div>
+      <div class="forecast-bar"><div class="forecast-fill" style="width:78%;background:linear-gradient(90deg,#e8699a,#f4a7c3);"></div></div>
+      <div class="forecast-label"><span>🏠 Logement (~700 €)</span><span style="color:#7898e0;font-weight:600;">Stable</span></div>
+      <div class="forecast-bar"><div class="forecast-fill" style="width:90%;background:linear-gradient(90deg,#7898e0,#a8b8f0);"></div></div>
+      <div class="forecast-label"><span>🚗 Transport (~100 €)</span><span style="color:#5db898;font-weight:600;">-20 € vs mois dernier</span></div>
+      <div class="forecast-bar"><div class="forecast-fill" style="width:35%;background:linear-gradient(90deg,#a8d8c8,#84c4b0);"></div></div>
+      <div class="forecast-label"><span>🎮 Loisirs (~300 €)</span><span style="color:var(--pink);font-weight:600;">+55 € vs mois dernier</span></div>
+      <div class="forecast-bar"><div class="forecast-fill" style="width:55%;background:linear-gradient(90deg,#c4a8e0,#d4b8f0);"></div></div>
+      <div style="margin-top:14px;padding:14px 18px;background:linear-gradient(135deg,#e8f8f4,#f0faf8);border-radius:12px;border:1.5px solid #c0e8d8;">
+        <div style="font-size:10px;color:#5db898;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Solde estimé fin de mois</div>
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#5db898;">+1 100 €</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">Taux d'épargne estimé : 39%</div>
+      </div>
+    </div>
+
+    <div class="coach-grid">
+      <div class="advice-card" style="background:linear-gradient(135deg,#fde8f3,#fef4f9);border-color:#f4c8e0;">
+        <div class="advice-icon">⚠️</div><div class="advice-title" style="color:#e8699a;">Alimentation en hausse</div>
+        <div class="advice-text">Vos dépenses alimentaires ont augmenté de 22% par rapport au mois dernier, principalement à cause des commandes Uber Eats (+5 commandes).</div>
+        <div class="advice-impact" style="background:#fde8f3;color:#e8699a;">📉 Impact : -91 €/mois</div>
+      </div>
+      <div class="advice-card" style="background:linear-gradient(135deg,#e8f8f4,#f0faf8);border-color:#c0e8d8;">
+        <div class="advice-icon">✅</div><div class="advice-title" style="color:#5db898;">Transport bien maîtrisé</div>
+        <div class="advice-text">Bravo ! Votre poste transport a diminué de 20% grâce à l'utilisation régulière du Pass Navigo. Continuez dans cette direction !</div>
+        <div class="advice-impact" style="background:#e8f8f4;color:#5db898;">💚 Économie : +20 €/mois</div>
+      </div>
+      <div class="advice-card" style="background:linear-gradient(135deg,#fdf8e8,#fffdf0);border-color:#e8d8a0;">
+        <div class="advice-icon">💡</div><div class="advice-title" style="color:#c8a028;">MacBook quasi atteint !</div>
+        <div class="advice-text">Vous êtes à 89% de votre objectif MacBook Pro. En épargnant 275 € de plus ce mois, vous atteignez votre cible avant mars 2026.</div>
+        <div class="advice-impact" style="background:#fdf8e8;color:#c8a028;">🎯 Il reste : 275 €</div>
+      </div>
+      <div class="advice-card" style="background:linear-gradient(135deg,#f0e8fa,#f8f0ff);border-color:#d8c0f0;">
+        <div class="advice-icon">🔮</div><div class="advice-title" style="color:#9a68d0;">Règle des 50/30/20</div>
+        <div class="advice-text">Vos charges essentielles représentent 68% de vos dépenses (vs 50% recommandé). Réduire les charges fixes améliorerait votre score.</div>
+        <div class="advice-impact" style="background:#f0e8fa;color:#9a68d0;">📊 Score cible : 85+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ MON COMPTE ════ -->
+  <div class="page" id="page-compte">
+
+    <!-- Header compte avec switcher -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);">Compte actif :</div>
+        <div style="display:flex;gap:6px;">
+          <div class="filter-chip active" onclick="switchAccount(this,'perso')">💼 Budget Perso</div>
+          <div class="filter-chip" onclick="switchAccount(this,'famille')">👨‍👩‍👧 Famille</div>
+          <div class="filter-chip" onclick="switchAccount(this,'coloc')">🏠 Coloc</div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="openModal('modal-new-account')">＋ Nouveau compte</button>
+    </div>
+
+    <!-- Infos du compte -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Informations du compte</div>
+          <div style="display:flex;gap:8px;">
+            <div class="card-action" onclick="openModal('modal-rename')">✏️ Renommer</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;background:linear-gradient(135deg,#fde8f3,#f0e8fa);border-radius:12px;border:1.5px solid rgba(232,105,154,0.15);">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--pink),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💼</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;" id="compte-name">Budget Perso</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;">Créé le 12 Sept 2025</div>
+            </div>
+            <div style="margin-left:auto;text-align:right;">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Statut</div>
+              <div style="background:#e8f8f4;color:#5db898;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:3px;">✅ Actif</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border);">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Solde actuel</div>
+              <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--pink);">3 240 €</div>
+            </div>
+            <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border);">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Membres</div>
+              <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--lavender);">1</div>
+            </div>
+            <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border);">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Opérations</div>
+              <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);">42</div>
+            </div>
+            <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border);">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Type</div>
+              <div style="font-size:13px;font-weight:600;margin-top:4px;">Personnel</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone danger -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">🔑 Code de partage</div></div>
+          <div style="font-size:12.5px;color:var(--text2);margin-bottom:14px;">Partagez ce code avec d'autres utilisateurs pour qu'ils rejoignent votre compte.</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,#fde8f3,#f0e8fa);border-radius:12px;border:1.5px solid rgba(232,105,154,0.2);">
+            <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:4px;color:var(--pink);flex:1;">BDG-4X7K2</div>
+            <div class="card-action" onclick="copyCode()">📋 Copier</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;">⚠️ Ne partagez ce code qu'avec des personnes de confiance.</div>
+        </div>
+
+        <div class="card" style="border-color:#f9c4d4;background:linear-gradient(135deg,#fff5f8,#fff);">
+          <div class="card-header"><div class="card-title" style="color:#d04060;">⚠️ Zone de danger</div></div>
+          <div style="font-size:12.5px;color:var(--text2);margin-bottom:14px;">La suppression du compte est irréversible. Toutes les opérations associées seront perdues.</div>
+          <button onclick="openModal('modal-delete-account')" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #f4a0b8;background:#fff0f4;color:#d04060;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">🗑️ Supprimer ce compte</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membres du compte -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">👥 Membres du compte</div>
+        <div class="card-action" onclick="showPage('partage', navEl('partage'))">Gérer →</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="members-list">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(135deg,#fde8f3,#fef4f9);border-radius:12px;border:1.5px solid rgba(232,105,154,0.15);">
+          <div class="avatar" style="width:38px;height:38px;font-size:13px;">SA</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:13.5px;">Sara A. <span style="font-size:10px;background:#fde8f3;color:#e8699a;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600;">Owner</span></div>
+            <div style="font-size:11px;color:var(--text3);">sara@email.com · Membre depuis Sept 2025</div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);">Vous</div>
+        </div>
+        <div style="padding:16px;text-align:center;background:var(--surface2);border-radius:12px;border:1.5px dashed var(--border);">
+          <div style="font-size:13px;color:var(--text3);">Aucun autre membre · Compte personnel</div>
+          <div class="card-action" style="display:inline-block;margin-top:8px;" onclick="showPage('partage', navEl('partage'))">Inviter quelqu'un →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PARTAGE ════ -->
+  <div class="page" id="page-partage">
+
+    <!-- Rejoindre un compte existant -->
+    <div class="card" style="background:linear-gradient(135deg,#fde8f3,#f0e8fa);border-color:rgba(232,105,154,0.2);">
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+        <div style="font-size:36px;">🔗</div>
+        <div style="flex:1;">
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px;">Rejoindre un compte partagé</div>
+          <div style="font-size:12.5px;color:var(--text2);">Vous avez reçu un code de partage ? Entrez-le ci-dessous pour rejoindre le compte d'un proche.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+          <input class="form-input" style="width:160px;" placeholder="Ex: BDG-4X7K2" id="join-code-input">
+          <button class="btn-primary" onclick="joinAccount()">Rejoindre →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mes comptes partagés -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📂 Mes comptes</div>
+        <button class="btn-primary" onclick="openModal('modal-new-account')">＋ Nouveau</button>
+      </div>
+
+      <!-- Compte 1 : perso -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="border:1.5px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,#fde8f3,#fef4f9);cursor:pointer;" onclick="toggleMembers('acc1')">
+            <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💼</div>
+            <div style="flex:1;">
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">Budget Perso</div>
+              <div style="font-size:11px;color:var(--text3);">1 membre · Personnel · Solde : 3 240 €</div>
+            </div>
+            <div style="background:#e8f8f4;color:#5db898;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;">Actif</div>
+            <div style="background:#fde8f3;color:var(--pink);font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;">Owner</div>
+            <div style="color:var(--text3);font-size:13px;">▾</div>
+          </div>
+          <div id="acc1" style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;border-top:1.5px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;">
+              <div class="avatar" style="width:32px;height:32px;font-size:11px;">SA</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Sara A.</div><div style="font-size:10.5px;color:var(--text3);">sara@email.com</div></div>
+              <div style="font-size:10px;background:#fde8f3;color:var(--pink);padding:2px 8px;border-radius:20px;font-weight:600;">Owner</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <div class="card-action" onclick="openModal('modal-rename')">✏️ Renommer</div>
+              <div class="card-action" onclick="openModal('modal-share-code')">🔑 Voir code</div>
+              <div style="margin-left:auto;font-size:11.5px;color:#d04060;cursor:pointer;background:#fff0f4;padding:4px 10px;border-radius:8px;border:1.5px solid #f4a0b8;" onclick="openModal('modal-delete-account')">🗑️ Supprimer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compte 2 : partagé famille -->
+        <div style="border:1.5px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,#e8f8f4,#f0faf8);cursor:pointer;" onclick="toggleMembers('acc2')">
+            <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#a8d8c8,#84c4b0);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👨‍👩‍👧</div>
+            <div style="flex:1;">
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">Famille</div>
+              <div style="font-size:11px;color:var(--text3);">3 membres · Partagé · Solde : 8 500 €</div>
+            </div>
+            <div style="background:#e8f8f4;color:#5db898;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;">Actif</div>
+            <div style="background:#e8f8f4;color:#5db898;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;">Owner</div>
+            <div style="color:var(--text3);font-size:13px;">▾</div>
+          </div>
+          <div id="acc2" style="padding:14px 18px;display:none;flex-direction:column;gap:8px;border-top:1.5px solid var(--border);">
+            <!-- Membre 1 -->
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;">
+              <div class="avatar" style="width:32px;height:32px;font-size:11px;background:linear-gradient(135deg,#a8d8c8,#84c4b0);">SA</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Sara A.</div><div style="font-size:10.5px;color:var(--text3);">sara@email.com</div></div>
+              <div style="font-size:10px;background:#e8f8f4;color:#5db898;padding:2px 8px;border-radius:20px;font-weight:600;">Owner</div>
+            </div>
+            <!-- Membre 2 -->
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c4a8e0,#a888c0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">MA</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Maman</div><div style="font-size:10.5px;color:var(--text3);">maman@email.com · Rejoint Jan 2026</div></div>
+              <div style="font-size:11px;color:#d04060;cursor:pointer;background:#fff0f4;padding:3px 8px;border-radius:7px;border:1.5px solid #f4a0b8;" onclick="confirmRemove('Maman')">Retirer</div>
+            </div>
+            <!-- Membre 3 -->
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f4b8a0,#e0986a);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">PA</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Papa</div><div style="font-size:10.5px;color:var(--text3);">papa@email.com · Rejoint Jan 2026</div></div>
+              <div style="font-size:11px;color:#d04060;cursor:pointer;background:#fff0f4;padding:3px 8px;border-radius:7px;border:1.5px solid #f4a0b8;" onclick="confirmRemove('Papa')">Retirer</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <div class="card-action" onclick="openModal('modal-rename')">✏️ Renommer</div>
+              <div class="card-action" onclick="openModal('modal-share-code')">🔑 Code partage</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compte 3 : coloc (membre, pas owner) -->
+        <div style="border:1.5px solid var(--border);border-radius:14px;overflow:hidden;opacity:0.85;">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,#f0e8fa,#f8f0ff);cursor:pointer;" onclick="toggleMembers('acc3')">
+            <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#c4a8e0,#a888c0);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏠</div>
+            <div style="flex:1;">
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">Coloc Mériadeck</div>
+              <div style="font-size:11px;color:var(--text3);">2 membres · Partagé · Solde : 1 200 €</div>
+            </div>
+            <div style="background:#e8f8f4;color:#5db898;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;">Actif</div>
+            <div style="background:#f0e8fa;color:#9a68d0;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;">Membre</div>
+            <div style="color:var(--text3);font-size:13px;">▾</div>
+          </div>
+          <div id="acc3" style="padding:14px 18px;display:none;flex-direction:column;gap:8px;border-top:1.5px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c4a8e0,#a888c0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">KA</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Karim A.</div><div style="font-size:10.5px;color:var(--text3);">karim@email.com · Owner</div></div>
+              <div style="font-size:10px;background:#f0e8fa;color:#9a68d0;padding:2px 8px;border-radius:20px;font-weight:600;">Owner</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(135deg,#fde8f3,#fef4f9);border-radius:10px;border:1.5px solid rgba(232,105,154,0.15);">
+              <div class="avatar" style="width:32px;height:32px;font-size:11px;">SA</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Sara A.</div><div style="font-size:10.5px;color:var(--text3);">Vous · Membre depuis Fév 2026</div></div>
+              <div style="font-size:10px;background:#fde8f3;color:var(--pink);padding:2px 8px;border-radius:20px;font-weight:600;">Vous</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <div style="font-size:11.5px;color:#d04060;cursor:pointer;background:#fff0f4;padding:6px 14px;border-radius:8px;border:1.5px solid #f4a0b8;font-weight:600;" onclick="openModal('modal-leave')">🚪 Quitter ce compte</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ════ MODALS ════ -->
+
+<!-- Modal: Renommer compte -->
+<div class="modal-overlay" id="modal-rename" onclick="if(event.target===this)closeModal('modal-rename')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">✏️ Renommer le compte</div><div class="modal-close" onclick="closeModal('modal-rename')">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom actuel</label><div style="padding:10px 14px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text2);">Budget Perso</div></div>
+    <div class="form-group"><label class="form-label">Nouveau nom</label><input class="form-input" placeholder="Ex: Budget Principal, Dépenses Perso…"></div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeModal('modal-rename')">Annuler</button><button class="btn-submit" onclick="closeModal('modal-rename')">Renommer ✓</button></div>
+  </div>
+</div>
+
+<!-- Modal: Nouveau compte -->
+<div class="modal-overlay" id="modal-new-account" onclick="if(event.target===this)closeModal('modal-new-account')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">💼 Nouveau compte</div><div class="modal-close" onclick="closeModal('modal-new-account')">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom du compte</label><input class="form-input" placeholder="Ex: Budget Perso, Famille, Coloc…"></div>
+    <div class="form-group"><label class="form-label">Solde initial (€)</label><input class="form-input" type="number" placeholder="0"></div>
+    <div style="padding:12px 14px;background:var(--pink-pale);border-radius:10px;border:1.5px solid rgba(232,105,154,0.2);margin-bottom:14px;">
+      <div style="font-size:11.5px;color:var(--pink);font-weight:600;">💡 Un code de partage sera automatiquement généré pour ce compte.</div>
+    </div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeModal('modal-new-account')">Annuler</button><button class="btn-submit" onclick="closeModal('modal-new-account')">Créer le compte ✓</button></div>
+  </div>
+</div>
+
+<!-- Modal: Voir code partage -->
+<div class="modal-overlay" id="modal-share-code" onclick="if(event.target===this)closeModal('modal-share-code')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🔑 Code de partage</div><div class="modal-close" onclick="closeModal('modal-share-code')">✕</div></div>
+    <div style="text-align:center;padding:24px 0;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Partagez ce code</div>
+      <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:8px;color:var(--pink);background:var(--pink-pale);padding:18px 24px;border-radius:14px;border:1.5px solid rgba(232,105,154,0.2);">BDG-4X7K2</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:12px;">Toute personne avec ce code peut rejoindre votre compte</div>
+    </div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeModal('modal-share-code')">Fermer</button><button class="btn-submit" onclick="closeModal('modal-share-code')">📋 Copier le code</button></div>
+  </div>
+</div>
+
+<!-- Modal: Supprimer compte -->
+<div class="modal-overlay" id="modal-delete-account" onclick="if(event.target===this)closeModal('modal-delete-account')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" style="color:#d04060;">🗑️ Supprimer le compte</div><div class="modal-close" onclick="closeModal('modal-delete-account')">✕</div></div>
+    <div style="padding:16px;background:#fff5f8;border-radius:12px;border:1.5px solid #f9c4d4;margin-bottom:16px;">
+      <div style="font-size:13px;color:#d04060;font-weight:600;margin-bottom:6px;">⚠️ Action irréversible</div>
+      <div style="font-size:12.5px;color:var(--text2);line-height:1.6;">La suppression du compte <strong>Budget Perso</strong> effacera définitivement toutes les opérations, objectifs et données associées.</div>
+    </div>
+    <div class="form-group"><label class="form-label">Tapez le nom du compte pour confirmer</label><input class="form-input" placeholder="Budget Perso"></div>
+    <div class="form-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-delete-account')">Annuler</button>
+      <button style="flex:2;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#e04060,#c03050);color:#fff;font-family:'DM Sans',sans-serif;" onclick="closeModal('modal-delete-account')">Supprimer définitivement</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Quitter compte -->
+<div class="modal-overlay" id="modal-leave" onclick="if(event.target===this)closeModal('modal-leave')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🚪 Quitter le compte</div><div class="modal-close" onclick="closeModal('modal-leave')">✕</div></div>
+    <div style="padding:16px;background:#fff5f8;border-radius:12px;border:1.5px solid #f9c4d4;margin-bottom:16px;">
+      <div style="font-size:12.5px;color:var(--text2);line-height:1.6;">Vous êtes sur le point de quitter le compte <strong>Coloc Mériadeck</strong>. Vous n'aurez plus accès aux opérations et données de ce compte.</div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-leave')">Annuler</button>
+      <button style="flex:2;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#e8699a,#c4a8e0);color:#fff;font-family:'DM Sans',sans-serif;" onclick="closeModal('modal-leave')">Quitter ce compte 🚪</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-op" onclick="if(event.target===this)closeModal('modal-op')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">➕ Nouvelle opération</div><div class="modal-close" onclick="closeModal('modal-op')">✕</div></div>
+    <div class="form-group"><label class="form-label">Type</label>
+      <div class="type-toggle"><div class="type-btn active-dep" onclick="setType(this,'dep')">📤 Dépense</div><div class="type-btn" onclick="setType(this,'rev')">📥 Revenu</div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Description</label><input class="form-input" placeholder="Ex: Carrefour, Salaire…"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" placeholder="0,00"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" value="2026-02-23"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Catégorie</label>
+      <select class="form-select-modal"><option>🍎 Alimentation</option><option>🏠 Logement</option><option>🚗 Transport</option><option>🎮 Loisirs</option><option>💊 Santé</option><option>🐾 Animaux</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Note (optionnel)</label><input class="form-input" placeholder="Ex: courses hebdo"></div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeModal('modal-op')">Annuler</button><button class="btn-submit" onclick="closeModal('modal-op')">Enregistrer ✓</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-obj" onclick="if(event.target===this)closeModal('modal-obj')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🎯 Nouvel objectif</div><div class="modal-close" onclick="closeModal('modal-obj')">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom de l'objectif</label><input class="form-input" placeholder="Ex: Voyage, Voiture, MacBook…"></div>
+    <div class="form-group"><label class="form-label">Emoji / Icône</label><input class="form-input" placeholder="Ex: ✈️ 🚗 🏠 💻"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Montant cible (€)</label><input class="form-input" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Date cible</label><input class="form-input" type="date"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Déjà épargné (€)</label><input class="form-input" type="number" placeholder="0" value="0"></div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeModal('modal-obj')">Annuler</button><button class="btn-submit" onclick="closeModal('modal-obj')">Créer l'objectif 🎯</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cat" onclick="if(event.target===this)closeModal('modal-cat')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🏷️ Nouvelle catégorie</div><div class="modal-close" onclick="closeModal('modal-cat')">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom</label><input class="form-input" placeholder="Ex: Animaux, Beauté, Sport…"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" placeholder="Ex: 🐾 ✂️ 🏋️"></div>
+    <div class="form-group"><label class="form-label">Couleur</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <div onclick="selectColor(this,'#e8699a')" style="width:28px;height:28px;border-radius:50%;background:#e8699a;cursor:pointer;border:2.5px solid #e8699a;"></div>
+        <div onclick="selectColor(this,'#c4a8e0')" style="width:28px;height:28px;border-radius:50%;background:#c4a8e0;cursor:pointer;border:2.5px solid transparent;"></div>
+        <div onclick="selectColor(this,'#a8d8c8')" style="width:28px;height:28px;border-radius:50%;background:#a8d8c8;cursor:pointer;border:2.5px solid transparent;"></div>
+        <div onclick="selectColor(this,'#f0d898')" style="width:28px;height:28px;border-radius:50%;background:#f0d898;cursor:pointer;border:2.5px solid transparent;"></div>
+        <div onclick="selectColor(this,'#d4a8d4')" style="width:28px;height:28px;border-radius:50%;background:#d4a8d4;cursor:pointer;border:2.5px solid transparent;"></div>
+        <div onclick="selectColor(this,'#f4b8a0')" style="width:28px;height:28px;border-radius:50%;background:#f4b8a0;cursor:pointer;border:2.5px solid transparent;"></div>
+        <div onclick="selectColor(this,'#7898e0')" style="width:28px;height:28px;border-radius:50%;background:#7898e0;cursor:pointer;border:2.5px solid transparent;"></div>
+      </div>
+    </div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeModal('modal-cat')">Annuler</button><button class="btn-submit" onclick="closeModal('modal-cat')">Créer 🏷️</button></div>
+  </div>
+</div>
+
+<script>
+const titles = { dashboard:'Tableau de bord', operations:'Opérations financières', categories:'Gestion des catégories', objectifs:"Objectifs d'épargne", coach:'Coach Budget 🤖', compte:'Mon Compte', partage:'Partage & Membres' };
+
+function navEl(name) {
+  return document.querySelector(`.nav-item[onclick*="${name}"]`);
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  else if (navEl(name)) navEl(name).classList.add('active');
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function setType(el, type) {
+  el.closest('.type-toggle').querySelectorAll('.type-btn').forEach(b => b.classList.remove('active-dep','active-rev'));
+  el.classList.add(type==='dep'?'active-dep':'active-rev');
+}
+
+function selectColor(el, color) {
+  el.closest('div').querySelectorAll('div').forEach(d => d.style.borderColor='transparent');
+  el.style.borderColor = color;
+}
+
+function toggleMembers(id) {
+  const el = document.getElementById(id);
+  if (el.style.display === 'none' || el.style.display === '') {
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function switchAccount(el, name) {
+  el.closest('div').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const names = { perso:'Budget Perso', famille:'Famille', coloc:'Coloc Mériadeck' };
+  const nameEl = document.getElementById('compte-name');
+  if (nameEl) nameEl.textContent = names[name] || name;
+}
+
+function copyCode() {
+  alert('Code BDG-4X7K2 copié !');
+}
+
+function joinAccount() {
+  const code = document.getElementById('join-code-input').value.trim();
+  if (!code) { alert('Veuillez entrer un code de partage.'); return; }
+  alert('Demande envoyée pour le code : ' + code);
+  document.getElementById('join-code-input').value = '';
+}
+
+function confirmRemove(name) {
+  if (confirm('Retirer ' + name + ' du compte ?')) {
+    alert(name + ' a été retiré du compte.');
+  }
+}
+</script>
+</body>
+</html>

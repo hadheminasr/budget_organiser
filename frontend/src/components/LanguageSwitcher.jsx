@@ -1,28 +1,19 @@
-import { useTranslation } from 'react-i18next';
-import SharedButton from '../SharedComponents/SharedButton';
+// Dans ton topbar/header
+import { useTranslation } from "react-i18next";
 
-const LanguageSwitcher = () => {
+export default function LangToggle() {
   const { i18n } = useTranslation();
 
+  const toggle = () => {
+    i18n.changeLanguage(i18n.language === "fr" ? "en" : "fr");
+  };
+
   return (
-    <div className="flex gap-2 w-fit">
-      <SharedButton
-        variant={i18n.language === 'fr' ? 'primary' : 'secondary'}
-        onClick={() => i18n.changeLanguage('fr')}
-        className="w-auto px-4 py-2 text-sm"
-      >
-        🇫🇷 FR
-      </SharedButton>
-
-      <SharedButton
-        variant={i18n.language === 'en' ? 'primary' : 'secondary'}
-        onClick={() => i18n.changeLanguage('en')}
-        className="w-auto px-4 py-2 text-sm"
-      >
-        🇬🇧 EN
-      </SharedButton>
-    </div>
+    <button
+      type="button"
+      onClick={toggle}
+      className="px-3 py-1.5 rounded-xl border border-pink-200 text-xs font-bold text-pink-400 hover:bg-pink-50 hover:scale-105 transition cursor-pointer">
+      {i18n.language === "fr" ? "EN" : "FR"}
+    </button>
   );
-};
-
-export default LanguageSwitcher;
+}

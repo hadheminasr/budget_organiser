@@ -20,7 +20,7 @@ console.log("activeBol =", req.query.activeBol);
     return res.status(200).json({ sucess: true, users });
   } catch (error) {
     console.error("Error in getAllUsers", error);
-    return res.status(500).json({ sucess: false, message: "server error" });
+    return res.status(500).json({ sucess: false, message: error.message });
   }
 };
 

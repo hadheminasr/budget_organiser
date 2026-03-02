@@ -96,7 +96,7 @@ export const VueGlobale = {
       { $limit: 5 },
       {
         $lookup: {
-          from: "Category",
+          from: "categories",
           localField: "_id",
           foreignField: "_id",
           as: "cat",
@@ -123,7 +123,7 @@ export const VueGlobale = {
 
     const rows = await Operation.aggregate([
       { $match: { date: { $gte: since, $lte: now } } },
-      { $group: { _id: "$type", total: { $sum: "$monatnt" } } },
+      { $group: { _id: "$type", total: { $sum: "$amount" } } },
     ]);
 
     const dep = rows.find((r) => r._id === "depense")?.total ?? 0;

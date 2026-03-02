@@ -1,114 +1,84 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import SharedCard from "../../../SharedComponents/SharedCard";
- export default function GestionCompte(){
-    const [stats,setStats]=useState([null]);
-    const [error,setError]=useState("");
-    const [loading,setLoading]=useState(false);
-    useEffect(()=>{
-        const fetchData=async()=>{
-            try{
-                setError("");
-                setLoading(true);
-                const res=axios.get("http://localhost:5000/api/admin/financierCategories",{withCredentials: true });
-                setStats(res.data?.stats || null);
-            } catch(error){
-                setError(e?.response?.data?.message || e.message || "Erreur serveur");
+import SharedCard from "../../SharedComponents/SharedCard";
+import CategoriesDistributionHistogram from "./CategoriesDistributionHistogram";
+import Top10ComptesActiviteBar from "./Top10ComptesActiviteBar";
+import FunnelComptes from "./FunnelComptes";
 
-            } finally{
-                setLoading(false)
-            };
-        };
+// icons (si tu utilises lucide-react)
+import { ShieldCheck, ShieldX, Activity, AlertTriangle,Target,Tags,ArrowLeftRight} from "lucide-react";
 
-        fetchData();
-        }, []);
+export default function ActiviteComportement() {
+  // 1) data backend (stats)
+  const [stats, setStats] = useState(null);
+
+  // 2) loading / error
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // 3) filtre table (drill-down)
+  // all | dormant7 | active7
+  const [filterMode, setFilterMode] = useState("all");
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        // ⚠️ adapte l’URL à ta route
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/ActiviteComportement",
+          { withCredentials: true }
+        );
+
+        // back => { success:true, stats:{...} }
+        setStats(res.data?.stats || null);
+      } catch (e) {
+        setError(e?.response?.data?.message || e.message || "Erreur serveur");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  /**
+   *  useMemo : on calcule une "vue" du tableau selon filterMode
+   *  - évite de recalculer à chaque render inutilement
+   *  - utile quand tu as des filtres / tri / grosses listes
+   */
+  const tableRows = useMemo(() => {
+    if (!stats) return [];
+
+    // 1) si "dormant7" => on affiche directement stats.dormant (déjà renvoyé par le backend)
+    if (filterMode === "dormant7") return stats.dormant || [];
+
+    // 2) si "active7" => tu peux soit:
+    // - re-fetch les comptes depuis une route backend (best)
+    // - ou afficher uniquement les IDs (moins UX)
+    // Ici: on fait simple => afficher une ligne avec ID (ou tu ajoutes une route /comptes?ids=...)
+    if (filterMode === "active7") {
+      return (stats.activeNowIds || []).map((id) => ({
+        _id: id,
+        nomCompte: "—",
+        nbUsers: "—",
+        isBlocked: false,
+        createdAt: null,
+      }));
     }
-    //useMemo
-    const tabrows = useMemo(()=>{
-        if(!stats) return [];
-        return [
-            {
-                title : "taux d'activité régulié "
 
+    // 3) sinon "all" => on affiche au minimum dormant + actives (pas parfait)
+    // Best practice: une route backend "GET /comptes" pour tous les comptes
+    // Ici: simple => on affiche dormant (car on a la liste), sinon vide.
+    return stats.dormant || [];
+  }, [stats, filterMode]);
 
-            },
-            {
-                title:"santé moyen"
-
-
-            },
-            {
-                title:"% comptes avec solde négatifs "
-            },
-            {
-                title:"% comptes en alerte"
-            }
-
-        ]
-
-    })
-    /*return [
-          {
-            title: "Comptes totaux",
-            value: stats.nbComptes,
-            icon: Wallet,
-            iconColor: "rose",
-          },
-          {
-            title: "Comptes actifs",
-            value: stats.compteActifs,
-            icon: ShieldCheck,
-            iconColor: "emerald",
-          },
-          {
-            title: "Comptes bloqués",
-            value: stats.compteInactifs,
-            icon: ShieldOff,
-            iconColor: "red",
-          },
-          {
-            title: "Comptes partagés",
-            value: `${Number(stats.comptePartage ?? 0).toFixed(1)}%`,
-            icon: Share2,
-            iconColor: "amber",
-            change: "≥ 2 utilisateurs",
-            changeType: "neutral",
-          },
-          {
-            title: "Utilisateurs",
-            value: stats.nbUsers,
-            icon: Users,
-            iconColor: "blue",
-            change: `${stats.newUsers ?? 0} nouveaux (7j)`,
-            changeType: (stats.newUsers ?? 0) > 0 ? "positive" : "neutral",
-          },
-          {
-            title: "Objectifs actifs",
-            value: stats.objectifActifs,
-            icon: Target,
-            iconColor: "blue",
-            change: `${Number(stats.objectifAtteints ?? 0).toFixed(0)}% atteints`,
-            changeType: (stats.objectifAtteints ?? 0) > 50 ? "positive" : "neutral",
-          },
-        ];
-      }, [stats]);*/ 
-    if (loading ) return <div>loading Gestion & Controle</div>
-    if (error) return <div style={{ color: "red" }}> {error}</div>
-    if (!stats) return <div >aucune donnees</div>
-    return (
-        <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
-          <h1 className="text-2xl font-bold text-gray-900">Gestion & Controle</h1>
-    
-          {/* GRID KPI */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {kpis.map((kpi, idx) => (
-              <SharedCard key={idx} {...kpi} />
-            ))}
-          </div>
-        </div>
-    )
-
-{/* 
+  // ----- UI states -----
+  if (loading) return <div>Loading Activité & Comportement...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (!stats) return <div>Aucune donnée.</div>;
 
   /**
    * KPI actionnable : Taux actifs 7j + variation
@@ -131,6 +101,7 @@ import SharedCard from "../../../SharedComponents/SharedCard";
     <div className="space-y-6">
       {/* ------------------ KPI CARDS ------------------ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Activité & Comportement</h1>
         {/* KPI normal 1: comptes actifs (non bloqués) */}
         <SharedCard
          title="moyenne opération par compte"
