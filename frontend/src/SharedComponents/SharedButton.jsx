@@ -1,38 +1,42 @@
-import { motion } from "framer-motion";
+// SharedComponents/SharedButton.jsx
 
 const SharedButton = ({
   children,
-  loading = false,
-  disabled = false,
+  onClick,
+  type = "button",
   variant = "primary",
+  disabled = false,
+  loading = false,
+  icon = null,
   className = "",
-  ...props
 }) => {
-  const base =
-    "w-full rounded-xl py-3 px-4 font-bold transition duration-200 shadow-lg";
-
-  const variants = {
-    primary:
-      "text-white bg-gradient-to-r from-[#D7A4A6] to-[#C58B8E] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#D7A4A6]/40",
-    secondary:
-      "text-[#5a3b3f] bg-white/70 border border-black/10 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#D7A4A6]/25",
-    ghost:
-      "text-[#C58B8E] bg-transparent hover:bg-[#D7A4A6]/10 shadow-none",
+  const styles = {
+    primary:   "bg-pink-400 text-white hover:bg-pink-500",
+    secondary: "bg-white text-pink-400 border border-pink-200 hover:bg-pink-50",
+    ghost:     "bg-transparent text-pink-400 hover:bg-pink-50",
+    danger:    "bg-red-50 text-red-400 border border-red-200 hover:bg-red-100",
   };
 
-  const disabledStyle = "disabled:opacity-60 disabled:cursor-not-allowed";
-
   return (
-    <motion.button
-      whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
-      whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
+    <button
+      type={type} 
+      onClick={onClick}
       disabled={disabled || loading}
-      className={`${base} ${variants[variant]} ${disabledStyle} ${className}`}
-      {...props}
+      className={`
+        w-full rounded-xl py-3 px-4
+        font-bold text-sm
+        flex items-center justify-center gap-2
+        transition duration-200
+        hover:scale-105 active:scale-95
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+        cursor-pointer
+        ${styles[variant]}
+        ${className}
+      `}
     >
+      {icon && icon}
       {loading ? "Chargement..." : children}
-    </motion.button>
+    </button>
   );
 };
-
 export default SharedButton;

@@ -1,33 +1,38 @@
 import Joi from "joi";
 import mongoose from "mongoose";
 
-const objectId = (value, helpers) => {
-  if (value === null) return value;
-  if (!mongoose.Types.ObjectId.isValid(value)) {
-    return helpers.error("any.invalid");
-  }
-  return value;
-};
-
+// helper ObjectId MongoDB
+const objectId = Joi.string().pattern(/^[0-9a-fA-F]{24}$/).messages({
+  "string.pattern.base": "ObjectId invalide (24 caractères hex).",
+});
+//add
 export const addCategorySchema = Joi.object({
-  body: Joi.object({
-    name: Joi.string().trim().min(2).max(40).required(),
+  params:Joi.object({
+    AccountId:objectId.required().messages({
+      "any.required": "id est obligatoire",
+    }
+    )
+  }).required(),
+  body:Joi.object({
 
-    color: Joi.string()
-      .trim()
-      .pattern(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)
-      .default("#000000"),
-
-    isDefault: Joi.boolean().default(false),
-
-    AccountId: Joi.alternatives()
-      .try(
-        Joi.string().custom(objectId, "ObjectId validation"),
-        Joi.valid(null)
-      )
-      .default(null),
+  name: Joi.string().trim().min(2).max(40).required(),
+  color: Joi.string().default("#000000"),
+  isDefault: Joi.boolean().default(false),
+  }).unknown(false)
+});
+//update
+export const updateCategorySchema = Joi.object({
+  params:Joi.object({
+    IdCategory:objectId.required().messages({
+      "any.required": "id est obligatoire",
+    }
+    )
   }).required(),
 
-  params: Joi.object({}).unknown(true),
-  query: Joi.object({}).unknown(true),
-});
+  body:Joi.object({
+    name: Joi.string().trim().min(2).max(40).optional(),
+    color: Joi.string().optional(),
+    isDefault: Joi.boolean().optional(),
+
+  }).min(1).messages({ "object.min": "Body vide: au moins un champ à modifier" }).unknown(false)
+})

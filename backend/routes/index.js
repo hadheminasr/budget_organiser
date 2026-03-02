@@ -25,7 +25,7 @@ router.use("/Accounts",protectRoute,AccountRoutes);
 // Admin 
 router.use("/admin", protectRoute, protectAdmin);
 
-router.use("/admin/users", userRoutes);
+router.use("/users", userRoutes);
 //router.use("/admin/KPI",KPIRoutes);
 router.use("/admin/KPI",VueGlobaleRoutes)
 

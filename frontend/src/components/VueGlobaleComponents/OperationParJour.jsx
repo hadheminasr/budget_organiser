@@ -1,4 +1,33 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import Box from "@mui/material/Box";
+import { LineChart } from "@mui/x-charts/LineChart";
+
+export default function DepenseRevenuLineChart({ data = [] }) {
+  const { xLabels, depData, revData } = useMemo(() => ({
+    xLabels: data.map((r) => r.date),
+    depData: data.map((r) => Number(r.depense ?? 0)),
+    revData: data.map((r) => Number(r.revenu ?? 0)),
+  }), [data]);
+
+  if (!data.length) return <div>Aucune donnée (7j).</div>;
+
+  return (
+    <Box sx={{ width: "100%", height: 320 }}>
+      <LineChart
+        series={[
+          { data: depData, label: "Dépenses", yAxisId: "leftAxisId" },
+          { data: revData, label: "Revenus", yAxisId: "rightAxisId" },
+        ]}
+        xAxis={[{ scaleType: "point", data: xLabels, height: 28 }]}
+        yAxis={[
+          { id: "leftAxisId", width: 50 },
+          { id: "rightAxisId", position: "right" },
+        ]}
+      />
+    </Box>
+  );
+}
+/**import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Box from "@mui/material/Box";
 import { LineChart } from "@mui/x-charts/LineChart";
@@ -69,3 +98,4 @@ export default function DepenseRevenuLineChart() {
     </Box>
   );
 }
+ */

@@ -9,10 +9,20 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import Messagerie from "./pages/Admin/Messagerie";
 import LoadingSpinner from "./components/LoadingSpinner";
-import VueGlobal from "./pages/Admin/VueGlobal/VueGlobale";
-import ActiviteComportement from "./pages/Admin/ActiviteComportement/ActiviteComportement";
-import FinancierCategorie from "./pages/Admin/FinancierCategorie/FinancierCategorie";
+import VueGlobal from "./pages/Admin/VueGlobale";
+import ActiviteComportement from "./components/ActiviteComportement/ActiviteComportement";
+import AdminDashboard from "./pages/Admin/AdminDash";
+import FinancierCategorie from "./components/FinancierCategorie/FinancierCategorie";
 import UserDash from "./pages/User/UserDash";
+import UserLayout from "../src/layout/userLayout";
+import Account from "./pages/User/Account";
+import Share from "./pages/User/Share";
+import Operations from "./pages/User/Operations";
+import Categories from "./pages/User/category";
+
+
+
+
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./context/AuthContext";
 
@@ -59,10 +69,7 @@ function App() {
   if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50
-      flex items-center justify-center relative overflow-hidden"
-    >
+    <div className="min-h-screen w-screen bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 relative overflow-hidden">
       <FloatingShape color="bg-rose-200/45" size="w-72 h-72" top="8%" left="10%" delay={0} />
       <FloatingShape color="bg-pink-200/35" size="w-96 h-96" top="35%" left="60%" delay={0.6} />
       <FloatingShape color="bg-amber-200/35" size="w-80 h-80" top="65%" left="18%" delay={1.1} />
@@ -73,7 +80,7 @@ function App() {
           path="/admin"
           element={
             <AdminRoute>
-              <VueGlobal />
+              <AdminDashboard />
             </AdminRoute>
           }
         />
@@ -148,14 +155,30 @@ function App() {
             </RedirectAuthenticatedUser>
           }
         />
-		<Route
+		{/*<Route
 		path="/user"
 		element={
 			<ProtectedRoute>
 			<UserDash />
 			</ProtectedRoute>
 		}
-		/>
+		/>*/}
+    <Route
+  path="/user"
+  element={
+    <ProtectedRoute>
+      <UserLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<Navigate to="UserDash" replace />} />
+  <Route path="userDash"   element={<UserDash />} />
+  <Route path="account"      element={<Account />} />
+  <Route path="partage" element={<Share />} />
+  <Route path="operations" element={<Operations />} />
+  <Route path="categories" element={<Categories />} />
+  
+</Route>
 
 
        

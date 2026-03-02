@@ -5,6 +5,7 @@ import { User } from "../models/User.js";
 import { Account } from "../models/Account.js";
 
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { generateUniqueShareCode } from "../utils/generateShareCode.js";
 import {
   sendWelcomeEmail,
   sendVerificationEmail,
@@ -38,32 +39,9 @@ export const AuthService = {
       verificationToken,
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
-
-    // A vereifier dans le sprint 3 cette if
-    const code = sharedCode?.trim();
     let account = null;
-
-    if (code) {
-      account = await Account.findOne({ Sharingcode: code });
-      if (!account) {
-        const err = new Error("Shared code invalid");
-        err.status = 400;
-        throw err;
-      }
-      if (account.isBlocked) {
-        const err = new Error("This account is blocked");
-        err.status = 403;
-        throw err;
-      }
-      await Account.updateOne(
-        { _id: account._id },
-        { $addToSet: { Users: newUser._id } }
-      );
-      const updated = await Account.findById(account._id).select("Users nbUsers");
-      updated.nbUsers = updated.Users.length;
-      await updated.save();
-    } else {
       const accountName = `Account of ${newUser.name}`;
+      const code = await generateUniqueShareCode(Account);
       account = await Account.create({
         nameAccount: accountName,
         solde: 0,
@@ -71,8 +49,8 @@ export const AuthService = {
         Users: [newUser._id],
         isBlocked: false,
         createdBy: newUser._id,
+        Sharingcode:code,
       });
-    }
     generateTokenAndSetCookie(res, newUser._id);
     await sendVerificationEmail(newUser.email, verificationToken);
 
@@ -126,13 +104,22 @@ export const AuthService = {
       err.status = 400;
       throw err;
     }
+    const account = await Account.findOne({ Users: user._id });
 
     generateTokenAndSetCookie(res, user._id);
 
     user.lastLogin = new Date();
     await user.save();
 
-    return { user: user, message: "logged in successfully" };
+    return { user: {
+              _id: user._id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              isVerified: user.isVerified,
+              accountId: account?._id ?? null, 
+            },
+            message: "logged in successfully" };
   },
 
   async logout(res) {
@@ -205,6 +192,11 @@ export const AuthService = {
       err.status = 400;
       throw err;
     }
-    return { user: user };
+    const account = await Account.findOne({ Users: userId });
+
+    return { user: {
+        ...user._doc,
+        accountId: account?._id ?? null, // ← ajoute ça
+      } };
   },
 };

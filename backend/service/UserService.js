@@ -1,5 +1,7 @@
 import { User } from "../models/User.js";
+import { Account } from "../models/Account.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import {generateUniqueShareCode} from "../utils/generateShareCode.js"
 import { sendWelcomeEmail, sendVerificationEmail } from "../mailtrap/emails.js";
 import bcryptjs from "bcryptjs";
 export const UserService ={

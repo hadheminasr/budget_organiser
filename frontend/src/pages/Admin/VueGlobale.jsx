@@ -1,13 +1,13 @@
-import OperationParJour from "./OperationParJour.jsx";
-import Top5CategoriesBarChart from "./Top5CategoriesBarChart.jsx";
-import DepensesVsRevenusDonut from "./DepensesVsRevenus.jsx";
-import HeatmapJourHeure from "./HeatmapJourHeure7j.jsx";
-import SharedCard from "../../../SharedComponents/SharedCard.jsx";
+import OperationParJour from "../../components/VueGlobaleComponents/OperationParJour.jsx";
+import Top5CategoriesBarChart from "../../components/VueGlobaleComponents/Top5CategoriesBarChart.jsx";
+import DepensesVsRevenusDonut from "../../components/VueGlobaleComponents/DepensesVsRevenus.jsx";
+import HeatmapJourHeure from "../../components/VueGlobaleComponents/HeatmapJourHeure7j.jsx";
+import SharedCard from "../../SharedComponents/SharedCard.jsx";
 import { useMemo, useEffect, useState } from "react";
 import axios from "axios";
 import { Users, Wallet, ShieldCheck, ShieldOff, Share2, Target } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "../../../context/AuthContext"; 
+import { useAuth } from "../../context/AuthContext.jsx"; 
 import { useNavigate } from "react-router-dom";
 
 export default function VueGlobal() {
@@ -118,22 +118,22 @@ const handleLogout = async () => {
         {/* 1) Courbe opérations par jour */}
         <div className="bg-white rounded-xl border p-4">
           <h2 className="text-lg font-semibold mb-2">Opérations par jour (7j)</h2>
-          <OperationParJour data={chartsData.operationsParJour7j} />
+          <OperationParJour data={chartsData?.operationsParJour7j} />
         </div>
         {/* 2) Top 5 catégories */}
         <div className="bg-white rounded-xl border p-4">
           <h2 className="text-lg font-semibold mb-2">Top 5 catégories (dépenses, 7j)</h2>
-          <Top5CategoriesBarChart data={chartsData.top5CategoriesDepenses7j} />
+          <Top5CategoriesBarChart data={chartsData?.top5CategoriesDepenses7j} />
         </div>
         {/* 3) Donut dépenses vs revenus */}
         <div className="bg-white rounded-xl border p-4">
           <h2 className="text-lg font-semibold mb-2">Dépenses vs Revenus (7j)</h2>
-          <DepensesVsRevenusDonut data={chartsData.depensesVsRevenus7j} />
+          <DepensesVsRevenusDonut data={chartsData?.depensesVsRevenus7j} />
         </div>
         {/* 4) Heatmap */}
         <div className="bg-white rounded-xl border p-4">
           <h2 className="text-lg font-semibold mb-2">Heatmap Jour × Heure (7j)</h2>
-          <HeatmapJourHeure data={chartsData.heatmapJourHeure7j} />
+          <HeatmapJourHeure data={chartsData?.heatmapJourHeure7j} />
         </div>
         <motion.button
                   whileHover={{ scale: 1.05 }}

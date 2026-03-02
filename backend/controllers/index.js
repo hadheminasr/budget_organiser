@@ -2,11 +2,11 @@ export {AuthController} from  "./AuthController.js";
 //User
 export { AddUser,deleteUser,updateUser,getAllUsers,getUser } from "./UserController.js";
 //Account
-export {updateAccount,AddAccount,getAccount,getAllAccounts,deleteAccount} from "./AccountController.js";
+export {updateAccount,AddAccount,getAccount,getAllAccounts,deleteAccount,getMyAccount,removeMember,getSharingCode,joinAccountByCode,regenererateSharingCode} from "./AccountController.js";
 //category
-export {AddCategory} from "./CategoryController.js";
+export {AddCategory,DeleteCategory,UpdateCategory,getAllCategories} from "./CategoryController.js";
 //operation
-export {AddOperation} from "./OperationController.js";
+export {AddOperation,UpdateOperation,DeleteOperation,getAllOperations} from "./OperationController.js";
 //goal
 export {AddGoal , getGoalStats } from "./GoalController.js";
 //VueGlobale
