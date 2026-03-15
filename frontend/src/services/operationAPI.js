@@ -1,6 +1,11 @@
 import axios from "axios";
 const BASE = "/api/operations";
 
+export const fetchOperationsGrouped = async (accountId) => {
+  const res = await axios.get(`${BASE}/grouped/${accountId}`, { withCredentials: true });
+  return res.data.groups;
+};
+
 export const fetchOperations = async (accountId) => {
   const res = await axios.get(`${BASE}/${accountId}`, { withCredentials: true });
   return res.data.operations;

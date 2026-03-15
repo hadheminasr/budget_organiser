@@ -1,90 +1,203 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import { useDashboard } from "../../hooks/UseDashboard";
+import SharedCard from "../../SharedComponents/SharedCard";
+import { Wallet, TrendingDown, Target, StickyNote } from "lucide-react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
-const UserDash = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+export default function UserDash() {
+  const { user }  = useAuth();
+  const { t }     = useTranslation();
+  const { data, loading, error } = useDashboard(user?.accountId);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
+  if (loading) return (
+    <div className="flex items-center justify-center h-40 text-pink-400 text-sm">
+      {t("common.loading")}
+    </div>
+  );
 
-  if (!user) return <div>Loading user...</div>;
+  if (error) return (
+    <div className="text-red-400 text-sm p-4 bg-red-50 rounded-xl">{error}</div>
+  );
+
+  if (!data) return null;
+
+  // ── données pour les graphiques
+  const pieData = data.byCategory.map(cat => ({
+    name:  cat.info?.name  ?? "Autre",
+    value: cat.total,
+    color: cat.info?.color ?? "#D7A4A6",
+  }));
+
+  const barData = data.byCategory.map(cat => ({
+    name:    cat.info?.name   ?? "Autre",
+    budget:  cat.info?.budget ?? 0,
+    depense: cat.total,
+  }));
+
+  const locale = t("common.locale");
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.5 }}
-      className="max-w-md w-full mx-auto mt-10 p-8 bg-gray-900 bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl border border-gray-800"
-    >
-      <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-green-400 to-emerald-600 text-transparent bg-clip-text">
-        Dashboard
-      </h2>
+    <div className="w-full flex flex-col gap-6">
 
-      <div className="space-y-6">
-        <motion.div
-          className="p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className="text-xl font-semibold text-green-400 mb-3">
-            Profile Information
-          </h3>
-          <p className="text-gray-300">Name: {user?.name}</p>
-          <p className="text-gray-300">Email: {user?.email}</p>
-        </motion.div>
-
-        <motion.div
-          className="p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h3 className="text-xl font-semibold text-green-400 mb-3">
-            Account Activity
-          </h3>
-          <p className="text-gray-300">
-            <span className="font-bold">Joined: </span>
-            {user?.createdAt
-              ? new Date(user.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })
-              : "—"}
-          </p>
-          <p className="text-gray-300">
-            <span className="font-bold">Last Login: </span>
-            {/* {user?.lastLogin ? formatDate(user.lastLogin) : "—"} */}
-          </p>
-        </motion.div>
+      {/* HEADER */}
+      <div>
+        <h1 className="font-bold text-xl text-rose-900">
+          {t("layout.hello", { name: user?.username })}
+        </h1>
+        <p className="text-xs text-pink-300">
+          {new Date().toLocaleDateString(locale, {
+            weekday: "long", day: "numeric",
+            month: "long",  year: "numeric"
+          })}
+        </p>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="mt-4"
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleLogout}
-          className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white 
-            font-bold rounded-lg shadow-lg hover:from-green-600 hover:to-emerald-700
-            focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-        >
-          Logout
-        </motion.button>
-      </motion.div>
-    </motion.div>
-  );
-};
+      {/* BANNER nouveau mois */}
+      {data.lastResetMonth !== new Date().toISOString().slice(0, 7) && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-amber-700">
+              🗓️ Nouveau mois disponible
+            </p>
+            <p className="text-xs text-amber-500 mt-0.5">
+              Initialisez votre budget pour ce mois
+            </p>
+          </div>
+          <button className="px-4 py-2 bg-amber-400 text-white text-xs font-bold rounded-xl hover:bg-amber-500 transition cursor-pointer">
+            Commencer
+          </button>
+        </div>
+      )}
 
-export default UserDash;
+      {/* KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <SharedCard
+          title="Solde disponible"
+          value={`${data.solde.toLocaleString(locale)} DT`}
+          change={`Reste : ${data.reste.toLocaleString(locale)} DT`}
+          changeType="positive"
+          icon={Wallet}
+          iconColor="rose"
+        />
+        <SharedCard
+          title="Dépensé ce mois"
+          value={`${data.totalDepense.toLocaleString(locale)} DT`}
+          change={`sur ${data.totalBudgets.toLocaleString(locale)} DT budgetés`}
+          changeType={data.totalDepense > data.totalBudgets ? "negative" : "neutral"}
+          icon={TrendingDown}
+          iconColor="amber"
+        />
+        <SharedCard
+          title="Objectifs actifs"
+          value={data.goals.length}
+          change={`${data.goals.filter(g => {
+            const p = (g.currentAmount / g.targetAmount) * 100;
+            return p >= 80;
+          }).length} presque atteints`}
+          changeType="positive"
+          icon={Target}
+          iconColor="emerald"
+        />
+        <SharedCard
+          title="Notes en attente"
+          value={data.pendingNotes}
+          change="notes à compléter"
+          changeType={data.pendingNotes > 0 ? "negative" : "positive"}
+          icon={StickyNote}
+          iconColor="blue"
+        />
+      </div>
+
+      {/* GRAPHIQUES */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        {/* Donut — répartition dépenses */}
+        <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-5">
+          <h2 className="font-bold text-sm text-rose-900 mb-4">
+            Répartition des dépenses
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={55}
+                outerRadius={85}
+                paddingAngle={3}
+                dataKey="value">
+                {pieData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(v) => `${v.toLocaleString(locale)} DT`}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Bar chart — budget vs réel */}
+        <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-5">
+          <h2 className="font-bold text-sm text-rose-900 mb-4">
+            Budget vs Dépenses réelles
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={barData} barCategoryGap="30%">
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip
+                formatter={(v) => `${v.toLocaleString(locale)} DT`}
+              />
+              <Legend />
+              <Bar dataKey="budget"  name="Budget"  fill="#f9a8d4" radius={[4,4,0,0]} />
+              <Bar dataKey="depense" name="Dépensé" fill="#D7A4A6" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+      </div>
+
+      {/* OBJECTIFS mini barres */}
+      {data.goals.length > 0 && (
+        <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-5">
+          <h2 className="font-bold text-sm text-rose-900 mb-4">
+            Progression des objectifs
+          </h2>
+          <div className="flex flex-col gap-4">
+            {data.goals.map(goal => {
+              const percent = Math.min(100,
+                ((goal.currentAmount ?? 0) / goal.targetAmount) * 100
+              );
+              return (
+                <div key={goal._id}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-semibold text-rose-900">
+                      {goal.icon} {goal.name}
+                    </span>
+                    <span className="text-pink-400">
+                      {(goal.currentAmount ?? 0).toLocaleString(locale)} /
+                      {goal.targetAmount.toLocaleString(locale)} DT
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-pink-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${percent}%`, backgroundColor: "#D7A4A6" }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-pink-300 mt-1 text-right">
+                    {percent.toFixed(0)}%
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

@@ -51,3 +51,13 @@ export const getAllOperations = async (req,res)=>{
     }
 
 }
+
+export const getOperationsGroupedByCategory = async (req, res) => {
+  const { AccountId } = req.params;
+  try {
+    const groups = await OperationService.getOperationsGroupedByCategory(AccountId);
+    res.status(200).json({ sucess: true, groups });
+  } catch (error) {
+    res.status(500).json({ sucess: false, message: error.message });
+  }
+};

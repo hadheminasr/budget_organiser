@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useAccount } from "../../hooks/UseAccount";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -8,18 +8,21 @@ import { renameAccount, removeMember, deleteAccount } from "../../services/accou
 import SharedButton from "../../SharedComponents/SharedButton";
 import SharedInput  from "../../SharedComponents/SharedInput";
 import SharedCard   from "../../SharedComponents/SharedCard";
+import { fetchOperations } from "../../services/operationAPI";
+
 
 export default function Account() {
   const { t, i18n }    = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [nbOps, setNbOps] = useState(0);
 
   const { account, loading, error, setAccount } = useAccount(user?.accountId);
 
-  const [editingName, setEditingName]         = useState(false);
-  const [tempName, setTempName]               = useState("");
+  const [editingName, setEditingName]= useState(false);
+  const [tempName, setTempName]= useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteInput, setDeleteInput]         = useState("");
+  const [deleteInput, setDeleteInput]= useState("");
 
   //Sante cote UI
   const healthScore = account
@@ -66,6 +69,12 @@ export default function Account() {
     }
   };
 
+    useEffect(() => {
+    if (!user?.accountId) return;
+    fetchOperations(user.accountId)
+      .then(ops => setNbOps(ops.length));
+  }, [user?.accountId]);
+
   // etats
   if (loading) return (
     <div className="flex items-center justify-center h-40 text-pink-400 text-sm">
@@ -82,7 +91,7 @@ export default function Account() {
   const isOwner = account.createdBy._id === user?._id?.toString();
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6">
       {/* ══ HEADER ══ */}
 <div className="bg-white rounded-2xl border border-pink-100 p-6 shadow-sm">
   
@@ -176,7 +185,7 @@ export default function Account() {
     />
     <SharedCard
       title={t("account.kpi.operations")}
-      value="+0"
+      value={nbOps}
       icon={Activity}
       iconColor="rose"
       iconColors={{ rose: "bg-rose-50 text-rose-400" }}

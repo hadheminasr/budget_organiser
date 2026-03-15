@@ -9,6 +9,10 @@ import { protectAdmin } from "../middelware/protectAdmin.js";
 import { protectRoute } from "../middelware/protectRoute.js";
 //import KPIRoutes from "./KPIRoutes.js"
 import VueGlobaleRoutes from "./VueGlobaleRoutes.js"
+import activityLogRoutes from "./ActivityLogRoutes.js";
+import noteRoutes from "./NoteRoutes.js";
+
+
 
 
 const router = express.Router();
@@ -22,6 +26,8 @@ router.use("/categories", protectRoute, CategoryRoutes);
 router.use("/goals", protectRoute, GoalRoutes);
 router.use("/operations", protectRoute, OperationRoutes);
 router.use("/Accounts",protectRoute,AccountRoutes);
+router.use("/logs", protectRoute,activityLogRoutes);
+router.use("/notes", protectRoute, noteRoutes);
 // Admin 
 router.use("/admin", protectRoute, protectAdmin);
 

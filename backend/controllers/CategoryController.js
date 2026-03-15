@@ -16,8 +16,10 @@ export const AddCategory=async(req,res)=>{
     export const UpdateCategory = async (req, res)=>{
         const {IdCategory} = req.params;
         const updates = req.body ;
+        const userId    = req.user._id;        
+        const AccountId = req.user.accountId;
         try{
-            const Category = await CategoryService.UpdateCategory(updates,IdCategory);
+            const Category = await CategoryService.UpdateCategory(updates,IdCategory,userId,AccountId);
             res.status(200).json({sucess:true,Category});
         }catch(error){
             console.error("error in update Category");
@@ -29,8 +31,10 @@ export const AddCategory=async(req,res)=>{
     
     export const DeleteCategory = async (req,res)=>{
         const {IdCategory} = req.params;
+        const userId    = req.user._id;        
+        const AccountId = req.user.accountId;
         try{
-            const Category = await CategoryService.DeleteCategory(IdCategory);
+            const Category = await CategoryService.DeleteCategory(IdCategory,userId,AccountId);
             res.status(200).json({sucess:true,message:"Category deleted with sucess"});
         }catch(error){
             console.error("error in delete Category");

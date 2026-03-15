@@ -21,9 +21,9 @@ export const addOperationSchema = Joi.object({
 
   body:Joi.object({  
     amount: Joi.number().positive().required(),
-    type: Joi.string().valid("depense", "revenue").required(),
     date: Joi.date().iso().default(() => new Date()),
-    categoryId:Joi.string().optional()
+    categoryId:Joi.string().required(),
+    description:Joi.string().optional(),
     //IdAccount: Joi.string().custom(objectId, "ObjectId validation").required(),
     
   }).required().unknown(false),
@@ -39,9 +39,9 @@ export const updateOperationSchema = Joi.object({
   body: Joi.object({
     amount: Joi.number().optional(),
     solde: Joi.number().precision(2).optional(),
-    type: Joi.string().valid("depense", "revenue").optional(),
     date: Joi.date().iso().optional(),
-    category:Joi.string().optional(),
+    categoryId:Joi.string().optional(),
+    description:Joi.string().optional(),
 
   })
     .min(1)

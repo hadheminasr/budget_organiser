@@ -196,7 +196,7 @@ export const AuthService = {
 
     return { user: {
         ...user._doc,
-        accountId: account?._id ?? null, // ← ajoute ça
+        accountId: account?._id ?? null, 
       } };
   },
 };

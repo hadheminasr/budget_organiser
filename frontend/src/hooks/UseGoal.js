@@ -1,22 +1,19 @@
 import { useState, useEffect } from "react";
-import { fetchOperationsGrouped } from "../services/operationAPI";
+import { fetchGoals } from "../services/goalAPI";
 import { useAuth } from "../context/AuthContext";
 
-
-
-export const useOperations = () => {
+export const useGoals = () => {
   const { user } = useAuth();
-  const [operations, setOperations] = useState([]);
+  const [goals, setGoals]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]= useState(null);
+  const [error, setError]     = useState(null);
 
   useEffect(() => {
     if (!user?.accountId) { setLoading(false); return; }
     const load = async () => {
       try {
-        const data = await fetchOperationsGrouped(user.accountId);
-        setOperations(data); 
-        
+        const data = await fetchGoals(user.accountId);
+        setGoals(data);
       } catch (err) {
         setError(err.response?.data?.message || "Erreur");
       } finally {
@@ -26,5 +23,5 @@ export const useOperations = () => {
     load();
   }, [user?.accountId]);
 
-  return { operations, loading, error, setOperations };
+  return { goals, loading, error, setGoals };
 };

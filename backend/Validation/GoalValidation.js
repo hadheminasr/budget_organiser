@@ -25,13 +25,9 @@ export const addGoalSchema = Joi.object({
       "date.format": "TargetDate doit être une date ISO",
     }),
     StartDate: Joi.date().iso().optional(),
-    
-
+    currentAmount: Joi.number().optional(),
+    icon: Joi.string().optional().default("🎯"),
     isActive: Joi.boolean().optional(),
     isAchieved: Joi.boolean().optional(),
-  })
-    .required()
-    .options({ abortEarly: false, allowUnknown: false }),
-
-  query: Joi.object({}).unknown(true),
+  }).required().unknown(false),
 });

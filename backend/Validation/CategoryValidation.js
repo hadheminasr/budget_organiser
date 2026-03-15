@@ -16,8 +16,10 @@ export const addCategorySchema = Joi.object({
   body:Joi.object({
 
   name: Joi.string().trim().min(2).max(40).required(),
+  budget: Joi.number().min(0).default(0), 
   color: Joi.string().default("#000000"),
   isDefault: Joi.boolean().default(false),
+  icon:   Joi.string().optional(),
   }).unknown(false)
 });
 //update
@@ -33,6 +35,8 @@ export const updateCategorySchema = Joi.object({
     name: Joi.string().trim().min(2).max(40).optional(),
     color: Joi.string().optional(),
     isDefault: Joi.boolean().optional(),
+    budget: Joi.number().min(0).default(0), 
+    icon:   Joi.string().optional(),
 
   }).min(1).messages({ "object.min": "Body vide: au moins un champ à modifier" }).unknown(false)
 })
