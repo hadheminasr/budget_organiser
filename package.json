@@ -34,7 +34,8 @@
     "jsonwebtoken": "^9.0.3",
     "mailtrap": "^4.4.0",
     "mongoose": "^9.1.5",
-    "nodemailer": "^7.0.13"
+    "nodemailer": "^7.0.13",
+    "recharts": "^3.8.0"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

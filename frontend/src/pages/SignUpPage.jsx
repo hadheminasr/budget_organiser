@@ -23,20 +23,38 @@ export default function SignUpPage() {
   const [error, setError] = useState(null);
 
 
+  const isPasswordValid = useMemo(() => {
+  return (
+    password.length >= 12 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}, [password]);
+
   const confirmError =
     confirm.length > 0 && password !== confirm
       ? t('auth.errors.passwordNotMatch')
       : "";
 
-  const canSubmit = useMemo(() => {
-    return (
-      name.trim() &&
-      prenom.trim() &&
-      email.trim() &&
-      password.length > 0 &&
-      password === confirm
-    );
-  }, [name, prenom, email, password, confirm]);
+  const nameError   = name.trim().length > 0   && name.trim().length   < 2;
+  const familyError = prenom.trim().length > 0  && prenom.trim().length < 2;
+
+const canSubmit = useMemo(() => {
+  const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+  return (
+    name.trim().length >= 2 &&
+    name.trim().length <= 50 &&
+    nameRegex.test(name.trim()) &&
+    prenom.trim().length >= 2 &&
+    prenom.trim().length <= 50 &&
+    nameRegex.test(prenom.trim()) &&
+    email.trim() &&
+    isPasswordValid &&
+    password === confirm
+  );
+}, [name, prenom, email, password, confirm, isPasswordValid]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,17 +81,15 @@ export default function SignUpPage() {
       >
         <div className="p-8">
 
-          {/* ← 6. bouton langue en haut à droite */}
           <div className="flex justify-end mb-4">
             <LanguageSwitcher />
           </div>
 
-          {/* ← 7. titre traduit */}
           <h1 className="text-3xl font-extrabold text-center mb-2 text-transparent bg-clip-text bg-gradient-to-r from-[#D7A4A6] to-[#C58B8E]">
             {t('auth.createAccount')}
           </h1>
 
-          {/* ← 8. sous-titre traduit */}
+          
           <p className="text-center text-sm text-neutral-500 mb-6">
             {t('auth.subtitle')}
           </p>
@@ -81,7 +97,7 @@ export default function SignUpPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
 
             <div>
-              {/* ← 9. labels traduits */}
+              
               <label className="block text-xs text-neutral-600 mb-1">
                 {t('auth.name')}
               </label>
@@ -91,6 +107,9 @@ export default function SignUpPage() {
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="family-name"
               />
+              {nameError && (
+                <p className="text-xs text-rose-500 mt-1">{t('auth.errors.invalidName')}</p>
+              )}
             </div>
 
             <div>
@@ -103,6 +122,9 @@ export default function SignUpPage() {
                 onChange={(e) => setPrenom(e.target.value)}
                 autoComplete="given-name"
               />
+              {familyError && (
+                <p className="text-xs text-rose-500 mt-1">{t('auth.errors.invalidName')}</p>
+              )}
             </div>
 
             <div>
@@ -131,6 +153,7 @@ export default function SignUpPage() {
               />
               <div className="mt-2">
                 <PasswordStrengthMeter password={password} />
+                
               </div>
             </div>
 
@@ -158,7 +181,10 @@ export default function SignUpPage() {
                 {error}
               </div>
             )}
-            <SharedButton type="submit" loading={isLoading} disabled={!canSubmit}>
+            <SharedButton 
+              type="submit" 
+              loading={isLoading} 
+              disabled={!canSubmit}>
               {t('auth.signup')}
             </SharedButton>
 

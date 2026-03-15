@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState ,useMemo} from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -19,6 +19,27 @@ const LoginPage = () => {
 	const API_URL="http://localhost:5000/api/auth";
 	const {t}=useTranslation();
 	const { login } = useAuth();
+
+	const isPasswordValid = useMemo(() => {
+	  return (
+		password.length >= 12 &&
+		/[A-Z]/.test(password) &&
+		/[a-z]/.test(password) &&
+		/[0-9]/.test(password) &&
+		/[^A-Za-z0-9]/.test(password)
+	  );
+	}, [password]);
+
+	const isEmailValid = useMemo(() => {
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+	}, [email]);
+
+	const canSubmit = useMemo(() => {
+	  
+	  return (
+		isEmailValid  && isPasswordValid 
+	  );
+	}, [ isEmailValid, isPasswordValid]);
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
@@ -58,6 +79,11 @@ const LoginPage = () => {
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
 					/>
+					{email.length > 0 && !isEmailValid && (
+					<p className='text-rose-400 text-xs mb-2'>
+						{t('auth.errors.invalidEmail')}
+					</p>
+					)}
 
 					<SharedInput
 						icon={Lock}
@@ -66,6 +92,11 @@ const LoginPage = () => {
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
+					{password.length > 0 && !isPasswordValid && (
+						<p className='text-rose-400 text-xs mb-2'>
+						{t('auth.errors.invalidPassword')}
+						</p>
+					)}
 
 					<div className='flex items-center mb-6'>
 						<Link to='/forgot-password' className='text-sm text-rose-200 hover:underline'>
@@ -76,7 +107,11 @@ const LoginPage = () => {
 					{error && <p className='text-red-500 font-semibold mb-2'>{error}</p>}
 
 					
-					<SharedButton type="submit" loading={isLoading} className="mt-2">
+					<SharedButton 
+						type="submit" 
+						loading={isLoading} 
+						disabled={!canSubmit}
+						className="mt-2">
 						{t('auth.login')}
 					</SharedButton>
 

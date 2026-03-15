@@ -10,6 +10,7 @@ const SharedButton = ({
   icon = null,
   className = "",
 }) => {
+  // we can set styles as template config in tailwind.config.js 
   const styles = {
     primary:   "bg-pink-400 text-white hover:bg-pink-500",
     secondary: "bg-white text-pink-400 border border-pink-200 hover:bg-pink-50",

@@ -34,11 +34,30 @@
     "sendResetLink": "Send reset link",
     "backToLogin": "Back to login",
     "errors": {
+      "invalidPassword": "Invalid password",
       "loginFailed": "Login failed. Try again.",
       "signupFailed": "Signup failed. Try again.",
       "passwordNotMatch": "Password confirmation does not match.",
       "invalidCode": "The code must contain 6 digits.",
-      "invalidOrExpiredCode": "Invalid or expired code. Please try again."
+      "invalidOrExpiredCode": "Invalid or expired code. Please try again.",
+      "invalidName": "At least 2 characters, letters only",
+      "invalidEmail": "Invalid email address"
+    }
+  },
+  
+  "password": {
+    "strengthLabel": "Password strength",
+    "minChars": "At least 6 characters",
+    "uppercase": "Contains uppercase letter",
+    "lowercase": "Contains lowercase letter",
+    "number": "Contains a number",
+    "special": "Contains special character",
+    "strength": {
+      "veryWeak": "Very Weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "good": "Good",
+      "strong": "Strong"
     }
   },
   "account": {
@@ -82,5 +101,171 @@
       "remove": "Error",
       "delete": "Delete error"
     }
+  },
+  "share": {
+  "joinTitle": "Join an account",
+  "joinSubtitle": "Paste the code received from a friend",
+  "codePlaceholder": "Ex: K7MX2QP4",
+  "joinBtn": "Join",
+  "joinSuccess": "✅ Account joined!",
+  "sharingIsCaring": "Sharing is caring! Shared accounts reach their goals <strong>40% faster</strong>. Invite someone and move forward together.",
+  "myCodeTitle": "My sharing code",
+  "myCodeSubtitle": "Current account:",
+  "regenerate": "Generate a new code",
+  "regenerating": "Generating...",
+  "regenerateWarning": "Regenerating invalidates the old code — existing members are not affected.",
+  "regenerateConfirm": "Regenerate? The old code will no longer work.",
+  "tip1": "Duos save <strong>2x faster</strong> thanks to mutual motivation.",
+  "tip2": "A shared goal is a goal <strong>almost reached</strong>.",
+  "tip3": "<strong>Sharing is caring</strong> — manage your finances with family or friends.",
+  "errors": {
+    "invalidCode": "Invalid code"
   }
+},
+"history": {
+  "title": "History",
+  "actions": "action(s)",
+  "noActivity": "No activity yet",
+  "filters": {
+    "allActions": "All actions",
+    "operations": "Expenses",
+    "categories": "Categories",
+    "goals": "Goals",
+    "notes": "Notes",
+    "allMonths": "All months"
+  },
+  "actions_config": {
+    "operation.add":      "Expense added",
+    "operation.update":   "Expense updated",
+    "operation.delete":   "Expense deleted",
+    "category.add":       "Category added",
+    "category.update":    "Category updated",
+    "category.delete":    "Category deleted",
+    "goal.add":           "New goal",
+    "goal.update":        "Goal updated",
+    "goal.achieved":      "Goal achieved!",
+    "goal.delete":        "Goal deleted",
+    "note.add":           "Note added",
+    "note.done":          "Note checked",
+    "note.delete":        "Note deleted"
+  },
+  "details": {
+    "operationAdd":    "-{{amount}} DT · {{category}}",
+    "operationUpdate": "{{oldAmount}} DT → {{newAmount}} DT",
+    "operationDelete": "-{{amount}} DT deleted",
+    "categoryAdd":     "{{name}} · budget {{budget}} DT",
+    "categoryUpdate":  "{{name}} · {{oldBudget}} → {{newBudget}} DT",
+    "goalAdd":         "{{name}} · {{targetAmount}} DT",
+    "goalUpdate":      "{{name}} · {{newTotal}} / {{targetAmount}} DT",
+    "noteDone":        "\"{{content}}\""
+  }
+},
+"notes": {
+  "title": "Notes & Todo",
+  "subtitle": "Your space to think, plan, share 💭",
+  "placeholder": "Write your note here... 💭\n(Cmd+Enter to send)",
+  "add": "Add",
+  "private": "Private",
+  "shared": "Shared",
+  "deleteConfirm": "Delete this note?",
+  "doneby": "done by {{name}}",
+  "tabs": {
+    "all":     "All",
+    "shared":  "Shared",
+    "private": "Private",
+    "done":    "Done"
+  },
+  "empty": {
+    "done":    "No completed notes",
+    "default": "No notes here",
+    "hint":    "Start by writing what's on your mind ✨"
+  }
+},
+"goals": {
+  "title": "Goals",
+  "count": "{{count}} goal(s)",
+  "noGoals": "No goals yet",
+  "achieved": "✅ Achieved",
+  "target": "Target:",
+  "monthsLeft": "— {{count}} months left",
+  "remaining": "{{amount}} DT left",
+  "addAmount": "Add amount",
+  "deleteConfirm": "Delete this goal?",
+  "progress": "Current progress: {{current}} / {{target}} DT",
+  "modal": {
+    "addTitle": "New goal",
+    "editTitle": "Edit goal",
+    "addTo": "Add to \"{{name}}\"",
+    "name": "Name",
+    "namePlaceholder": "Ex: Turkey trip...",
+    "targetAmount": "Target amount (DT)",
+    "targetDate": "Target date",
+    "icon": "Icon",
+    "create": "Create",
+    "edit": "Edit",
+    "add": "Add"
+  }
+},
+"categories": {
+  "title": "Categories",
+  "count": "{{count}} category(ies)",
+  "noCategories": "No categories yet",
+  "add": "Add",
+  "deleteConfirm": "Delete?",
+  "perMonth": "DT/month",
+  "preview": "Preview",
+  "modal": {
+    "addTitle": "New category",
+    "editTitle": "Edit category",
+    "name": "Name",
+    "namePlaceholder": "Ex: Food...",
+    "budget": "Monthly budget (DT)",
+    "icon": "Icon",
+    "color": "Color",
+    "add": "Add",
+    "edit": "Edit"
+  }
+},
+"operations": {
+  "title": "Expenses",
+  "count": "{{count}} expense(s)",
+  "noOperations": "No expenses yet",
+  "noOperationsHint": "Click \"Add\" to get started",
+  "deleteConfirm": "Delete this expense?",
+  "spent": "{{amount}} DT spent",
+  "remaining": "{{amount}} DT remaining",
+  "exceeded": "{{amount}} DT exceeded",
+  "budget": "Budget: {{amount}} DT",
+  "totalSpent": "Total spent",
+  "modal": {
+    "addTitle": "New expense",
+    "editTitle": "Edit expense",
+    "amount": "Amount (DT)",
+    "description": "Description",
+    "descriptionPlaceholder": "Description of your expense",
+    "category": "Category",
+    "categoryPlaceholder": "Choose a category",
+    "date": "Date",
+    "add": "Add",
+    "edit": "Edit"
+  }
+},"layout": {
+  "hello": "Hello, {{name}} 👋",
+  "logout": "🚪 Log out",
+  "nav": {
+    "principal": "Main",
+    "dashboard": "🏠 Dashboard",
+    "operations": "↕️ Operations",
+    "categories": "🏷️ Categories",
+    "goals": "🎯 Goals",
+    "notes": "📝 Notes",
+    "automation": "Automation",
+    "subscriptions": "🔄 Subscriptions",
+    "history": "🕒 History",
+    "coach": "🤖 Budget Coach",
+    "account": "Account",
+    "myAccount": "👤 My Account",
+    "share": "👥 Share"
+  }
+}
 }

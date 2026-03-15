@@ -10,14 +10,13 @@ export async function generateUniqueShareCode(AccountModel, length = 8, maxAttem
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // 1) Générer une string random
+    
     const bytes = crypto.randomBytes(length);
     let code = "";
     for (let i = 0; i < length; i++) {
       code += alphabet[bytes[i] % alphabet.length];
     }
 
-    // 2) Vérifier unicité
     const exists = await AccountModel.exists({ Sharingcode: code });
     if (!exists) return code;
   }

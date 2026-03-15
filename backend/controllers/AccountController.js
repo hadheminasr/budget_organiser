@@ -137,4 +137,26 @@ export const regenererateSharingCode = async (req,res) => {
   }
 };
 
+export const getDashboardData = async (req, res) => {
+  const { accountId } = req.params;
+  try {
+    const dashboardData = await AccountService.getDashboardData(accountId);
+    return res.status(200).json({ success: true, dashboardData });
+  } catch (error) {
+    console.error("Error in getDashboardData", error);
+    return res.status(500).json({ success: false, message: error.message });
+  } 
+};
+
+export const resetMensuel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const result = await AccountService.resetMensuel(id, userId, req.body);
+    res.json({ success: true, result });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
 

@@ -19,6 +19,9 @@ import Account from "./pages/User/Account";
 import Share from "./pages/User/Share";
 import Operations from "./pages/User/Operations";
 import Categories from "./pages/User/category";
+import Goals from "./pages/User/Goal";
+import History from "./pages/User/history";
+import Note from "./pages/User/Note";
 
 
 
@@ -70,9 +73,9 @@ function App() {
 
   return (
     <div className="min-h-screen w-screen bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 relative overflow-hidden">
-      <FloatingShape color="bg-rose-200/45" size="w-72 h-72" top="8%" left="10%" delay={0} />
+      {/*<FloatingShape color="bg-rose-200/45" size="w-72 h-72" top="8%" left="10%" delay={0} />
       <FloatingShape color="bg-pink-200/35" size="w-96 h-96" top="35%" left="60%" delay={0.6} />
-      <FloatingShape color="bg-amber-200/35" size="w-80 h-80" top="65%" left="18%" delay={1.1} />
+      <FloatingShape color="bg-amber-200/35" size="w-80 h-80" top="65%" left="18%" delay={1.1} />*/}
 
       <Routes>
         {/* ADMIN */}
@@ -164,19 +167,22 @@ function App() {
 		}
 		/>*/}
     <Route
-  path="/user"
-  element={
-    <ProtectedRoute>
-      <UserLayout />
-    </ProtectedRoute>
-  }
->
+      path="/user"
+      element={
+        <ProtectedRoute>
+          <UserLayout />
+        </ProtectedRoute>
+      }
+    >
   <Route index element={<Navigate to="UserDash" replace />} />
   <Route path="userDash"   element={<UserDash />} />
   <Route path="account"      element={<Account />} />
   <Route path="partage" element={<Share />} />
   <Route path="operations" element={<Operations />} />
   <Route path="categories" element={<Categories />} />
+  <Route path="goals" element={<Goals />} />
+  <Route path="history" element={<History />} />
+  <Route path="note" element={<Note />} />
   
 </Route>
 

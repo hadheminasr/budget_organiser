@@ -34,11 +34,30 @@
     "sendResetLink": "Envoyer le lien",
     "backToLogin": "Retour à la connexion",
     "errors": {
+      "invalidPassword": "Mot de passe invalide",
       "loginFailed": "Échec de connexion. Réessayez.",
       "signupFailed": "Échec d'inscription. Réessayez.",
       "passwordNotMatch": "La confirmation du mot de passe ne correspond pas.",
       "invalidCode": "Le code doit contenir 6 chiffres.",
-      "invalidOrExpiredCode": "Code invalide ou expiré. Réessayez."
+      "invalidOrExpiredCode": "Code invalide ou expiré. Réessayez.",
+      "invalidName": "Au moins 2 caractères, lettres uniquement",
+      "invalidEmail": "Adresse email invalide"
+    }
+  },
+  
+  "password": {
+    "strengthLabel": "Force du mot de passe",
+    "minChars": "Au moins 6 caractères",
+    "uppercase": "Contient une majuscule",
+    "lowercase": "Contient une minuscule",
+    "number": "Contient un chiffre",
+    "special": "Contient un caractère spécial",
+    "strength": {
+      "veryWeak": "Très faible",
+      "weak": "Faible",
+      "fair": "Moyen",
+      "good": "Bon",
+      "strong": "Fort"
     }
   },
 
@@ -83,5 +102,172 @@
       "remove": "Erreur",
       "delete": "Erreur suppression"
     }
+  },
+  "share": {
+  "joinTitle": "Rejoindre un compte",
+  "joinSubtitle": "Collez le code reçu par un proche",
+  "codePlaceholder": "Ex: K7MX2QP4",
+  "joinBtn": "Rejoindre",
+  "joinSuccess": "✅ Compte rejoint !",
+  "sharingIsCaring": "Sharing is caring ! Les comptes partagés atteignent leurs objectifs <strong>40% plus vite</strong>. Invitez un proche et avancez ensemble.",
+  "myCodeTitle": "Mon code de partage",
+  "myCodeSubtitle": "Compte actuel :",
+  "regenerate": "Régénérer un nouveau code",
+  "regenerating": "Régénération...",
+  "regenerateWarning": "Régénérer invalide l'ancien code — les membres existants ne sont pas affectés.",
+  "regenerateConfirm": "Régénérer ? L'ancien code ne fonctionnera plus.",
+  "tip1": "Les duos épargnent <strong>2x plus vite</strong> grâce à la motivation mutuelle.",
+  "tip2": "Un objectif partagé est un objectif <strong>presque atteint</strong>.",
+  "tip3": "<strong>Sharing is caring</strong> — gérez vos finances en famille ou entre amis.",
+  "errors": {
+    "invalidCode": "Code invalide"
   }
+},
+"history": {
+  "title": "Historique",
+  "actions": "action(s)",
+  "noActivity": "Aucune activité pour le moment",
+  "filters": {
+    "allActions": "Toutes les actions",
+    "operations": "Dépenses",
+    "categories": "Catégories",
+    "goals": "Objectifs",
+    "notes": "Notes",
+    "allMonths": "Tous les mois"
+  },
+  "actions_config": {
+    "operation.add":      "Ajout dépense",
+    "operation.update":   "Modification dépense",
+    "operation.delete":   "Suppression dépense",
+    "category.add":       "Ajout catégorie",
+    "category.update":    "Modification catégorie",
+    "category.delete":    "Suppression catégorie",
+    "goal.add":           "Nouvel objectif",
+    "goal.update":        "Objectif mis à jour",
+    "goal.achieved":      "Objectif atteint !",
+    "goal.delete":        "Suppression objectif",
+    "note.add":           "Ajout note",
+    "note.done":          "Note cochée",
+    "note.delete":        "Suppression note"
+  },
+  "details": {
+    "operationAdd":    "-{{amount}} DT · {{category}}",
+    "operationUpdate": "{{oldAmount}} DT → {{newAmount}} DT",
+    "operationDelete": "-{{amount}} DT supprimé",
+    "categoryAdd":     "{{name}} · budget {{budget}} DT",
+    "categoryUpdate":  "{{name}} · {{oldBudget}} → {{newBudget}} DT",
+    "goalAdd":         "{{name}} · {{targetAmount}} DT",
+    "goalUpdate":      "{{name}} · {{newTotal}} / {{targetAmount}} DT",
+    "noteDone":        "\"{{content}}\""
+  }
+},
+"notes": {
+  "title": "Notes & Todo",
+  "subtitle": "Ton espace pour penser, planifier, partager 💭",
+  "placeholder": "Écris ta note ici... 💭\n(Cmd+Enter pour envoyer)",
+  "add": "Ajouter",
+  "private": "Privée",
+  "shared": "Partagée",
+  "deleteConfirm": "Supprimer cette note ?",
+  "doneby": "fait par {{name}}",
+  "tabs": {
+    "all":     "Toutes",
+    "shared":  "Partagées",
+    "private": "Privées",
+    "done":    "Faites"
+  },
+  "empty": {
+    "done":    "Aucune note complétée",
+    "default": "Aucune note ici",
+    "hint":    "Commence par écrire ce qui te passe par la tête ✨"
+  }
+},
+"goals": {
+  "title": "Objectifs",
+  "count": "{{count}} objectif(s)",
+  "noGoals": "Aucun objectif pour le moment",
+  "achieved": "✅ Atteint",
+  "target": "Cible :",
+  "monthsLeft": "— {{count}} mois restants",
+  "remaining": "encore {{amount}} DT",
+  "addAmount": "Ajouter un montant",
+  "deleteConfirm": "Supprimer cet objectif ?",
+  "progress": "Progression actuelle : {{current}} / {{target}} DT",
+  "modal": {
+    "addTitle": "Nouvel objectif",
+    "editTitle": "Modifier l'objectif",
+    "addTo": "Ajouter à \"{{name}}\"",
+    "name": "Nom",
+    "namePlaceholder": "Ex: Voyage Turquie...",
+    "targetAmount": "Montant cible (DT)",
+    "targetDate": "Date cible",
+    "icon": "Icône",
+    "create": "Créer",
+    "edit": "Modifier",
+    "add": "Ajouter"
+  }
+},
+"categories": {
+  "title": "Catégories",
+  "count": "{{count}} catégorie(s)",
+  "noCategories": "Aucune catégorie",
+  "add": "Ajouter",
+  "deleteConfirm": "Supprimer ?",
+  "perMonth": "DT/mois",
+  "preview": "Aperçu",
+  "modal": {
+    "addTitle": "Nouvelle catégorie",
+    "editTitle": "Modifier la catégorie",
+    "name": "Nom",
+    "namePlaceholder": "Ex: Alimentation...",
+    "budget": "Budget mensuel (DT)",
+    "icon": "Icône",
+    "color": "Couleur",
+    "add": "Ajouter",
+    "edit": "Modifier"
+  }
+},
+"operations": {
+  "title": "Dépenses",
+  "count": "{{count}} dépense(s)",
+  "noOperations": "Aucune dépense pour le moment",
+  "noOperationsHint": "Cliquez sur \"Ajouter\" pour commencer",
+  "deleteConfirm": "Supprimer cette dépense ?",
+  "spent": "{{amount}} DT dépensé",
+  "remaining": "{{amount}} DT restant",
+  "exceeded": "{{amount}} DT dépassé",
+  "budget": "Budget : {{amount}} DT",
+  "totalSpent": "Total dépensé",
+  "modal": {
+    "addTitle": "Nouvelle dépense",
+    "editTitle": "Modifier la dépense",
+    "amount": "Montant (DT)",
+    "description": "Description",
+    "descriptionPlaceholder": "Description de votre dépense",
+    "category": "Catégorie",
+    "categoryPlaceholder": "Choisir une catégorie",
+    "date": "Date",
+    "add": "Ajouter",
+    "edit": "Modifier"
+  }
+},
+"layout": {
+  "hello": "Bonjour, {{name}} 👋",
+  "logout": "🚪 Déconnexion",
+  "nav": {
+    "principal": "Principal",
+    "dashboard": "🏠 Dashboard",
+    "operations": "↕️ Opérations",
+    "categories": "🏷️ Catégories",
+    "goals": "🎯 Objectifs",
+    "notes": "📝 Notes",
+    "automation": "Automatisation",
+    "subscriptions": "🔄 Abonnements",
+    "history": "🕒 Historique",
+    "coach": "🤖 Coach Budget",
+    "account": "Compte",
+    "myAccount": "👤 Mon Compte",
+    "share": "👥 Partage"
+  }
+}
 }

@@ -22,3 +22,6 @@ export {KPI} from "./KPIService.js";
 
 //VueGlobale 
 export {VueGlobale} from "./VueGlobaleService.js";
+
+//Note
+export {NoteService} from "./NoteService.js";

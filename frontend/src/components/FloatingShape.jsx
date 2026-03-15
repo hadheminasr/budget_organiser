@@ -21,5 +21,5 @@ const FloatingShape = ({ color = "bg-rose-200/40", size = "w-64 h-64", top = "10
 		/>
 	);
 };
-
+//
 export default FloatingShape;
