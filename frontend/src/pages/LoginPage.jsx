@@ -110,7 +110,7 @@ const LoginPage = () => {
 					<SharedButton 
 						type="submit" 
 						loading={isLoading} 
-						disabled={!canSubmit}
+						//disabled={!canSubmit}
 						className="mt-2">
 						{t('auth.login')}
 					</SharedButton>

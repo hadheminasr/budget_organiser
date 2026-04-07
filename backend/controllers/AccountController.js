@@ -159,4 +159,15 @@ export const resetMensuel = async (req, res) => {
   }
 };
 
+export const getReport = async (req, res) => {
+  const { accountId } = req.params;
+  try {
+    const report = await AccountService.getReport(accountId);
+    return res.status(200).json({ success: true, report });
+  } catch (error) {
+    console.error("Error in getReport", error);
+    return res.status(500).json({ success: false, message: error.message });
+  } 
+};
+
 

@@ -115,7 +115,7 @@ export default function Share() {
       </div>
 
       {/* ══ MON CODE ══ */}
-      {account && (
+      {account && isOwner && (
         <div className="bg-white rounded-2xl border border-pink-100 p-6 shadow-sm">
           <h2 className="font-bold text-rose-900 mb-1">{t("share.myCodeTitle")}</h2>
           <p className="text-xs text-pink-300 mb-4">

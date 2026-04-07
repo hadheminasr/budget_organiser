@@ -161,27 +161,38 @@
     "noteDone":        "\"{{content}}\""
   }
 },
-"notes": {
-  "title": "Notes & Todo",
-  "subtitle": "Ton espace pour penser, planifier, partager 💭",
-  "placeholder": "Écris ta note ici... 💭\n(Cmd+Enter pour envoyer)",
-  "add": "Ajouter",
-  "private": "Privée",
-  "shared": "Partagée",
-  "deleteConfirm": "Supprimer cette note ?",
-  "doneby": "fait par {{name}}",
-  "tabs": {
-    "all":     "Toutes",
-    "shared":  "Partagées",
-    "private": "Privées",
-    "done":    "Faites"
-  },
-  "empty": {
-    "done":    "Aucune note complétée",
-    "default": "Aucune note ici",
-    "hint":    "Commence par écrire ce qui te passe par la tête ✨"
-  }
-},
+ "notes": {
+    "title": "Notes & Todo",
+    "subtitle": "Votre espace pour penser, planifier, partager 💭",
+    "newNote": "Nouvelle note",
+    "placeholder": "Écrivez votre note ici... 💭\n(Cmd+Entrée pour envoyer)",
+    "searchPlaceholder": "Rechercher une note...",
+    "categoryPlaceholder": "Catégorie (optionnel)",
+    "private": "Privé",
+    "shared": "Partagé",
+    "add": "Ajouter",
+    "deleteConfirm": "Supprimer cette note ?",
+    "filters": "Filtres",
+    "tabs": {
+      "all": "Toutes",
+      "shared": "Partagées",
+      "private": "Privées",
+      "done": "Terminées"
+    },
+    "suggestions": {
+      "title": "Suggestions :",
+      "budget": "💰 Prévoir budget courses",
+      "expense": "📊 Dépense imprévue :",
+      "goal": "🎯 Objectif économies :",
+      "note": "📝 Note importante :"
+    },
+    "empty": {
+      "default": "Aucune note pour le moment",
+      "done": "Aucune note terminée",
+      "hint": "Commencez par écrire ce qui vous passe par la tête ✨"
+    },
+    "doneby": "✅ fait par {{name}}"
+  }, 
 "goals": {
   "title": "Objectifs",
   "count": "{{count}} objectif(s)",
@@ -205,6 +216,11 @@
     "create": "Créer",
     "edit": "Modifier",
     "add": "Ajouter"
+  },
+  "errors": {
+    "nameTooShort": "Le nom doit contenir au moins 2 caractères",
+    "invalidTargetAmount": "Le montant cible doit être supérieur à 0",
+    "futureTargetDate": "La date cible doit être supérieure à aujourd’hui"
   }
 },
 "categories": {
@@ -225,6 +241,10 @@
     "color": "Couleur",
     "add": "Ajouter",
     "edit": "Modifier"
+  },
+  "errors": {
+    "nameTooShort": "Le nom doit contenir au moins 2 caractères",
+    "invalidBudget": "Le budget doit être supérieur ou égal à 0"
   }
 },
 "operations": {
@@ -238,6 +258,9 @@
   "exceeded": "{{amount}} DT dépassé",
   "budget": "Budget : {{amount}} DT",
   "totalSpent": "Total dépensé",
+  "budgetExceeded": "⚠️ Budget {{budget}} DT dépassé — Total dépensé : {{total}} DT",
+  "insufficientBalance": "Solde insuffisant",
+  "addError": "Erreur lors de l'ajout de la dépense",
   "modal": {
     "addTitle": "Nouvelle dépense",
     "editTitle": "Modifier la dépense",
@@ -249,6 +272,17 @@
     "date": "Date",
     "add": "Ajouter",
     "edit": "Modifier"
+  },
+  "errors": {
+    "invalidAmount": "Le montant doit être supérieur à 0",
+    "amountRequired": "Le montant est obligatoire",
+    "descriptionRequired": "La description est obligatoire",
+    "descriptionTooShort": "La description doit contenir au moins 3 caractères",
+    "descriptionTooLong": "La description ne doit pas dépasser 100 caractères",
+    "categoryRequired": "La catégorie est obligatoire",
+    "dateRequired": "La date est obligatoire",
+    "invalidDate": "La date est invalide",
+    "futureDateNotAllowed": "La date ne peut pas être dans le futur"
   }
 },
 "layout": {
@@ -267,7 +301,8 @@
     "coach": "🤖 Coach Budget",
     "account": "Compte",
     "myAccount": "👤 Mon Compte",
-    "share": "👥 Partage"
+    "share": "👥 Partage",
+    "report": "📊 Rapport"
   }
 }
 }

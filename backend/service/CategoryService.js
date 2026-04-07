@@ -4,10 +4,10 @@ import { ActivityLogService } from "./ActivityLogService.js"; // ← ajout
 
 export const CategoryService = {
   async addCategory(data, AccountId, userId) {
-    const { name, color, budget, icon } = data;
+    const { name, color, budget, icon, normalizedGroup } = data;
 
     const category = await Category.create({
-      name, color, budget, icon,
+      name, color, budget, icon, normalizedGroup,
       AccountId,
       createdBy: userId,
       isDefault: false,

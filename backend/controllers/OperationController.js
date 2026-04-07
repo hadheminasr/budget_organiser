@@ -1,18 +1,20 @@
 import { OperationService } from "../service/OperationService.js";
-export const AddOperation=async(req,res)=>{
-    const {AccountId}=req.params;
-    const userId = req.user._id;//a verifier f test est ce que kaad yetsava l usner li logged in walla 
-    const data= req.body;
-    console.log(userId);
-   try{
-        const operation=await OperationService.AddOperation(data,userId,AccountId);
-        res.status(200).json({sucess:true,operation});
+export const AddOperation = async (req, res) => {
+  const { AccountId } = req.params;
+  const userId = req.user._id;
+  const data   = req.body;
 
-    }catch(error){
-        console.error("error in add operation ",error)
-        res.status(500).json({sucess:false,message:error.message})
-    }; 
-}
+  try {
+    const operation = await OperationService.AddOperation(data, userId, AccountId);
+    res.status(200).json({ sucess: true, operation });
+  } catch (error) {
+    console.error("error in add operation", error);
+    res.status(error.status || 500).json({ 
+      sucess:  false,
+      message: error.message
+    });
+  }
+};
 
 export const UpdateOperation = async (req, res)=>{
     const {IdOperation} = req.params;

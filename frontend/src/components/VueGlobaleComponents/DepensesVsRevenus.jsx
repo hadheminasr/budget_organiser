@@ -40,7 +40,7 @@ export default function DepensesVsRevenusDonut({data=[]}) {
         margin={{ top: 10, bottom: 10, left: 10, right: 10 }}
       />
 
-      {/* Petit affichage du total (optionnel) */}
+      {/* Petit affichage du total */}
       <Typography
         sx={{
           position: "absolute",

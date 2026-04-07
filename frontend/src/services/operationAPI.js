@@ -12,8 +12,12 @@ export const fetchOperations = async (accountId) => {
 };
 
 export const addOperation = async (accountId, data) => {
-  const res = await axios.post(`${BASE}/${accountId}`, data, { withCredentials: true });
-  return res.data.operation;
+  const res = await axios.post(
+    `/api/operations/${accountId}`,
+    data,
+    { withCredentials: true }
+  );
+  return res.data; 
 };
 
 export const updateOperation = async (operationId, data) => {

@@ -8,6 +8,7 @@ const OperationSchema = new mongoose.Schema(
         IdCategory:{type:mongoose.Schema.Types.ObjectId,ref:"Category"},
         description:{type:String},
         archived: { type: Boolean, default: false },
+        month:{ type: String, default: null },
     },{ timestamps: true }
 );
 export const Operation=mongoose.model("Operation",OperationSchema);

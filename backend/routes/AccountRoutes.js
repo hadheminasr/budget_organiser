@@ -1,4 +1,4 @@
-import {updateAccount,AddAccount,getAccount,getAllAccounts,deleteAccount,removeMember,getMyAccount,joinAccountByCode,getSharingCode,regenererateSharingCode,getDashboardData,resetMensuel} from "../controllers/index.js"
+import {updateAccount,AddAccount,getAccount,getAllAccounts,deleteAccount,removeMember,getMyAccount,joinAccountByCode,getSharingCode,regenererateSharingCode,getDashboardData,resetMensuel,getReport} from "../controllers/index.js"
 import express from "express";
 
 import { validate } from "../middelware/validate.js";
@@ -31,4 +31,6 @@ router.put("/:id/regenerate-code", verifyToken, regenererateSharingCode );
 router.get("/:accountId/dashboard", verifyToken, getDashboardData);
 
 router.post("/:id/monthly-reset", verifyToken, resetMensuel);
+
+router.get("/:accountId/report", verifyToken, getReport);
 export default  router;

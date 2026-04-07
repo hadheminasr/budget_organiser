@@ -35,6 +35,7 @@
     "mailtrap": "^4.4.0",
     "mongoose": "^9.1.5",
     "nodemailer": "^7.0.13",
+    "react-toastify": "^11.0.5",
     "recharts": "^3.8.0"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchDashboardData } from "../services/DashboardAPI";
+import { fetchDashboardData } from "../services/accountAPI";
 
 export const useDashboard = (accountId) => {
   const [data,    setData]    = useState(null);

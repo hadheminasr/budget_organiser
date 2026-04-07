@@ -23,5 +23,17 @@ export {KPI} from "./KPIService.js";
 //VueGlobale 
 export {VueGlobale} from "./VueGlobaleService.js";
 
+//control
+export {ControleService} from "./ControleService.js";
+
+//fiancier
+export {FinancierService} from "./FinancierService.js";
+
+//activite
+export {ActiviteService} from "./ActiviteService.js";
+
 //Note
 export {NoteService} from "./NoteService.js";
+
+//message 
+export {MessageService} from "./MessageService.js";

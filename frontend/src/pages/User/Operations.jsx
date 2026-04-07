@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useOperations } from "../../hooks/UseOperations";
 import { useCategories } from "../../hooks/useCategory";
@@ -8,30 +8,55 @@ import { Plus, Pencil, Trash2, TrendingDown } from "lucide-react";
 import SharedButton from "../../SharedComponents/SharedButton";
 import SharedInput  from "../../SharedComponents/SharedInput";
 import SharedModal  from "../../SharedComponents/SharedModal";
+import toast from "react-hot-toast";
+
+
 
 function OperationModal({ onClose, onSave, categories, initial = null }) {
-  const { t } = useTranslation(); // ← ajout
+  const { t } = useTranslation();
+
   const [form, setForm] = useState({
-    amount:      initial?.amount      ?? "",
+    amount: initial?.amount ?? "",
     description: initial?.description ?? "",
-    date:        initial?.date
+    date: initial?.date
       ? new Date(initial.date).toISOString().slice(0, 10)
       : new Date().toISOString().slice(0, 10),
-    categoryId:  initial?.IdCategory?._id ?? "",
+    categoryId: initial?.IdCategory?._id ?? "",
   });
+
+  const amountError =
+    form.amount !== "" && Number(form.amount) <= 0;
+
+  const descriptionError =
+    form.description.trim().length > 0 &&
+    form.description.trim().length < 3;
+  
+
+  const categoryError = false;
+  const dateError = false;
+
+  const canSubmit =
+    form.amount !== "" &&
+    Number(form.amount) > 0 &&
+    form.description.trim().length >= 3 &&
+    form.categoryId &&
+    form.date;
 
   return (
     <SharedModal
       title={initial ? t("operations.modal.editTitle") : t("operations.modal.addTitle")}
       onClose={onClose}
       onSubmit={() => {
-        if (!form.amount || !form.categoryId) return;
-        onSave(form);
+        if (!canSubmit) return;
+        onSave({
+          ...form,
+          amount: Number(form.amount),
+        });
         onClose();
       }}
       submitLabel={initial ? t("operations.modal.edit") : t("operations.modal.add")}
-      submitDisabled={!form.amount || !form.categoryId}>
-
+      submitDisabled={!canSubmit}
+    >
       <div>
         <label className="text-xs text-pink-400 font-semibold mb-1 block">
           {t("operations.modal.amount")}
@@ -39,10 +64,15 @@ function OperationModal({ onClose, onSave, categories, initial = null }) {
         <SharedInput
           type="number"
           value={form.amount}
-          onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
           placeholder="0.00"
           className="!mb-0"
         />
+        {amountError && (
+          <p className="text-xs text-rose-500 mt-1">
+            {t("operations.errors.invalidAmount")}
+          </p>
+        )}
       </div>
 
       <div>
@@ -52,10 +82,15 @@ function OperationModal({ onClose, onSave, categories, initial = null }) {
         <SharedInput
           type="text"
           value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           placeholder={t("operations.modal.descriptionPlaceholder")}
           className="!mb-0"
         />
+        {descriptionError && (
+          <p className="text-xs text-rose-500 mt-1">
+            {t("operations.errors.descriptionTooShort")}
+          </p>
+        )}
       </div>
 
       <div>
@@ -64,13 +99,21 @@ function OperationModal({ onClose, onSave, categories, initial = null }) {
         </label>
         <select
           value={form.categoryId}
-          onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-          className="w-full border border-pink-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-pink-400 bg-white cursor-pointer">
+          onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+          className="w-full border border-pink-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-pink-400 bg-white cursor-pointer"
+        >
           <option value="">{t("operations.modal.categoryPlaceholder")}</option>
-          {categories.map(cat => (
-            <option key={cat._id} value={cat._id}>{cat.name}</option>
+          {categories.map((cat) => (
+            <option key={cat._id} value={cat._id}>
+              {cat.name}
+            </option>
           ))}
         </select>
+        {categoryError && (
+          <p className="text-xs text-rose-500 mt-1">
+            {t("operations.errors.categoryRequired")}
+          </p>
+        )}
       </div>
 
       <div>
@@ -80,31 +123,53 @@ function OperationModal({ onClose, onSave, categories, initial = null }) {
         <SharedInput
           type="date"
           value={form.date}
-          onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
           className="!mb-0"
         />
       </div>
-
     </SharedModal>
   );
 }
 
+
 export default function Operations() {
-  const { t }    = useTranslation(); // ← ajout
+  const { t }= useTranslation();
   const { user } = useAuth();
-  const { categories }                       = useCategories();
+  const { categories }= useCategories();
   const { operations, loading, error, setOperations } = useOperations();
   const locale = t("common.locale");
 
   const [showModal, setShowModal] = useState(false);
   const [editingOp, setEditingOp] = useState(null);
 
+
   const handleAdd = async (form) => {
-    await addOperation(user.accountId, form);
+  try {
+    const res = await addOperation(user.accountId, form);
+
+    if (res.depassement) {
+      toast.error(t("operations.budgetExceeded", {
+        budget: res.budgetCategorie,
+        total:  res.nouveauTotal,
+      }));
+    }
+
     const groups = await fetchOperationsGrouped(user.accountId);
     setOperations(groups);
-  };
 
+  } catch (err) {
+    const message = err.response?.data?.message;
+    
+    if (message === "Solde insuffisant") {
+      toast.error(t("operations.insufficientBalance"));
+    } else if (message === "Reste insuffisant pour couvrir le dépassement") {
+      toast.error(t("operations.insufficientReste"));
+    } else {
+      toast.error(t("operations.addError"));
+    }
+    
+  }
+};
   const handleUpdate = async (form) => {
     await updateOperation(editingOp._id, form);
     const groups = await fetchOperationsGrouped(user.accountId);

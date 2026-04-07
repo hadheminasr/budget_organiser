@@ -9,10 +9,11 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import Messagerie from "./pages/Admin/Messagerie";
 import LoadingSpinner from "./components/LoadingSpinner";
-import VueGlobal from "./pages/Admin/VueGlobale";
-import ActiviteComportement from "./components/ActiviteComportement/ActiviteComportement";
-import AdminDashboard from "./pages/Admin/AdminDash";
-import FinancierCategorie from "./components/FinancierCategorie/FinancierCategorie";
+//import VueGlobal from "./pages/Admin/VueGlobale";
+//import GestionControle from "./components/GestionControle/GestionControle";
+//import ActiviteComportement from "./components/ActiviteComportement/ActiviteComportement";
+//import AdminDashboard from "./pages/Admin/AdminDash";
+//import FinancierCategorie from "./components/FinancierCategorie/FinancierCategorie";
 import UserDash from "./pages/User/UserDash";
 import UserLayout from "../src/layout/userLayout";
 import Account from "./pages/User/Account";
@@ -22,6 +23,12 @@ import Categories from "./pages/User/category";
 import Goals from "./pages/User/Goal";
 import History from "./pages/User/history";
 import Note from "./pages/User/Note";
+import Report from "./pages/User/Report";
+
+
+import AdminLayout from "./layout/AdminLayout";
+import AdminDash from "./pages/Admin/AdminDash";
+
 
 
 
@@ -78,40 +85,19 @@ function App() {
       <FloatingShape color="bg-amber-200/35" size="w-80 h-80" top="65%" left="18%" delay={1.1} />*/}
 
       <Routes>
-        {/* ADMIN */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/messagerie"
-          element={
-            <AdminRoute>
-              <Messagerie />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/vue-global"
-          element={
-            <AdminRoute>
-              <VueGlobal />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/activite"
-          element={
-            <AdminRoute>
-              <ActiviteComportement />
-            </AdminRoute>
-          }
-        />
-
+  {/* ADMIN */}
+  <Route
+    path="/admin"
+    element={
+      <AdminRoute>
+        <AdminLayout />
+      </AdminRoute>
+    }
+  >
+    <Route index element={<Navigate to="dashboard" replace />} />
+    <Route path="dashboard" element={<AdminDash />} />
+    <Route path="messagerie" element={<Messagerie />} />
+  </Route>
         {/* HOME */}
         <Route
           path="/"
@@ -183,6 +169,7 @@ function App() {
   <Route path="goals" element={<Goals />} />
   <Route path="history" element={<History />} />
   <Route path="note" element={<Note />} />
+  <Route path="report" element={<Report />} />
   
 </Route>
 
