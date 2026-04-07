@@ -27,3 +27,17 @@ export const removeMember = async (accountId, memberIdToRemove) => {
 export const deleteAccount = async (accountId) => {
   await axios.delete(`${BASE}/${accountId}`, { withCredentials: true });
 };
+
+export const resetMensuel = async (accountId, data) => {
+  const res = await axios.post(
+    `${BASE}/${accountId}/monthly-reset`,
+    data,
+    { withCredentials: true }
+  );
+  return res.data;
+};
+
+export const fetchDashboardData = async (accountId) => {
+  const res = await axios.get(`${BASE}/${accountId}/dashboard`);
+  return res.data.dashboardData;
+};

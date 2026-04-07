@@ -10,21 +10,59 @@ import SharedModal from "../../SharedComponents/SharedModal";
 
 const ICONS = ["🍕", "🚗", "💊", "🎮", "👗", "✈️", "🏠", "📚", "💪", "🐶", "☕", "🎵"];
 
+const CATEGORY_GROUPS = [
+  { value: "HOUSING", label: "Logement" },
+  { value: "FOOD_HOME", label: "Alimentation maison" },
+  { value: "EATING_OUT", label: "Restauration extérieure" },
+  { value: "TRANSPORT", label: "Transport" },
+  { value: "HEALTH_BEAUTY", label: "Santé / beauté" },
+  { value: "CHILDREN", label: "Enfants / famille" },
+  { value: "ENTERTAINMENT", label: "Sorties / loisirs" },
+  { value: "SHOPPING", label: "Shopping" },
+  { value: "SMOKING_ALCOHOL_CAFE", label: "Tabac / alcool / café" },
+  { value: "BILLS", label: "Factures" },
+  { value: "SAVINGS", label: "Épargne" },
+  { value: "OTHER", label: "Autre" },
+];
 function CategoryModal({ onClose, onSave, initial = null }) {
-  const { t } = useTranslation(); // ← ajout
-  const [name,   setName]   = useState(initial?.name   ?? "");
-  const [color,  setColor]  = useState(initial?.color  ?? "#000000");
+  const { t } = useTranslation();
+
+  const [name, setName] = useState(initial?.name ?? "");
+  const [color, setColor] = useState(initial?.color ?? "#000000");
   const [budget, setBudget] = useState(initial?.budget ?? "");
-  const [icon,   setIcon]   = useState(initial?.icon   ?? "🏷️");
+  const [icon, setIcon] = useState(initial?.icon ?? "🏷️");
+  const [normalizedGroup, setNormalizedGroup] = useState(
+    initial?.normalizedGroup ?? "OTHER"
+  );
+
+  const nameError = name.trim().length > 0 && name.trim().length < 2;
+
+  const budgetError = budget !== "" && Number(budget) < 0;
+
+  const canSubmit =
+    name.trim().length >= 2 &&
+    (budget === "" || Number(budget) >= 0);
 
   return (
     <SharedModal
       title={initial ? t("categories.modal.editTitle") : t("categories.modal.addTitle")}
       onClose={onClose}
-      onSubmit={() => { if (!name.trim()) return; onSave({ name, color, budget: Number(budget), icon }); onClose(); }}
-      submitLabel={initial ? t("categories.modal.edit") : t("categories.modal.add")}
-      submitDisabled={!name.trim()}>
+      onSubmit={() => {
+      if (!canSubmit) return;
 
+      onSave({
+        name: name.trim(),
+        color,
+        budget: budget === "" ? 0 : Number(budget),
+        icon,
+        normalizedGroup,
+      });
+
+      onClose();
+    }}
+      submitLabel={initial ? t("categories.modal.edit") : t("categories.modal.add")}
+      submitDisabled={!canSubmit}
+    >
       {/* Nom */}
       <div>
         <label className="text-xs text-pink-400 font-semibold mb-1 block">
@@ -32,10 +70,34 @@ function CategoryModal({ onClose, onSave, initial = null }) {
         </label>
         <SharedInput
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           placeholder={t("categories.modal.namePlaceholder")}
           className="!mb-0"
         />
+        {nameError && (
+          <p className="text-xs text-rose-500 mt-1">
+            {t("categories.errors.nameTooShort")}
+          </p>
+        )}
+      </div>
+
+      {/* Famille normalisée */}
+      <div>
+        <label className="text-xs text-pink-400 font-semibold mb-1 block">
+          Famille de la catégorie
+        </label>
+
+        <select
+          value={normalizedGroup}
+          onChange={(e) => setNormalizedGroup(e.target.value)}
+          className="w-full border border-pink-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-pink-400 bg-white cursor-pointer"
+        >
+          {CATEGORY_GROUPS.map((group) => (
+            <option key={group.value} value={group.value}>
+              {group.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Budget */}
@@ -46,10 +108,15 @@ function CategoryModal({ onClose, onSave, initial = null }) {
         <SharedInput
           type="number"
           value={budget}
-          onChange={e => setBudget(e.target.value)}
+          onChange={(e) => setBudget(e.target.value)}
           placeholder="0"
           className="!mb-0"
         />
+        {budgetError && (
+          <p className="text-xs text-rose-500 mt-1">
+            {t("categories.errors.invalidBudget")}
+          </p>
+        )}
       </div>
 
       {/* Icône */}
@@ -58,10 +125,14 @@ function CategoryModal({ onClose, onSave, initial = null }) {
           {t("categories.modal.icon")}
         </label>
         <div className="flex flex-wrap gap-2">
-          {ICONS.map(i => (
-            <button key={i} type="button" onClick={() => setIcon(i)}
+          {ICONS.map((i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIcon(i)}
               className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center border transition cursor-pointer
-                ${icon === i ? "border-pink-400 bg-pink-50" : "border-pink-100 hover:bg-pink-50"}`}>
+                ${icon === i ? "border-pink-400 bg-pink-50" : "border-pink-100 hover:bg-pink-50"}`}
+            >
               {i}
             </button>
           ))}
@@ -74,15 +145,20 @@ function CategoryModal({ onClose, onSave, initial = null }) {
           {t("categories.modal.color")}
         </label>
         <div className="flex items-center gap-3">
-          <input type="color" value={color} onChange={e => setColor(e.target.value)}
-            className="w-10 h-10 rounded-xl border border-pink-200 cursor-pointer" />
-          <div className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white text-xs font-semibold"
-            style={{ backgroundColor: color }}>
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            className="w-10 h-10 rounded-xl border border-pink-200 cursor-pointer"
+          />
+          <div
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white text-xs font-semibold"
+            style={{ backgroundColor: color }}
+          >
             {icon} {name || t("categories.preview")}
           </div>
         </div>
       </div>
-
     </SharedModal>
   );
 }

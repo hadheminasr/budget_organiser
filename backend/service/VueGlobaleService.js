@@ -102,7 +102,7 @@ export const VueGlobale = {
           as: "cat",
         },//ajoute cat mais sous forma du tableau
       },
-      { $unwind: { path: "$cat", preserveNullAndEmptyArrays: true } },//$unwind transforme tableau en objet  , preserveNullAndEmptyArrays: true: si cat[] le doc reste et cat=null
+      { $unwind: { path: "$cat", preserveNullAndEmptyArrays: true } },//$unwind transforme tableau en objet  | preserveNullAndEmptyArrays: true: si cat[] le doc reste et cat=null
       {
         $project: {
           _id: 0,

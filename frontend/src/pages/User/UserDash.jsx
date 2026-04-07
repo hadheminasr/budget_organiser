@@ -1,14 +1,22 @@
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useDashboard } from "../../hooks/UseDashboard";
+import { useState } from "react";
 import SharedCard from "../../SharedComponents/SharedCard";
 import { Wallet, TrendingDown, Target, StickyNote } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+
+import NewMonthModal from "../../components/NewModal";
 
 export default function UserDash() {
   const { user }  = useAuth();
   const { t }     = useTranslation();
   const { data, loading, error } = useDashboard(user?.accountId);
+  const [showResetModal, setShowResetModal] = useState(false);
+  
+  /*const isOwner = account?.createdBy?._id === user?._id?.toString()
+               || account?.createdBy      === user?._id?.toString();*/
+
 
   if (loading) return (
     <div className="flex items-center justify-center h-40 text-pink-400 text-sm">
@@ -22,7 +30,7 @@ export default function UserDash() {
 
   if (!data) return null;
 
-  // ── données pour les graphiques
+  // données pour les graphiques
   const pieData = data.byCategory.map(cat => ({
     name:  cat.info?.name  ?? "Autre",
     value: cat.total,
@@ -39,20 +47,6 @@ export default function UserDash() {
 
   return (
     <div className="w-full flex flex-col gap-6">
-
-      {/* HEADER */}
-      <div>
-        <h1 className="font-bold text-xl text-rose-900">
-          {t("layout.hello", { name: user?.username })}
-        </h1>
-        <p className="text-xs text-pink-300">
-          {new Date().toLocaleDateString(locale, {
-            weekday: "long", day: "numeric",
-            month: "long",  year: "numeric"
-          })}
-        </p>
-      </div>
-
       {/* BANNER nouveau mois */}
       {data.lastResetMonth !== new Date().toISOString().slice(0, 7) && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-center justify-between">
@@ -64,37 +58,43 @@ export default function UserDash() {
               Initialisez votre budget pour ce mois
             </p>
           </div>
-          <button className="px-4 py-2 bg-amber-400 text-white text-xs font-bold rounded-xl hover:bg-amber-500 transition cursor-pointer">
+          <button
+            onClick={() => setShowResetModal(true)}
+            className="px-4 py-2 bg-amber-400 text-white text-xs font-bold rounded-xl hover:bg-amber-500 transition cursor-pointer">
             Commencer
           </button>
         </div>
-      )}
-
+      )
+      }
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <SharedCard
-          title="Solde disponible"
+          title="Budget total du mois"
           value={`${data.solde.toLocaleString(locale)} DT`}
-          change={`Reste : ${data.reste.toLocaleString(locale)} DT`}
-          changeType="positive"
+          change="inclut salaire + économies reportées"
+          changeType="neutral"
           icon={Wallet}
           iconColor="rose"
         />
         <SharedCard
-          title="Dépensé ce mois"
-          value={`${data.totalDepense.toLocaleString(locale)} DT`}
-          change={`sur ${data.totalBudgets.toLocaleString(locale)} DT budgetés`}
-          changeType={data.totalDepense > data.totalBudgets ? "negative" : "neutral"}
-          icon={TrendingDown}
+          title="Montant budgété"
+          value={`${data.totalBudgets.toLocaleString(locale)} DT`}
+          change="répartis sur vos catégories"
+          changeType="neutral"
+          icon={Wallet}
           iconColor="amber"
+        />
+        <SharedCard
+          title="Réserve restante"
+          value={`${data.reste.toLocaleString(locale)} DT`}
+          change="encore disponible après budgets et objectifs"
+          changeType={data.reste > 0 ? "positive" : "negative"}
+          icon={Wallet}
+          iconColor="emerald"
         />
         <SharedCard
           title="Objectifs actifs"
           value={data.goals.length}
-          change={`${data.goals.filter(g => {
-            const p = (g.currentAmount / g.targetAmount) * 100;
-            return p >= 80;
-          }).length} presque atteints`}
           changeType="positive"
           icon={Target}
           iconColor="emerald"
@@ -197,7 +197,16 @@ export default function UserDash() {
           </div>
         </div>
       )}
+        {showResetModal && (
+        <NewMonthModal
+          onClose={() => setShowResetModal(false)}
+          onSuccess={() => window.location.reload()}
+          soldeActuel={data.solde ?? 0}
+        />
+      )}
 
     </div>
   );
+
+
 }
