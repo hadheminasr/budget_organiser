@@ -1,39 +1,56 @@
-// src/hooks/useVueGlobale.js
 import { useEffect, useState } from "react";
 import { fetchVueGlobale } from "../services/VueGlobaleAPI";
 
-export const useVueGlobale = () => {
-  const [kpisData, setKpisData] = useState(null);
-  const [chartsData, setChartsData] = useState(null);
+export default function useVueGlobale() {
+  const [data, setData] = useState({
+    kpis: null,
+    charts: null,
+    insights: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadVueGlobale = async () => {
+    let isMounted = true;
+
+    const load = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const data = await fetchVueGlobale();
+        const result = await fetchVueGlobale();
 
-        setKpisData(data?.kpis ?? null);
-        setChartsData(data?.charts ?? null);
+        if (!isMounted) return;
+
+        setData({
+          kpis: result?.kpis ?? null,
+          charts: result?.charts ?? null,
+          insights: result?.insights ?? [],
+        });
       } catch (err) {
-        setError(err?.response?.data?.message || err.message || "Erreur serveur");
+        if (!isMounted) return;
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Erreur lors du chargement de la vue globale"
+        );
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    loadVueGlobale();
+    load();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return {
-    kpisData,
-    chartsData,
+    kpis: data.kpis,
+    charts: data.charts,
+    insights: data.insights,
     loading,
     error,
-    setKpisData,
-    setChartsData,
   };
-};
+}

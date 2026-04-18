@@ -2,27 +2,15 @@ import { VueGlobale } from "../service/index.js";
 
 export const getVueGlobale = async (req, res) => {
   try {
-    const [kpis, operationsParJour, top5, donut, heatmap] = await Promise.all([
-      VueGlobale.KPI(),
-      VueGlobale.operationsParJour7j(),
-      VueGlobale.top5CategoriesDepenses7j(),
-      VueGlobale.depensesVsRevenus7j(),
-      VueGlobale.heatmapJourHeure7j(),
-    ]);
+    const result = await VueGlobale.getAll();
 
     return res.json({
       success: true,
-      data: {
-        kpis,
-        charts: {
-          operationsParJour7j: operationsParJour,
-          top5CategoriesDepenses7j: top5,
-          depensesVsRevenus7j: donut,
-          heatmapJourHeure7j: heatmap,
-        },
-      },
+      data: result,
     });
   } catch (err) {
+    console.error("Erreur getVueGlobale :", err);
+
     return res.status(500).json({
       success: false,
       message: err.message || "Erreur serveur",

@@ -33,3 +33,9 @@ export {getNotes, addNote, markDone, deleteNote, updateNote} from "./NoteControl
 //message
 export {sendMessage, getAllMessages, getMessagesForAccount,
   markAsRead, countUnread, getTemplates} from "./MessageController.js";
+
+//Profile
+export {getAccountProfile, updateAccountProfile, createAccountProfile} from "./AccountProfileController.js";
+
+//coachBudgetV1
+export {getCoachBudgetData} from "./CoachBudgetV1.js";

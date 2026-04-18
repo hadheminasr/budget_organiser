@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes , useLocation } from "react-router-dom";
 import FloatingShape from "./components/FloatingShape";
 
 import SignUpPage from "./pages/SignUpPage";
@@ -9,11 +9,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import Messagerie from "./pages/Admin/Messagerie";
 import LoadingSpinner from "./components/LoadingSpinner";
-//import VueGlobal from "./pages/Admin/VueGlobale";
-//import GestionControle from "./components/GestionControle/GestionControle";
-//import ActiviteComportement from "./components/ActiviteComportement/ActiviteComportement";
-//import AdminDashboard from "./pages/Admin/AdminDash";
-//import FinancierCategorie from "./components/FinancierCategorie/FinancierCategorie";
+;
 import UserDash from "./pages/User/UserDash";
 import UserLayout from "../src/layout/userLayout";
 import Account from "./pages/User/Account";
@@ -24,17 +20,34 @@ import Goals from "./pages/User/Goal";
 import History from "./pages/User/history";
 import Note from "./pages/User/Note";
 import Report from "./pages/User/Report";
-
+import CoachBudgetPage from "./pages/User/CoachBudgetV1";
 
 import AdminLayout from "./layout/AdminLayout";
 import AdminDash from "./pages/Admin/AdminDash";
 
-
-
-
+import FirstLogin from "./pages/User/FirstLoginPage";
 
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./context/AuthContext";
+
+const UserAccountProfileGuard = ({ children }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const isFirstLoginPage = location.pathname === "/user/first-login";
+
+  if (
+    user?.role !== "admin" &&
+    user?.accountId &&
+    user?.accountProfileCompleted === false &&
+    !isFirstLoginPage
+  ) {
+    return <Navigate to="/user/first-login" replace />;
+  }
+
+  return children;
+};
+
 
 const RoleHome = () => {
   const { user } = useAuth();
@@ -156,7 +169,9 @@ function App() {
       path="/user"
       element={
         <ProtectedRoute>
-          <UserLayout />
+          <UserAccountProfileGuard>
+            <UserLayout />
+          </UserAccountProfileGuard>
         </ProtectedRoute>
       }
     >
@@ -170,7 +185,8 @@ function App() {
   <Route path="history" element={<History />} />
   <Route path="note" element={<Note />} />
   <Route path="report" element={<Report />} />
-  
+  <Route path="first-login" element={<FirstLogin />} />
+  <Route path="coach" element={<CoachBudgetPage />} />
 </Route>
 
 
