@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate , useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next"; // ← ajout
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -16,37 +16,35 @@ const UserLayout = () => {
   const navigate         = useNavigate();
   const locale           = t("common.locale");
 
-const [showPanel, setShowPanel]       = useState(false);
+  const [showPanel, setShowPanel]       = useState(false);
 
-const panelRef                        = useRef(null);
+  const panelRef                        = useRef(null);
 
-const {
-  messages,
-  unreadCount,
-  loading:      loadingMsg,
-  loadMessages,
-  handleMarkRead,
-} = useMessages();
+  const {
+    messages,
+    unreadCount,
+    loading:      loadingMsg,
+    loadMessages,
+    handleMarkRead,
+  } = useMessages();
 
-const handleOpenPanel = () => {
-  setShowPanel(p => !p);
-  if (!showPanel) loadMessages();
-};
-
-// fermer le panel si clic en dehors
-useEffect(() => {
-  const handleClick = (e) => {
-    if (panelRef.current && !panelRef.current.contains(e.target)) {
-      setShowPanel(false);
-    }
+  const handleOpenPanel = () => {
+    setShowPanel(p => !p);
+    if (!showPanel) loadMessages();
   };
-  document.addEventListener("mousedown", handleClick);
-  return () => document.removeEventListener("mousedown", handleClick);
-}, []);
 
-// charger les messages quand on ouvre le panel
+  // fermer le panel si clic en dehors
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (panelRef.current && !panelRef.current.contains(e.target)) {
+        setShowPanel(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
-
+  // charger les messages quand on ouvre le panel
 
   const handleLogout = async () => {
     await logout();

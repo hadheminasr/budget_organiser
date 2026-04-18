@@ -15,9 +15,9 @@ import ActiviteRoutes from "./ActiviteRoutes.js";
 import activityLogRoutes from "./ActivityLogRoutes.js";
 import noteRoutes from "./NoteRoutes.js";
 import MessageRoutes from "./MessageRoutes.js";
-
-
-
+import AccountProfileRoutes from "./AccountProfileRoutes.js";
+import CoachBudgetV1Routes from "./CoachBudgetV1Routes.js";
+import PremiumCoachRoutes from "./PremiumCoachRoutes.js";
 
 const router = express.Router();
 
@@ -42,4 +42,8 @@ router.use("/admin/BI", ControlRoutes);
 router.use("/admin/BI", FinancierRoutes);
 router.use("/admin/BI", ActiviteRoutes);
 router.use("/messages", MessageRoutes);
+router.use("/account-profile", AccountProfileRoutes);
+router.use("/coach-budget", CoachBudgetV1Routes);
+router.use("/premium-coach", PremiumCoachRoutes);
+
 export default router;

@@ -37,3 +37,13 @@ export {NoteService} from "./NoteService.js";
 
 //message 
 export {MessageService} from "./MessageService.js";
+
+//accountProfile
+export {accountProfileService} from "./AccountProfileService.js";
+
+//coachBudgetV1
+export {coachBudgetV1Service} from "./CoachBudgetV1.js";
+
+//premiumCoach
+
+export { buildPremiumCoach } from "./premiumCoach/premiumCoachOrchestrator.js";

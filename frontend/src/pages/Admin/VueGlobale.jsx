@@ -1,100 +1,63 @@
-import OperationParJour from "../../components/VueGlobaleComponents/OperationParJour.jsx";
-import Top5CategoriesBarChart from "../../components/VueGlobaleComponents/Top5CategoriesBarChart.jsx";
-import DepensesVsRevenusDonut from "../../components/VueGlobaleComponents/DepensesVsRevenus.jsx";
-import HeatmapJourHeure from "../../components/VueGlobaleComponents/HeatmapJourHeure7j.jsx";
-import SharedCard from "../../SharedComponents/SharedCard.jsx";
-import { useMemo } from "react";
-import { Users, Wallet, ShieldCheck, ShieldOff, Share2, Target } from "lucide-react";
-import { useVueGlobale } from "../../hooks/useVueGlobale.js";
+import useVueGlobale from "../../hooks/useVueGlobale";
+import VueGlobaleKpis from "../../components/VueGlobaleComponents/VueGlobaleKpis";
+import HeatmapJourHeure7j from "../../components/VueGlobaleComponents/HeatmapJourHeure7j";
+import HealthRadarChart from "../../components/VueGlobaleComponents/HealthRadarChart";
+import CategoryTreemapChart from "../../components/VueGlobaleComponents/CategoryTreemapChart";
+import BudgetFlowChart from "../../components/VueGlobaleComponents/BudgetFlowChart";
+import InsightsCard from "../../components/VueGlobaleComponents/InsightsCard";
 
-export default function VueGlobal() {
- 
-  const { kpisData, chartsData, loading, error } = useVueGlobale();
+export default function VueGlobale() {
+  const { kpis, charts, insights, loading, error } = useVueGlobale();
 
-  const kpis = useMemo(() => {
-    if (!kpisData) return [];
+  const activityHeatmap = charts?.activityHeatmap ?? [];
+  const healthRadar = charts?.healthRadar ?? [];
+  const categoryTreemap = charts?.categoryTreemap ?? [];
+  const budgetFlow = charts?.budgetFlow ?? [];
+  const collaborationScatter = charts?.collaborationScatter ?? [];
 
-    return [
-      {
-        title: "Comptes totaux",
-        value: kpisData.nbComptes,
-        icon: Wallet,
-        iconColor: "rose",
-      },
-      {
-        title: "Comptes actifs",
-        value: kpisData.comptesActifs,
-        icon: ShieldCheck,
-        iconColor: "emerald",
-      },
-      {
-        title: "Comptes bloqués",
-        value: kpisData.comptesBloques,
-        icon: ShieldOff,
-        iconColor: "red",
-      },
-      {
-        title: "Comptes partagés",
-        value: `${Number(kpisData.pctComptesPartages ?? 0).toFixed(1)}%`,
-        icon: Share2,
-        iconColor: "amber",
-        change: "≥ 2 utilisateurs",
-        changeType: "neutral",
-      },
-      {
-        title: "Utilisateurs",
-        value: kpisData.nbUsers,
-        icon: Users,
-        iconColor: "blue",
-        change: `${kpisData.newUsers7j ?? 0} nouveaux (7j)`,
-        changeType: (kpisData.newUsers7j ?? 0) > 0 ? "positive" : "neutral",
-      },
-      {
-        title: "Objectifs actifs",
-        value: kpisData.objectifsActifs,
-        icon: Target,
-        iconColor: "blue",
-        change: `${Number(kpisData.pctObjectifsAtteints ?? 0).toFixed(0)}% atteints`,
-        changeType: (kpisData.pctObjectifsAtteints ?? 0) > 50 ? "positive" : "neutral",
-      },
-    ];
-  }, [kpisData]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40 text-sm text-gray-400">
+        Chargement de la vue globale...
+      </div>
+    );
+  }
 
-  if (loading) return <div>Chargement...</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
-  if (!kpisData || !chartsData) return <div>Aucune donnée.</div>;
+  if (error) {
+    return (
+      <div className="text-sm p-4 rounded-xl border border-red-200 bg-red-50 text-red-700">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Vue Globale</h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {kpis.map((kpi, idx) => (
-          <SharedCard key={idx} {...kpi} />
-        ))}
+    <div className="w-full flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold text-slate-800">Vue globale</h1>
+        <p className="text-sm text-slate-500">
+          Vue d’ensemble de la santé, de l’activité et de la collaboration sur la plateforme.
+        </p>
       </div>
 
-      <div className="space-y-6">
-        <div className="bg-white rounded-xl border p-4">
-          <h2 className="text-lg font-semibold mb-2">Opérations par jour (7j)</h2>
-          <OperationParJour data={chartsData?.operationsParJour7j} />
-        </div>
+      {/* KPIs */}
+      <VueGlobaleKpis kpis={kpis} />
 
-        <div className="bg-white rounded-xl border p-4">
-          <h2 className="text-lg font-semibold mb-2">Top 5 catégories (dépenses, 7j)</h2>
-          <Top5CategoriesBarChart data={chartsData?.top5CategoriesDepenses7j} />
-        </div>
-
-        <div className="bg-white rounded-xl border p-4">
-          <h2 className="text-lg font-semibold mb-2">Dépenses vs Revenus (7j)</h2>
-          <DepensesVsRevenusDonut data={chartsData?.depensesVsRevenus7j} />
-        </div>
-
-        <div className="bg-white rounded-xl border p-4">
-          <h2 className="text-lg font-semibold mb-2">Heatmap Jour × Heure (7j)</h2>
-          <HeatmapJourHeure data={chartsData?.heatmapJourHeure7j} />
-        </div>
+      {/* Bloc 1 */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <HeatmapJourHeure7j data={activityHeatmap} />
+        <HealthRadarChart data={healthRadar} />
       </div>
+
+      {/* Bloc 2 */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <CategoryTreemapChart data={categoryTreemap} />
+        <BudgetFlowChart data={budgetFlow} />
+      </div>
+
+      {/* Bloc 3*/}
+      <InsightsCard insights={insights} />
     </div>
   );
 }

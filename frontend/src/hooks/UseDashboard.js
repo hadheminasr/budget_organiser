@@ -11,7 +11,9 @@ export const useDashboard = (accountId) => {
     const load = async () => {
       try {
         const res = await fetchDashboardData(accountId);
+        console.log("RES DASHBOARD =", res);
         setData(res);
+        console.log("TYPE RES =", typeof res);
       } catch (err) {
         setError(err.message);
       } finally {

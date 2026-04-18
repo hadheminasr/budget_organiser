@@ -3,6 +3,8 @@ import bcryptjs from "bcryptjs";
 
 import { User } from "../models/User.js";
 import { Account } from "../models/Account.js";
+import { AccountProfile } from "../models/AccountProfile.js";
+
 
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { generateUniqueShareCode } from "../utils/generateShareCode.js";
@@ -186,17 +188,31 @@ export const AuthService = {
   },
 
   async checkAuth(userId) {
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      const err = new Error("User not found");
-      err.status = 400;
-      throw err;
-    }
-    const account = await Account.findOne({ Users: userId });
+  const user = await User.findById(userId).select("-password");
+  if (!user) {
+    const err = new Error("User not found");
+    err.status = 400;
+    throw err;
+  }
 
-    return { user: {
-        ...user._doc,
-        accountId: account?._id ?? null, 
-      } };
-  },
+  const account = await Account.findOne({ Users: userId });
+
+  let accountProfileCompleted = false;
+
+  if (account?._id) {
+    const accountProfile = await AccountProfile.findOne({
+      accountId: account._id,
+    });
+
+    accountProfileCompleted = !!accountProfile;
+  }
+
+  return {
+    user: {
+      ...user._doc,
+      accountId: account?._id ?? null,
+      accountProfileCompleted,
+    },
+  };
+},
 };

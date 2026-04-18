@@ -27,26 +27,24 @@ export const GoalService = {
     if (!isMember) throw new Error("Forbidden");
 
     const save = {
-      name:          data.name?.trim(),
-      targetAmount:  data.targetAmount,
-      TargetDate:    data.TargetDate,
-      IdAccount:     accountId,
-      createdBy:     userId,
+      name:data.name?.trim(),
+      targetAmount:data.targetAmount,
+      TargetDate:data.TargetDate,
+      IdAccount:accountId,
+      createdBy:userId,
       currentAmount: data.currentAmount || 0,
-      icon:          data.icon || "🎯",
+      icon:data.icon || "🎯",
     };
 
     const goal = await Goal.create(save);
 
-    // ── log ──────────────────────────────────────────────────────
+    //log 
     const user = await User.findById(userId).select("name");
     await ActivityLogService.log(
       accountId, userId, user?.name,
       "goal.add", "goal", goal._id,
       { name: goal.name, targetAmount: goal.targetAmount, icon: goal.icon }
     );
-    // ─────────────────────────────────────────────────────────────
-
     return goal;
   },
 
@@ -55,48 +53,72 @@ export const GoalService = {
   },
 
   async UpdateGoal(goalId, updates, userId) {
-    const goal = await Goal.findById(goalId);
-    if (!goal) throw new Error("Goal not found");
+  //parce que ton objectif contient aussi des champs sensibles ou calculés, comme currentAmount, isAchieved, isActive, createdBy, etc. Donc tu ne veux pas que le client puisse les modifier directement via l’updat
+  //findByIdAndUpdate(goalId):famma logque métier avant sauvegarde
+  //findById + modification manuelle + save()
+  const goal = await Goal.findById(goalId);
+  if (!goal) throw new Error("Goal not found");
 
-    const isAddAmount = !!updates.addAmount;
-    const addedAmount = updates.addAmount;
+  const isAddAmount = !!updates.addAmount;
+  const addedAmount = updates.addAmount;
 
-    if (isAddAmount) {
-      goal.currentAmount += updates.addAmount;
-      if (goal.currentAmount >= goal.targetAmount) {
-        goal.isAchieved = true;
-        goal.isActive   = false;
+  if (isAddAmount) {
+    goal.currentAmount += updates.addAmount;
+    delete updates.addAmount;
+  }
+
+  if (updates.name)         goal.name = updates.name;
+  if (updates.targetAmount) goal.targetAmount = updates.targetAmount;
+  if (updates.TargetDate)   goal.TargetDate = updates.TargetDate;
+  if (updates.icon)         goal.icon = updates.icon;
+
+  // recalcul métier global de l’état
+  if (goal.currentAmount >= goal.targetAmount) {
+    goal.isAchieved = true;
+    goal.isActive = false;
+  } else {
+    goal.isAchieved = false;
+    goal.isActive = true;
+  }
+
+  const saved = await goal.save();
+
+  const user = await User.findById(userId).select("name username");
+
+  if (isAddAmount) {
+    await ActivityLogService.log(
+      goal.IdAccount,
+      userId,
+      user?.name || user?.username,
+      saved.isAchieved ? "goal.achieved" : "goal.update",
+      "goal",
+      goalId,
+      {
+        name: goal.name,
+        addedAmount,
+        newTotal: goal.currentAmount,
+        targetAmount: goal.targetAmount,
       }
-      delete updates.addAmount;
-    }
+    );
+  } else {
+    await ActivityLogService.log(
+      goal.IdAccount,
+      userId,
+      user?.name || user?.username,
+      "goal.update",
+      "goal",
+      goalId,
+      {
+        name: goal.name,
+        targetAmount: goal.targetAmount,
+        currentAmount: goal.currentAmount,
+        isAchieved: goal.isAchieved,
+      }
+    );
+  }
 
-    if (updates.name)         goal.name         = updates.name;
-    if (updates.targetAmount) goal.targetAmount = updates.targetAmount;
-    if (updates.TargetDate)   goal.TargetDate   = updates.TargetDate;
-    if (updates.icon)         goal.icon         = updates.icon;
-
-    const saved = await goal.save();
-
-    // ── log ──────────────────────────────────────────────────────
-    const user = await User.findById(userId).select("name");
-    if (isAddAmount) {
-      await ActivityLogService.log(
-        goal.IdAccount, userId, user?.name,
-        saved.isAchieved ? "goal.achieved" : "goal.update",
-        "goal", goalId,
-        { name: goal.name, addedAmount, newTotal: goal.currentAmount, targetAmount: goal.targetAmount }
-      );
-    } else {
-      await ActivityLogService.log(
-        goal.IdAccount, userId, user?.username,
-        "goal.update", "goal", goalId,
-        { name: goal.name }
-      );
-    }
-    // ─────────────────────────────────────────────────────────────
-
-    return saved;
-  },
+  return saved;
+},
 
   async deleteGoal(goalId, userId) {
     const goal = await Goal.findByIdAndDelete(goalId);

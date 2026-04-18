@@ -27,7 +27,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   const { goals } = useGoals();
 
   const [step, setStep] = useState(1);
-  const [solde, setSolde] = useState("");
+  const [solde, setSolde] = useState(""); // nouveau solde du mois
   const [budgets, setBudgets] = useState({});
   const [distributions, setDistributions] = useState({});
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,19 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   // CALCULS MÉTIER
   // ──────────────────────────────────────────
 
-  // Étape 3 : les objectifs utilisent le solde réel du mois précédent
+  // Nouveau solde du mois courant (étape 1)
+  const nouveauSolde = Number(solde || 0);
+
+  // Étape 2 : budgets pris uniquement depuis le nouveau solde
+  const totalBudgets = Object.values(budgets).reduce(
+    (sum, val) => sum + (Number(val) || 0),
+    0
+  );
+
+  const budgetsDepassentSolde = totalBudgets > nouveauSolde;
+  const resteApresBudgets = nouveauSolde - totalBudgets;
+
+  // Étape 3 : objectifs pris uniquement depuis le solde du mois précédent
   const montantDisponiblePourObjectifs = Number(soldeActuel ?? 0);
 
   const totalDistributions = Object.values(distributions).reduce(
@@ -48,21 +60,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   const distributionsDepassentDisponible =
     totalDistributions > montantDisponiblePourObjectifs;
 
-  // Ce qui reste du mois précédent après objectifs
   const montantReporte = montantDisponiblePourObjectifs - totalDistributions;
-
-  // Nouveau total disponible pour le mois courant
-  const totalDisponibleMois = montantReporte + Number(solde || 0);
-
-  const totalBudgets = Object.values(budgets).reduce(
-    (sum, val) => sum + (Number(val) || 0),
-    0
-  );
-
-  const budgetsDepassentSolde = totalBudgets > totalDisponibleMois;
-
-  // Partie du nouveau solde qui n’est pas budgétée
-  const resteApresBudgets = totalDisponibleMois - totalBudgets;
 
   // ── soumission
   const handleSubmit = async () => {
@@ -92,7 +90,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   };
 
   // ──────────────────────────────────────────
-  // ÉTAPE 1 — Nouveau salaire
+  // ÉTAPE 1 — Nouveau solde
   // ──────────────────────────────────────────
   const Step1 = (
     <div className="flex flex-col gap-4">
@@ -101,8 +99,8 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
           📅 Initialisation du mois de {moisActuel}
         </p>
         <p className="text-xs text-rose-500">
-          Commencez par entrer votre salaire de ce mois. Le solde restant du mois
-          de {moisPrecedent} sera reporté automatiquement.
+          Commencez par entrer le solde du nouveau mois. Ce montant sera
+          enregistré dans le champ solde du mois courant.
         </p>
       </div>
 
@@ -113,7 +111,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
               💰 Solde restant de {moisPrecedent}
             </p>
             <p className="text-[10px] text-amber-500 mt-0.5">
-              Montant réel disponible en fin de mois précédent
+              Ce montant sera utilisé seulement à l’étape objectifs
             </p>
           </div>
           <span className="text-lg font-bold text-amber-700">
@@ -124,7 +122,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
 
       <div>
         <label className="text-xs text-pink-400 font-semibold mb-1 block">
-          💵 Votre salaire de {moisActuel}
+          💵 Votre solde de {moisActuel}
         </label>
         <SharedInput
           type="number"
@@ -139,31 +137,20 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
       {solde && (
         <div className="bg-pink-50 rounded-xl px-4 py-3 flex flex-col gap-2 text-xs">
           <p className="font-bold text-rose-900 mb-1">
-            📊 Total disponible pour {moisActuel}
+            📊 Solde initial de {moisActuel}
           </p>
 
           <div className="flex justify-between">
-            <span className="text-pink-400">
-              Solde reporté de {moisPrecedent}
-            </span>
-            <span className="font-semibold text-amber-600">
-              +{(soldeActuel ?? 0).toLocaleString("fr-FR")} DT
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-pink-400">
-              Salaire de {moisActuel}
-            </span>
+            <span className="text-pink-400">Solde du nouveau mois</span>
             <span className="font-semibold text-blue-600">
-              +{Number(solde).toLocaleString("fr-FR")} DT
+              {nouveauSolde.toLocaleString("fr-FR")} DT
             </span>
           </div>
 
           <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-            <span className="font-bold text-rose-900">Total disponible</span>
+            <span className="font-bold text-rose-900">Total enregistré en solde</span>
             <span className="font-bold text-emerald-600 text-sm">
-              {(Number(soldeActuel ?? 0) + Number(solde)).toLocaleString("fr-FR")} DT
+              {nouveauSolde.toLocaleString("fr-FR")} DT
             </span>
           </div>
         </div>
@@ -181,8 +168,8 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
           🏷️ Budgets de {moisActuel}
         </p>
         <p className="text-xs text-blue-500">
-          Définissez combien vous voulez allouer à chaque catégorie ce mois-ci.
-          Ces montants seront pris depuis votre total disponible du mois courant.
+          Répartissez le solde du nouveau mois entre vos catégories.
+          Le montant non budgété sera enregistré dans le champ reste.
         </p>
       </div>
 
@@ -197,7 +184,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
             </div>
             <SharedInput
               type="number"
-              value={budgets[cat._id] ?? cat.budget ?? ""}
+              value={budgets[cat._id] ?? ""}
               onChange={(e) =>
                 setBudgets((prev) => ({
                   ...prev,
@@ -213,27 +200,13 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
 
       <div className="bg-pink-50 rounded-xl px-4 py-3 flex flex-col gap-2 text-xs">
         <p className="font-bold text-rose-900 mb-1">
-          📊 Répartition de votre budget total de {moisActuel}
+          📊 Répartition du solde de {moisActuel}
         </p>
 
         <div className="flex justify-between">
-          <span className="text-pink-400">Montant reporté</span>
-          <span className="font-semibold text-amber-600">
-            {montantReporte.toLocaleString("fr-FR")} DT
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="text-pink-400">Salaire {moisActuel}</span>
+          <span className="text-pink-400">Solde du nouveau mois</span>
           <span className="font-semibold text-blue-600">
-            +{Number(solde || 0).toLocaleString("fr-FR")} DT
-          </span>
-        </div>
-
-        <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-          <span className="font-bold text-rose-900">Total disponible</span>
-          <span className="font-bold text-emerald-600 text-sm">
-            {totalDisponibleMois.toLocaleString("fr-FR")} DT
+            {nouveauSolde.toLocaleString("fr-FR")} DT
           </span>
         </div>
 
@@ -245,7 +218,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
         </div>
 
         <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-          <span className="font-bold text-rose-900">Reste non budgété</span>
+          <span className="font-bold text-rose-900">Reste</span>
           <span
             className={`font-bold text-sm ${
               resteApresBudgets < 0 ? "text-red-400" : "text-emerald-600"
@@ -257,7 +230,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
 
         {budgetsDepassentSolde && (
           <p className="text-xs text-red-400 bg-red-50 px-3 py-2 rounded-xl">
-            ⚠️ Le total des budgets dépasse le solde disponible
+            ⚠️ Le total des budgets dépasse le solde du nouveau mois
           </p>
         )}
       </div>
@@ -274,22 +247,17 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
           🎯 Épargne sur vos objectifs
         </p>
         <p className="text-xs text-emerald-600">
-          Voici le solde restant du mois précédent. Vous pouvez maintenant en
-          distribuer une partie sur vos objectifs avant de démarrer le nouveau mois.
+          Ici, vous distribuez uniquement le solde restant du mois précédent
+          sur vos objectifs. Ce montant n’affecte pas le solde du nouveau mois.
         </p>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-xs font-bold text-amber-700">
-              💰 Montant disponible pour objectifs
-            </p>
-            <p className="text-[10px] text-amber-500 mt-0.5">
-              Solde disponible du mois précédent
-            </p>
-          </div>
-          <span className="text-lg font-bold text-amber-700">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs">
+        <div className="flex justify-between">
+          <span className="text-amber-600 font-semibold">
+            💰 Économies de {moisPrecedent} à distribuer
+          </span>
+          <span className="font-bold text-amber-700">
             {montantDisponiblePourObjectifs.toLocaleString("fr-FR")} DT
           </span>
         </div>
@@ -364,7 +332,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
         </div>
 
         <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-          <span className="font-bold text-rose-900">Montant reporté</span>
+          <span className="font-bold text-rose-900">Montant restant de mars</span>
           <span
             className={`font-bold text-sm ${
               montantReporte < 0 ? "text-red-400" : "text-emerald-600"
@@ -375,7 +343,8 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
         </div>
 
         <p className="text-[10px] text-pink-300 mt-1">
-          💡 Ce montant sera reporté, puis additionné au salaire du nouveau mois.
+          💡 Ce montant correspond au solde restant du mois précédent après
+          distribution sur objectifs.
         </p>
       </div>
 

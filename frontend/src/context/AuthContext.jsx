@@ -15,22 +15,21 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
   //  CHECK AUTH AU DÉMARRAGE
   const checkAuth = async () => {
-    setIsCheckingAuth(true);
-    setError(null);
-    try {
-      const res = await axios.get(`${API_URL}/check-auth`);
-      setUser(res.data.user);
-      setIsAuthenticated(true);
-      return res.data.user;
-    } catch (err) {
-      setUser(null);
-      setIsAuthenticated(false);
-      return null;
-    } finally {
-      setIsCheckingAuth(false);
-    }
-  };
-
+  setIsCheckingAuth(true);
+  setError(null);
+  try {
+    const res = await axios.get(`${API_URL}/check-auth`);
+    setUser(res.data.user);
+    setIsAuthenticated(true);
+    return res.data.user;
+  } catch (err) {
+    setUser(null);
+    setIsAuthenticated(false);
+    return null;
+  } finally {
+    setIsCheckingAuth(false);
+  }
+};
   useEffect(() => {
     checkAuth();
 
