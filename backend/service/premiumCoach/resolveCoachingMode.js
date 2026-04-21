@@ -75,6 +75,39 @@ export function resolveCoachingMode(payload) {
 
   const preferredAdviceStyle   = userProfile.preferredAdviceStyle ?? "balanced";
 
+  const totalBudget            = snap.totalBudget ?? 0;
+  const projectedMonthlySpend  = snap.projectedMonthlySpend ?? 0;
+  const urgentGoalsCount       = meta.urgentGoalsCount ?? 0;
+
+  const hasMultipleOverspents  = overspentCategoriesCount >= 2;
+  const hasProjectedOverrun    = totalBudget > 0 && projectedMonthlySpend > totalBudget;
+  const hasUrgentGoal          = urgentGoalsCount > 0;
+
+  const categories = payload?.categories ?? [];
+
+  const overspentCategories = categories.filter(
+    (category) => Number(category?.overspentBy ?? 0) > 0
+  );
+
+  const maxOverspentAmount = overspentCategories.length
+    ? Math.max(...overspentCategories.map((category) => Number(category?.overspentBy ?? 0)))
+    : 0;
+
+  const totalOverspentAmount = overspentCategories.reduce(
+    (sum, category) => sum + Number(category?.overspentBy ?? 0),
+    0
+  );
+
+  const hasSevereOverspend = maxOverspentAmount >= 300;
+  const hasMassiveOverspend = maxOverspentAmount >= 500;
+  const hasHeavyTotalOverspend = totalOverspentAmount >= 500;
+
+  // reste faible par rapport aux jours restants
+  const hasTightRunway =
+    daysLeftInMonth > 0 &&
+    remainingAmount > 0 &&
+    (remainingAmount / daysLeftInMonth) <= 25;
+
   // ML (optionnel — null tant que non connecté)
   const personaCluster         = mlSignals.clusterLabel         ?? PERSONA_CLUSTERS.BALANCED_PLANNER;
   const recommendedPlanTemplate= mlSignals.recommendedPlanTemplate ?? PLAN_TEMPLATES.BALANCED_PLAN;
@@ -116,6 +149,67 @@ export function resolveCoachingMode(payload) {
   if (isCriticalEndOfMonth) {
     mode = COACHING_MODES.RECOVERY_STRICT;
   }
+  const tensionSignals = [
+  hasMultipleOverspents,
+  hasProjectedOverrun,
+  hasUrgentGoal,
+  hasTightRunway,
+].filter(Boolean).length;
+
+// Si le mode est encore BALANCED alors qu'il y a déjà des signaux de tension,
+// on monte d'un cran vers CONTROLLED_BALANCED.
+if (
+  mode === COACHING_MODES.BALANCED &&
+  (
+    hasMultipleOverspents ||
+    hasProjectedOverrun ||
+    hasUrgentGoal ||
+    hasTightRunway
+  )
+) {
+  mode = COACHING_MODES.CONTROLLED_BALANCED;
+}
+
+// Si plusieurs signaux se cumulent, on serre davantage.
+if (
+  tensionSignals >= 3 &&
+  (
+    mode === COACHING_MODES.BALANCED ||
+    mode === COACHING_MODES.CONTROLLED_BALANCED
+  )
+) {
+  mode = COACHING_MODES.RECOVERY;
+}
+
+// Cas plus sévère : dépassements multiples + projection au-dessus du budget
+// + très peu de marge journalière.
+if (
+  hasMultipleOverspents &&
+  hasProjectedOverrun &&
+  hasTightRunway
+) {
+  mode = COACHING_MODES.STRICT_CONTROL;
+}
+
+if (
+  hasMassiveOverspend &&
+  hasProjectedOverrun
+) {
+  mode = COACHING_MODES.STRICT_CONTROL;
+} else if (
+  hasSevereOverspend &&
+  (
+    hasMultipleOverspents ||
+    hasProjectedOverrun
+  )
+) {
+  mode = COACHING_MODES.RECOVERY;
+} else if (
+  hasHeavyTotalOverspend &&
+  mode === COACHING_MODES.CONTROLLED_BALANCED
+) {
+  mode = COACHING_MODES.RECOVERY;
+}
 
   // ── Overrides par persona ──────────────────────────────────────────────────
   if (personaCluster === PERSONA_CLUSTERS.GOAL_DRIVEN_UNSTABLE && hasActiveGoal && !isHighRisk) {
@@ -142,6 +236,7 @@ export function resolveCoachingMode(payload) {
     : "low";
 
   const communicationStyle = normalizeAdviceStyle(preferredAdviceStyle);
+  
 
   return {
     mode,
@@ -164,6 +259,16 @@ export function resolveCoachingMode(payload) {
       daysLeftInMonth,
       overspentCategoriesCount,
       isCriticalEndOfMonth,
+      maxOverspentAmount,
+      totalOverspentAmount,
+      hasSevereOverspend,
+      hasMassiveOverspend,
+      hasHeavyTotalOverspend,
+      hasMultipleOverspents,
+      hasProjectedOverrun,
+      hasUrgentGoal,
+      hasTightRunway,
+      tensionSignals,
     },
   };
 }

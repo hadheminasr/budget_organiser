@@ -10,6 +10,13 @@
 import { COACHING_MODES } from "./Premiumconstants.js";
 
 // ─── Utilitaires ─────────────────────────────────────────────────────────────
+const STRUCTURAL_GROUPS = new Set(["HOUSING", "BILLS", "SAVINGS"]);
+
+function isStructuralGroup(groupKey) {
+  return STRUCTURAL_GROUPS.has(groupKey);
+}
+
+
 
 function round2(n) {
   return Math.round((Number(n) || 0) * 100) / 100;
@@ -38,136 +45,189 @@ function buildCategoryActions(categories, rebalance, daysInPeriod) {
     (rebalance?.recommendations ?? []).map((r) => [String(r.categoryId), r])
   );
 
-  return categories.map((cat, index) => {
-    const rec          = recMap.get(String(cat.categoryId));
-    const recommended  = rec?.recommendedRemaining ?? cat.remaining ?? 0;
+  return categories
+    .map((cat, index) => {
+      const rec = recMap.get(String(cat.categoryId));
+      if (!rec) return null;
 
-    // Budget journalier = montant recommandé / jours restants
-    const dailyCap = daysInPeriod > 0
-      ? round2(recommended / daysInPeriod)
-      : round2(recommended);
+      if (
+        isStructuralGroup(rec.normalizedGroup) ||
+        rec.adviceMode === "structural"
+      ) {
+        if (
+          rec.normalizedGroup === "HOUSING" &&
+          rec.structuralAdvice === "high_housing_weight"
+        ) {
+          return {
+            priority: index + 1,
+            type: "structural_review",
+            category: rec.name,
+            categoryId: rec.categoryId,
+            icon: rec.icon || "💸",
+            color: rec.color || "#999999",
+            isOverspent: rec.overspent,
+            action: "review",
+            title: "Réévaluer le poids du logement",
+            description:
+              "Le logement représente une part importante du budget mensuel. Si cette charge reste durablement élevée, une option plus abordable pourrait améliorer votre marge financière.",
+            amount: null,
+            dailyAmount: null,
+          };
+        }
 
-    // Total semaine = dailyCap * 7 (ou jours restants si < 7)
-    const weeklyCap = round2(dailyCap * daysInPeriod);
+        return null;
+      }
 
-    const isOverspent = Boolean(cat.isOverspent);
-    const action      = rec?.action ?? (isOverspent ? "reduce" : "maintain");
+      const recommended = rec.recommendedRemaining ?? cat.remaining ?? 0;
+      const dailyCap =
+        daysInPeriod > 0 ? round2(recommended / daysInPeriod) : round2(recommended);
+      const weeklyCap = round2(dailyCap * daysInPeriod);
 
-    return {
-      priority:    index + 1,
-      type:        "category_cap",
-      category:    cat.name,
-      categoryId:  cat.categoryId,
-      icon:        cat.icon  || "💸",
-      color:       cat.color || "#999999",
-      isOverspent,
-      action,
-      title:       isOverspent
-        ? `Réduire "${cat.name}"`
-        : `Limiter "${cat.name}"`,
-      description: isOverspent
-        ? `Cette catégorie a déjà dépassé son budget de ${round2(cat.overspentBy)} DT. Ne plus dépenser sur "${cat.name}" cette semaine.`
-        : `Ne pas dépasser ${weeklyCap} DT sur "${cat.name}" cette semaine (${dailyCap} DT/jour).`,
-      amount:       weeklyCap,
-      dailyAmount:  dailyCap,
-    };
-  });
+      const isOverspent = Boolean(cat.isOverspent);
+      const action = rec.action ?? (isOverspent ? "reduce" : "maintain");
+
+      return {
+        priority: index + 1,
+        type: "category_cap",
+        category: rec.name,
+        categoryId: rec.categoryId,
+        icon: rec.icon || "💸",
+        color: rec.color || "#999999",
+        isOverspent,
+        action,
+        title:
+          action === "freeze"
+            ? `Geler "${rec.name}"`
+            : action === "reduce"
+              ? `Limiter "${rec.name}"`
+              : action === "increase"
+                ? `Ajuster "${rec.name}"`
+                : `Maintenir "${rec.name}"`,
+        description:
+          action === "freeze"
+            ? `Suspendez temporairement les dépenses sur "${rec.name}" cette semaine.`
+            : action === "reduce"
+              ? `Ne pas dépasser ${weeklyCap} DT sur "${rec.name}" cette semaine (${dailyCap} DT/jour).`
+              : action === "increase"
+                ? `Vous pouvez consacrer jusqu'à ${weeklyCap} DT à "${rec.name}" cette semaine (${dailyCap} DT/jour).`
+                : `Gardez vos dépenses de "${rec.name}" sous contrôle cette semaine.`,
+        amount: weeklyCap,
+        dailyAmount: dailyCap,
+      };
+    })
+    .filter(Boolean);
 }
-
 // ─── Texte de synthèse selon mode ────────────────────────────────────────────
+function buildNarrative({
+  mode,
+  score,
+  weeklyBudget,
+  daysInPeriod,
+  goalProtection,
+  rebalance,
+  remainingAmount,
+}) {
+  const spendableAmount = rebalance?.spendableAmount ?? remainingAmount ?? 0;
+  const goalStatus = goalProtection?.status ?? null;
 
-function buildNarrative({ mode, score, weeklyBudget, daysInPeriod, goalProtection }) {
-  const goalName     = goalProtection?.primaryGoal?.name ?? null;
-  const hasGoal      = Boolean(goalName);
-  const isEndOfMonth = daysInPeriod <= 5;
-
-  if (
-    mode === COACHING_MODES.RECOVERY_STRICT ||
-    mode === COACHING_MODES.RECOVERY_STRICT_SHARED
-  ) {
-    return isEndOfMonth
-      ? `Fin de mois critique — limitez vos dépenses au strict minimum. Budget restant : ${weeklyBudget} DT.`
-      : `Votre budget est sous pression (score ${score}/100). Concentrez-vous sur l'essentiel cette semaine.`;
-  }
-
-  if (
-    mode === COACHING_MODES.GOAL_FOCUSED ||
-    mode === COACHING_MODES.GOAL_FOCUSED_SHARED
-  ) {
-    return hasGoal
-      ? `Semaine orientée objectif : protégez votre épargne pour "${goalName}" et limitez les dépenses flexibles.`
-      : `Semaine orientée maîtrise budgétaire. Budget conseillé : ${weeklyBudget} DT.`;
-  }
+  const essentialCutToZero = (rebalance?.recommendations ?? []).some(
+    (r) =>
+      ["FOOD_HOME", "TRANSPORT", "CHILDREN"].includes(r.normalizedGroup) &&
+      Number(r.recommendedRemaining ?? 0) <= 0
+  );
 
   if (
-    mode === COACHING_MODES.CONTROLLED_BALANCED ||
-    mode === COACHING_MODES.CONTROLLED_BALANCED_SHARED
+    Number(remainingAmount ?? 0) <= 0 ||
+    Number(spendableAmount ?? 0) <= 0 ||
+    goalStatus === "blocked"
   ) {
-    return `Votre budget est maîtrisé mais demande de la vigilance. Budget hebdomadaire conseillé : ${weeklyBudget} DT.`;
+    return `Le budget disponible est épuisé. Limitez les dépenses non essentielles jusqu'au prochain reset et concentrez-vous sur les charges indispensables.`;
   }
 
-  return `Bonne trajectoire (score ${score}/100). Budget hebdomadaire conseillé : ${weeklyBudget} DT.`;
+  if (goalStatus === "fragile" || essentialCutToZero) {
+    return `Situation globalement stable, mais des arbitrages restent nécessaires. Budget conseillé pour les ${daysInPeriod} prochains jours : ${weeklyBudget} DT.`;
+  }
+
+  return `Bonne trajectoire (score ${score}/100). Budget conseillé pour les ${daysInPeriod} prochains jours : ${weeklyBudget} DT.`;
 }
-
 // ─── Export principal ─────────────────────────────────────────────────────────
 
 export function generateWeeklyPlan(payload, coachingMode, goalProtection, rebalance) {
-  // ── Lecture du payload ────────────────────────────────────────────────────
-  const snap       = payload?.financialSnapshot ?? {};
-  const categories = payload?.categories        ?? [];
-  const userProfile= payload?.userProfile       ?? {};
+  const snap = payload?.financialSnapshot ?? {};
+  const categories = payload?.categories ?? [];
+  const userProfile = payload?.userProfile ?? {};
 
-  const remainingAmount          = snap.remainingAmount          ?? 0;
-  const daysLeftInMonth          = snap.daysLeftInMonth          ?? 30;
-  const score                    = snap.score                    ?? 50;
-  const riskLevel                = snap.riskLevel                ?? "medium";
+  const remainingAmount = snap.remainingAmount ?? 0;
+  const daysLeftInMonth = snap.daysLeftInMonth ?? 30;
+  const score = snap.score ?? 50;
+  const riskLevel = snap.riskLevel ?? "medium";
   const overspentCategoriesCount = snap.overspentCategoriesCount ?? 0;
 
-  const mode                = coachingMode?.mode ?? COACHING_MODES.BALANCED;
-  const personaCluster      = coachingMode?.metadata?.personaCluster ?? "balanced_planner";
-  const preferredAdviceStyle= userProfile.preferredAdviceStyle   ?? "balanced";
+  const mode = coachingMode?.mode ?? COACHING_MODES.BALANCED;
+  const personaCluster =
+    coachingMode?.metadata?.personaCluster ?? "balanced_planner";
+  const preferredAdviceStyle =
+    userProfile.preferredAdviceStyle ?? "balanced";
 
-  // ── Période effective : 7 jours ou fin de mois si < 7 ────────────────────
-  const daysInPeriod  = Math.min(7, Math.max(1, daysLeftInMonth));
-  const isLastWeek    = daysLeftInMonth <= 7;
+  const daysInPeriod = Math.min(7, Math.max(1, daysLeftInMonth));
+  const isLastWeek = daysLeftInMonth <= 7;
 
-  // ── Budget hebdomadaire conseillé ─────────────────────────────────────────
-  // = spendableAmount / semaines restantes (prorata des jours)
   const spendableAmount = rebalance?.spendableAmount ?? remainingAmount;
-  const weeksRemaining  = daysLeftInMonth > 0
-    ? Math.max(1, daysLeftInMonth / 7)
-    : 1;
-  const weeklyBudget    = round2(spendableAmount / weeksRemaining);
+  const weeksRemaining =
+    daysLeftInMonth > 0 ? Math.max(1, daysLeftInMonth / 7) : 1;
+  const weeklyBudget = round2(spendableAmount / weeksRemaining);
 
-  // ── Sélection des catégories prioritaires ─────────────────────────────────
-  const topCats   = pickTopPriorityCategories(categories, 3);
-  const catActions= buildCategoryActions(topCats, rebalance, daysInPeriod);
+  const topCats = pickTopPriorityCategories(categories, 3);
+  const catActions = buildCategoryActions(topCats, rebalance, daysInPeriod);
 
-  // ── Action de protection objectif (si applicable) ─────────────────────────
   const actions = [...catActions];
+  const noSpendableMargin =
+  Number(rebalance?.spendableAmount ?? remainingAmount) <= 0;
 
+if (noSpendableMargin) {
+  actions.unshift({
+    priority: 1,
+    type: "zero_budget_guard",
+    action: "freeze",
+    title: "Passer en dépenses essentielles uniquement",
+    description:
+      "Le budget disponible est épuisé. Évitez toute dépense non essentielle jusqu'au prochain reset et limitez-vous aux charges indispensables.",
+    amount: 0,
+    dailyAmount: 0,
+  });
+}
   const protectedAmount = goalProtection?.protectedAmount ?? 0;
   if (protectedAmount > 0 && goalProtection?.hasActiveGoal) {
     const goalName = goalProtection?.primaryGoal?.name ?? "l'objectif";
     actions.push({
-      priority:    actions.length + 1,
-      type:        "goal_protection",
-      title:       `Réserver pour "${goalName}"`,
+      priority: actions.length + 1,
+      type: "goal_protection",
+      title: `Réserver pour "${goalName}"`,
       description: `Préservez ${protectedAmount} DT ce mois-ci pour alimenter "${goalName}" lors du prochain reset. Ne touchez pas à cette réserve.`,
-      amount:      protectedAmount,
+      amount: protectedAmount,
       dailyAmount: null,
     });
   }
 
-  // ── Narrative ─────────────────────────────────────────────────────────────
+  const normalizedActions = actions.map((item, index) => ({
+  ...item,
+  priority: index + 1,
+}));
+
   const summary = buildNarrative({
-    mode, score, weeklyBudget, daysInPeriod, goalProtection,
+      mode,
+      score,
+      weeklyBudget,
+      daysInPeriod,
+      goalProtection,
+      rebalance,
+      remainingAmount,
   });
 
   return {
     header: {
-      coachingMode:       mode,
-      coachingModeLabel:  coachingMode?.label ?? "",
+      coachingMode: mode,
+      coachingModeLabel: coachingMode?.label ?? "",
       riskLevel,
       personaCluster,
       preferredAdviceStyle,
@@ -175,17 +235,16 @@ export function generateWeeklyPlan(payload, coachingMode, goalProtection, rebala
 
     context: {
       score,
-      remainingAmount:          round2(remainingAmount),   // lu depuis payload
-      spendableAmount:          round2(spendableAmount),
-      daysLeftInMonth,                                     // lu depuis payload
+      remainingAmount: round2(remainingAmount),
+      spendableAmount: round2(spendableAmount),
+      daysLeftInMonth,
       daysInPeriod,
       isLastWeek,
       weeklyBudget,
       overspentCategoriesCount,
     },
 
-    actions: actions.slice(0, coachingMode?.maxActions ?? 4),
-
+    actions: normalizedActions.slice(0, coachingMode?.maxActions ?? 4),
     summary,
   };
 }
