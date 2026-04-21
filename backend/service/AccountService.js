@@ -7,26 +7,28 @@ import { Note } from "../models/Note.js";
 import { Operation } from "../models/Operation.js";
 import { Category } from "../models/Category.js";
 import { ActivityLogService } from "./ActivityLogService.js";
+import {
+  computeBudgetCompliance,
+  computeHealthScore,
+} from "../utils/buildHealthScore.js";
+
 
 function getReportPeriods() {
   const now = new Date();
 
-  const currentMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const reportMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  const twoMonthsAgoDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
 
   const toMonthKey = (date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
   return {
-    reportMonthDate: currentMonthDate,
+    reportMonthDate,
     previousMonthDate,
-    twoMonthsAgoDate,
-    reportMonth: toMonthKey(currentMonthDate),
+    reportMonth: toMonthKey(reportMonthDate),
     previousMonth: toMonthKey(previousMonthDate),
-    twoMonthsAgo: toMonthKey(twoMonthsAgoDate),
   };
-};
+}
 function computeMonthSummary({ operations, categories, nbNotes = 0 }) {
   const nbOperations = operations.length;
   const totalDepense = operations.reduce((sum, op) => sum + Number(op.amount || 0), 0);
@@ -95,13 +97,16 @@ function buildGoalsWidget(goalsActifs) {
     };
   });
 };
-async function buildCategoriesHistorique(accountId, categories) {
+async function buildCategoriesHistorique(accountId, categories, periods) {
+  const allowedMonths = [periods.previousMonth, periods.reportMonth];
+
   return Promise.all(
     categories.map(async (cat) => {
       const opsOfCat = await Operation.find({
         IdAccount: accountId,
         archived: true,
         IdCategory: cat._id,
+        month: { $in: allowedMonths },
       });
 
       const historyByMonth = opsOfCat.reduce((acc, op) => {
@@ -110,9 +115,10 @@ async function buildCategoriesHistorique(accountId, categories) {
         return acc;
       }, {});
 
-      const history = Object.entries(historyByMonth)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([m, depense]) => ({
+      const history = allowedMonths.map((m) => {
+        const depense = historyByMonth[m] ?? 0;
+
+        return {
           month: m,
           label: new Date(`${m}-01`).toLocaleDateString("fr-FR", {
             month: "short",
@@ -121,7 +127,8 @@ async function buildCategoriesHistorique(accountId, categories) {
           depense,
           budget: cat.budget ?? 0,
           statut: depense <= (cat.budget ?? 0) ? "respecte" : "depasse",
-        }));
+        };
+      });
 
       const moyenne =
         history.length > 0
@@ -139,7 +146,7 @@ async function buildCategoriesHistorique(accountId, categories) {
       };
     })
   );
-};
+}
 async function buildReportBase(accountId, periods) {
   const account = await Account.findById(accountId);
   if (!account) throw new Error("Account not found");
@@ -163,22 +170,21 @@ async function buildReportBase(accountId, periods) {
     month: periods.previousMonth,
   });
 
-  const twoMonthsAgoOperations = await Operation.find({
-    IdAccount: accountId,
-    archived: true,
-    month: periods.twoMonthsAgo,
-  });
+  
 
   const currentMonthFirstDay = new Date(
     periods.reportMonthDate.getFullYear(),
     periods.reportMonthDate.getMonth(),
     1
   );
+
   const currentMonthLastDay = new Date(
-    periods.reportMonthDate.getFullYear(),
-    periods.reportMonthDate.getMonth() + 1,
-    0
-  );
+  periods.reportMonthDate.getFullYear(),
+  periods.reportMonthDate.getMonth() + 1,
+  0,
+  23, 59, 59, 999
+);
+
 
   const previousMonthFirstDay = new Date(
     periods.previousMonthDate.getFullYear(),
@@ -186,10 +192,11 @@ async function buildReportBase(accountId, periods) {
     1
   );
   const previousMonthLastDay = new Date(
-    periods.previousMonthDate.getFullYear(),
-    periods.previousMonthDate.getMonth() + 1,
-    0
-  );
+  periods.previousMonthDate.getFullYear(),
+  periods.previousMonthDate.getMonth() + 1,
+  0,
+  23, 59, 59, 999
+);
 
   const currentNbNotes = await Note.countDocuments({
     IdAccount: accountId,
@@ -226,11 +233,7 @@ async function buildReportBase(accountId, periods) {
     nbNotes: previousNbNotes,
   });
 
-  const twoMonthsAgoSummary = computeMonthSummary({
-    operations: twoMonthsAgoOperations,
-    categories,
-    nbNotes: 0,
-  });
+ 
 
   const plusGrosseDepense =
     operations.length > 0
@@ -291,33 +294,35 @@ async function buildReportBase(accountId, periods) {
     },
   ];
 
-  const categoriesHistorique = await buildCategoriesHistorique(accountId, categories);
+  const categoriesHistorique = await buildCategoriesHistorique(
+  accountId,
+  categories,
+  periods
+);
   const goalsWidget = buildGoalsWidget(goalsActifs);
 
   return {
-    accountId,
-    reportMonth: periods.reportMonth,
-    totalCats,
-    totalBudget,
-    categories,
-    operations,
-    previousOperations,
-    twoMonthsAgoOperations,
-    currentSummary,
-    previousSummary,
-    twoMonthsAgoSummary,
-    objectifsActifs,
-    plusGrosseDepense: plusGrosseDepense
-      ? {
-          amount: plusGrosseDepense.amount,
-          category: plusGrosseDepense.IdCategory?.name ?? "—",
-        }
-      : null,
-    lineChart,
-    historiqueTable,
-    categoriesHistorique,
-    goalsWidget,
-  };
+  accountId,
+  reportMonth: periods.reportMonth,
+  totalCats,
+  totalBudget,
+  categories,
+  operations,
+  previousOperations,
+  currentSummary,
+  previousSummary,
+  objectifsActifs,
+  plusGrosseDepense: plusGrosseDepense
+    ? {
+        amount: plusGrosseDepense.amount,
+        category: plusGrosseDepense.IdCategory?.name ?? "—",
+      }
+    : null,
+  lineChart,
+  historiqueTable,
+  categoriesHistorique,
+  goalsWidget,
+};
 };
 function buildBIBlock(base, periods) {
   const {
@@ -328,7 +333,6 @@ function buildBIBlock(base, periods) {
     goalsWidget,
     currentSummary,
     previousSummary,
-    twoMonthsAgoSummary,
   } = base;
 
   const fmt = (n) => Math.round(n);
@@ -340,8 +344,12 @@ function buildBIBlock(base, periods) {
     return improved ? "up" : "down";
   };
 
-  const currentLabel = periods.previousMonthDate.toLocaleDateString("fr-FR", { month: "long" });
-  const previousLabel = periods.twoMonthsAgoDate.toLocaleDateString("fr-FR", { month: "long" });
+  const currentLabel = periods.reportMonthDate.toLocaleDateString("fr-FR", {
+    month: "long",
+  });
+  const previousLabel = periods.previousMonthDate.toLocaleDateString("fr-FR", {
+    month: "long",
+  });
 
   const execRate = pct(currentSummary.totalDepense, totalBudget);
   const prevExecRate = pct(previousSummary.totalDepense, totalBudget);
@@ -422,42 +430,51 @@ function buildBIBlock(base, periods) {
       value: `${execRate}%`,
       delta: `${sign(execDelta)}${Math.abs(execDelta)} pts`,
       deltaType: deltaType(execRate, prevExecRate, true),
-      note: `vs ${prevExecRate}% en ${currentLabel}`,
+      note: `vs ${prevExecRate}% en ${previousLabel}`,
     },
     {
       label: "Taux d'épargne",
       value: `${savRate}%`,
       delta: `${sign(savDelta)}${Math.abs(savDelta)} pts`,
       deltaType: deltaType(savRate, prevSavRate),
-      note: `vs ${prevSavRate}% en ${currentLabel}`,
+      note: `vs ${prevSavRate}% en ${previousLabel}`,
     },
     {
       label: "Dépense moyenne / jour",
       value: `${avgPerDay} DT`,
       delta: `${sign(avgPerDay - prevAvgPerDay)}${Math.abs(avgPerDay - prevAvgPerDay)} DT`,
       deltaType: deltaType(avgPerDay, prevAvgPerDay, true),
-      note: `vs ${prevAvgPerDay} DT en ${currentLabel}`,
+      note: `vs ${prevAvgPerDay} DT en ${previousLabel}`,
     },
     {
       label: "Catégories sous contrôle",
       value: `${currentSummary.catsNonDepassees} / ${totalCats}`,
-      delta: `${sign(currentSummary.catsNonDepassees - previousSummary.catsNonDepassees)}${Math.abs(currentSummary.catsNonDepassees - previousSummary.catsNonDepassees)} cat.`,
-      deltaType: deltaType(currentSummary.catsNonDepassees, previousSummary.catsNonDepassees),
-      note: `vs ${previousSummary.catsNonDepassees}/${totalCats} en ${currentLabel}`,
+      delta: `${sign(currentSummary.catsNonDepassees - previousSummary.catsNonDepassees)}${Math.abs(
+        currentSummary.catsNonDepassees - previousSummary.catsNonDepassees
+      )} cat.`,
+      deltaType: deltaType(
+        currentSummary.catsNonDepassees,
+        previousSummary.catsNonDepassees
+      ),
+      note: `vs ${previousSummary.catsNonDepassees}/${totalCats} en ${previousLabel}`,
     },
     {
       label: "Solde libéré fin de mois",
       value: `${soldeFinal.toLocaleString("fr-TN")} DT`,
-      delta: `${sign(soldeFinal - prevSoldeFinal)}${Math.abs(soldeFinal - prevSoldeFinal).toLocaleString("fr-TN")} DT`,
+      delta: `${sign(soldeFinal - prevSoldeFinal)}${Math.abs(
+        soldeFinal - prevSoldeFinal
+      ).toLocaleString("fr-TN")} DT`,
       deltaType: deltaType(soldeFinal, prevSoldeFinal),
-      note: `vs ${prevSoldeFinal.toLocaleString("fr-TN")} DT en ${currentLabel}`,
+      note: `vs ${prevSoldeFinal.toLocaleString("fr-TN")} DT en ${previousLabel}`,
     },
     {
       label: "Dépassements catégories",
       value: `${catsDepassees}`,
-      delta: `${sign(catsDepassees - prevCatsDepassees)}${Math.abs(catsDepassees - prevCatsDepassees)}`,
+      delta: `${sign(catsDepassees - prevCatsDepassees)}${Math.abs(
+        catsDepassees - prevCatsDepassees
+      )}`,
       deltaType: deltaType(catsDepassees, prevCatsDepassees, true),
-      note: `vs ${prevCatsDepassees} en ${currentLabel}`,
+      note: `vs ${prevCatsDepassees} en ${previousLabel}`,
     },
     {
       label: "Objectifs actifs",
@@ -469,9 +486,11 @@ function buildBIBlock(base, periods) {
     {
       label: "Score BI global",
       value: `${scoreBiGlobal} / 100`,
-      delta: `${sign(scoreBiGlobal - prevScoreBiGlobal)}${Math.abs(scoreBiGlobal - prevScoreBiGlobal)} pts`,
+      delta: `${sign(scoreBiGlobal - prevScoreBiGlobal)}${Math.abs(
+        scoreBiGlobal - prevScoreBiGlobal
+      )} pts`,
       deltaType: deltaType(scoreBiGlobal, prevScoreBiGlobal),
-      note: `vs ${prevScoreBiGlobal} en ${currentLabel}`,
+      note: `vs ${prevScoreBiGlobal} en ${previousLabel}`,
     },
   ];
 
@@ -495,16 +514,15 @@ function buildBIBlock(base, periods) {
     }))
     .sort((a, b) => b.reel / b.budget - a.reel / a.budget);
 
-  // radar = previousMonth vs twoMonthsAgo
   const radarCategories = categories.filter((c) => (c.budget ?? 0) > 0);
 
   const radarData = {
     labels: radarCategories.map((c) => c.name),
     current: radarCategories.map((c) =>
-      pct(previousSummary.depenseParCat[c._id.toString()] ?? 0, c.budget)
+      pct(currentSummary.depenseParCat[c._id.toString()] ?? 0, c.budget)
     ),
     previous: radarCategories.map((c) =>
-      pct(twoMonthsAgoSummary.depenseParCat[c._id.toString()] ?? 0, c.budget)
+      pct(previousSummary.depenseParCat[c._id.toString()] ?? 0, c.budget)
     ),
     currentLabel,
     previousLabel,
@@ -517,14 +535,18 @@ function buildBIBlock(base, periods) {
       type: "positive",
       text: `Taux d'épargne de **${savRate}%** — ${
         savDelta > 0
-          ? `en hausse de **+${savDelta} pts** vs ${currentLabel}`
-          : `stable vs ${currentLabel}`
+          ? `en hausse de **+${savDelta} pts** vs ${previousLabel}`
+          : `stable vs ${previousLabel}`
       }. Solde libéré : **${soldeFinal.toLocaleString("fr-TN")} DT**.`,
     });
   } else {
     insights.push({
       type: "warning",
-      text: `Le taux d'épargne recule de **${Math.abs(savDelta)} pts** vs ${currentLabel} (${prevSavRate}% → ${savRate}%). Budget libéré : **${soldeFinal.toLocaleString("fr-TN")} DT**.`,
+      text: `Le taux d'épargne recule de **${Math.abs(
+        savDelta
+      )} pts** vs ${previousLabel} (${prevSavRate}% → ${savRate}%). Budget libéré : **${soldeFinal.toLocaleString(
+        "fr-TN"
+      )} DT**.`,
     });
   }
 
@@ -535,7 +557,9 @@ function buildBIBlock(base, periods) {
       const pctEcart = pct(ecart, v.budget);
       insights.push({
         type: "negative",
-        text: `**${v.name}** dépasse son budget de **+${ecart.toLocaleString("fr-TN")} DT (+${pctEcart}%)**. Consommation : ${pct(v.reel, v.budget)}% du budget alloué.`,
+        text: `**${v.name}** dépasse son budget de **+${ecart.toLocaleString(
+          "fr-TN"
+        )} DT (+${pctEcart}%)**. Consommation : ${pct(v.reel, v.budget)}% du budget alloué.`,
       });
     });
   }
@@ -548,7 +572,10 @@ function buildBIBlock(base, periods) {
     const libere = bestCat.budget - bestCat.reel;
     insights.push({
       type: "positive",
-      text: `**${bestCat.name}** est la catégorie la mieux maîtrisée — consommation à **${pct(bestCat.reel, bestCat.budget)}%**, soit **${libere.toLocaleString("fr-TN")} DT libérés** sur ce poste.`,
+      text: `**${bestCat.name}** est la catégorie la mieux maîtrisée — consommation à **${pct(
+        bestCat.reel,
+        bestCat.budget
+      )}%**, soit **${libere.toLocaleString("fr-TN")} DT libérés** sur ce poste.`,
     });
   }
 
@@ -556,12 +583,18 @@ function buildBIBlock(base, periods) {
     const depassement = currentSummary.totalDepense - totalBudget;
     insights.push({
       type: "negative",
-      text: `Le budget global a été **dépassé de ${depassement.toLocaleString("fr-TN")} DT** (exécution à **${execRate}%**). C'est ${execRate > prevExecRate ? "pire" : "mieux"} qu'en ${currentLabel} (${prevExecRate}%).`,
+      text: `Le budget global a été **dépassé de ${depassement.toLocaleString(
+        "fr-TN"
+      )} DT** (exécution à **${execRate}%**). C'est ${
+        execRate > prevExecRate ? "pire" : "mieux"
+      } qu'en ${previousLabel} (${prevExecRate}%).`,
     });
   } else if (execRate <= 80) {
     insights.push({
       type: "positive",
-      text: `Excellente maîtrise globale — seulement **${execRate}% du budget consommé**, soit **${100 - execRate}% de marge** préservée ce mois.`,
+      text: `Excellente maîtrise globale — seulement **${execRate}% du budget consommé**, soit **${
+        100 - execRate
+      }% de marge** préservée ce mois.`,
     });
   }
 
@@ -900,7 +933,7 @@ async resetMensuel(accountId, userId, data) {
   const account = await Account.findById(accountId);
   if (!account) throw new Error("Compte introuvable");
 
-  const member = account.members.find(
+  /*const member = account.members.find(
     (m) => String(m.userId) === String(userId)
   );
 
@@ -910,7 +943,7 @@ async resetMensuel(accountId, userId, data) {
 
   if (member.role !== "gérant") {
     throw new Error("Accès refusé : seul le gérant peut réinitialiser le mois");
-  }
+  }*/
 
 
 
@@ -961,21 +994,29 @@ async resetMensuel(accountId, userId, data) {
   }
 
   // ── distribuer sur les objectifs (depuis solde de mars)
-  if (data.distributions?.length > 0) {
-    for (const item of data.distributions) {
-      const goal = await Goal.findById(item.goalId);
-      if (!goal) continue;
+  // ── distribuer sur les objectifs
+if (Array.isArray(data.distributions) && data.distributions.length > 0) {
+  for (const item of data.distributions) {
+    if (!item?.goalId) continue;
 
-      const ancienMontant  = Number(goal.currentAmount ?? 0);
-      const nouveauMontant = ancienMontant + Number(item.amount || 0);
-      const objectifAtteint = nouveauMontant >= Number(goal.targetAmount ?? 0);
+    const amount = Number(item.amount ?? 0);
+    if (amount <= 0) continue;
 
-      await Goal.findByIdAndUpdate(item.goalId, {
-        currentAmount: nouveauMontant,
-        isAchieved:    objectifAtteint,
-      });
-    }
+    const goal = await Goal.findById(item.goalId);
+    if (!goal) continue;
+
+    const ancienMontant = Number(goal.currentAmount ?? 0);
+    const targetAmount = Number(goal.targetAmount ?? 0);
+
+    const nouveauMontant = ancienMontant + amount;
+    const objectifAtteint = nouveauMontant >= targetAmount;
+
+    await Goal.findByIdAndUpdate(item.goalId, {
+      currentAmount: nouveauMontant,
+      isAchieved: objectifAtteint,
+    });
   }
+}
 
   // ── mettre à jour le compte
   await Account.findByIdAndUpdate(accountId, {

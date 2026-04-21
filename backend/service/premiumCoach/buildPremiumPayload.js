@@ -1,11 +1,7 @@
-// backend/service/premiumCoach/buildPremiumPayload.js
-// ─────────────────────────────────────────────────────────────────────────────
 // Construit le payload unifié qui sert de SOURCE DE VÉRITÉ pour tous les
 // moteurs premium. Chaque valeur est calculée ICI et UNE SEULE FOIS.
 // Les moteurs (resolveCoachingMode, budgetRebalancer, etc.) lisent ce payload
 // sans jamais recalculer ni redériver une valeur.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import mongoose from "mongoose";
 import { Account }   from "../../models/Account.js";
 import { Category }  from "../../models/Category.js";
@@ -21,15 +17,19 @@ import {
   THRESHOLDS,
 } from "./Premiumconstants.js";
 
-// ─── Utilitaires ─────────────────────────────────────────────────────────────
-
+//  Utilitaires 
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
 
+
+//exemple : getMonthBounds(new Date("2026-04-15"))
+// start = 2026-04-01
+// end   = 2026-05-01
 function getMonthBounds(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
   const end   = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   return { start, end };
 }
+
 
 function getDaysLeftInMonth(date = new Date()) {
   const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -40,27 +40,22 @@ function getDaysElapsedInMonth(date = new Date()) {
   return date.getDate() - 1; // jour 1 = 0 jours écoulés
 }
 
-// ─── Normalisation du style de conseil ───────────────────────────────────────
 
-function normalizeAdviceStyle(raw) {
-  const v = String(raw || "").trim().toLowerCase();
-  if (v.includes("strict") || v.includes("ferme") || v.includes("bloquant"))
-    return ADVICE_STYLES.STRICT;
-  if (v.includes("direct") || v.includes("court") || v.includes("actionnable"))
-    return ADVICE_STYLES.DIRECT;
-  if (v.includes("doux") || v.includes("soft") || v.includes("calm"))
-    return ADVICE_STYLES.SOFT;
-  if (v.includes("motivant") || v.includes("encourageant") || v.includes("motivating"))
-    return ADVICE_STYLES.MOTIVATING;
-  if (v.includes("detail") || v.includes("détail"))
-    return ADVICE_STYLES.DETAILED;
-  if (v.includes("concis") || v.includes("concise"))
-    return ADVICE_STYLES.CONCISE;
-  return ADVICE_STYLES.MOTIVATING;
+//Normalisation du style de conseil
+export function normalizeAdviceStyle(raw) {
+  const allowed = [
+    ADVICE_STYLES.DIRECT,
+    ADVICE_STYLES.MOTIVATING,
+    ADVICE_STYLES.DETAILED,
+    ADVICE_STYLES.CONCISE,
+  ];
+
+  return allowed.includes(raw) ? raw : ADVICE_STYLES.DIRECT;
 }
 
-// ─── Priorité d'une catégorie ─────────────────────────────────────────────────
-
+// Priorité d'une catégorie
+// Les catégories essentielles (housing, bills, savings) ont une priorité plus élevée pour les conseils et le rééquilibrage.
+//exemple : buildCategoryPriority("HOUSING") → { isEssential: true, priorityScore: 5 } 
 function buildCategoryPriority(normalizedGroup = "OTHER") {
   if (ESSENTIAL_GROUPS.includes(normalizedGroup))
     return { isEssential: true,  priorityScore: 5 };
@@ -69,9 +64,8 @@ function buildCategoryPriority(normalizedGroup = "OTHER") {
   return { isEssential: false, priorityScore: 3 };
 }
 
-// ─── Calcul des dépenses par catégorie ───────────────────────────────────────
+// Calcul des dépenses par catégorie
 // Ajoute spentRate (0-100) utilisé par WeeklyPlanGenerator pour trier
-
 function computeSpentByCategory(categories = [], operations = []) {
   return categories.map((cat) => {
     const categoryId = String(cat._id);
@@ -278,6 +272,7 @@ export async function buildPremiumPayload(accountId) {
 
   // ── Chargement DB ──────────────────────────────
   const account = await Account.findById(accountId).lean();
+  console.log("Account trouvé :", account ? "OUI" : "NON");
   if (!account) throw new Error("Compte introuvable");
 
   const [categories, goals, operations] = await Promise.all([
@@ -343,10 +338,10 @@ export async function buildPremiumPayload(accountId) {
 
     userProfile: profile,
 
-    // ─ Source de vérité financière ─────────────────
+    // Source de vérité financière 
     financialSnapshot: {
       ...financialSnapshotBase,
-      score:      unifiedScore.score,
+      score:unifiedScore.score,
       scoreTrend: unifiedScore.scoreTrend,
       riskLevel,
       // daysLeftInMonth est déjà dans financialSnapshotBase — pas de doublon
