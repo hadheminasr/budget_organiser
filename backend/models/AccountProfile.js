@@ -14,78 +14,126 @@ const AccountProfileSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-
+    
+    // 1- Contexte général du compte
     householdSituation: {
       type: String,
-      enum: ["alone", "couple", "family", "shared"],
+      enum: ["alone", "couple", "family", "shared_roommates"],
       required: true,
     },
 
     housingType: {
       type: String,
-      enum: ["parents", "rent", "owner", "other"],
+      enum: ["rent", "owner", "family_home", "other"],
       required: true,
     },
 
-    hasChildren: {
-      type: Boolean,
-      default: false,
+    budgetCapacityLevel: {
+      type: String,
+      enum: ["low", "moderate", "comfortable"],
+      required: true,
     },
 
-    hasCar: {
-      type: Boolean,
-      default: false,
+    accountIncomeRegularity: {
+      type: String,
+      enum: ["stable", "variable", "irregular"],
+      required: true,
     },
 
+    // 2- Habitudes financières
     eatingOutFrequency: {
       type: String,
-      enum: ["rarely", "sometimes", "often","never"],
+      enum: ["rarely", "sometimes", "often"],
+      required: true,
+    },
+
+    savingHabit: {
+      type: String,
+      enum: ["never", "rarely", "sometimes", "regularly"],
       required: true,
     },
 
     mainDifficulty: {
       type: String,
       enum: [
-        "leisure",
-        "food",
-        "unexpected",
-        "transport",
-        "shopping",
         "saving",
-        "other",
+        "overspending",
+        "irregular_expenses",
+        "tracking",
+        "planning",
+        "none",
       ],
-      required: true,
-    },
-
-    savingHabit: {
-      type: String,
-      enum: ["regularly", "sometimes", "rarely", "never"],
       required: true,
     },
 
     mainGoal: {
       type: String,
       enum: [
-        "control_spending",
-        "reduce_overspending",
         "save_more",
-        "reach_goal",
-        "plan_better",
+        "reduce_expenses",
+        "stabilize_budget",
+        "prepare_project",
+        "repay_debt",
+        "gain_visibility",
       ],
       required: true,
     },
 
+    // 3- Style de conseil premium
     adviceStyle: {
       type: String,
-      enum: ["direct", "motivating", "detailed", "alerts_only"],
+      enum: ["direct", "motivating", "detailed", "concise"],
       required: true,
     },
 
-    notes: {
+    // 4- Contraintes du compte
+
+    transportContext: {
       type: String,
-      default: "",
-      trim: true,
-      maxlength: 300,
+      enum: ["none", "public_transport", "one_car", "multiple_cars"],
+      default: "none",
+    },
+
+    familyChargeLevel: {
+      type: String,
+      enum: ["none", "light", "moderate", "high"],
+      default: "none",
+    },
+
+    financialPressureSources: {
+      type: [{
+        type: String,
+        enum: [
+          "housing",
+          "food",
+          "transport",
+          "children",
+          "health",
+          "shopping",
+          "loans",
+          "education",
+          "other",
+        ],
+      }],
+    default: [],
+  },
+
+    setsBudget: {
+      type: String,
+      enum: ["no", "sometimes", "yes"],
+      required: true,
+    },
+
+    tracksExpenses: {
+      type: String,
+      enum: ["no", "sometimes", "yes"],
+      required: true,
+    },
+
+    hasFinancialGoal: {
+      type: String,
+      enum: ["no", "yes"],
+      required: true,
     },
   },
   { timestamps: true }

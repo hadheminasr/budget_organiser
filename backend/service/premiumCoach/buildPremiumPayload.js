@@ -8,6 +8,9 @@ import { Category }  from "../../models/Category.js";
 import { Goal }      from "../../models/Goal.js";
 import { Operation } from "../../models/Operation.js";
 import { User }      from "../../models/User.js";
+import { getPersonaSignal } from "../ML/personaService.js";;
+import { getStressSignal } from "../ML/stressService.js";
+
 
 import {
   RISK_SCORE_THRESHOLDS,
@@ -288,8 +291,8 @@ export async function buildPremiumPayload(accountId) {
   ]);
 
   let ownerUser = null;
-  if (Array.isArray(account.users) && account.users.length > 0) {
-    ownerUser = await User.findById(account.users[0]).lean();
+  if (Array.isArray(account.Users) && account.Users.length > 0) {
+    ownerUser = await User.findById(account.Users[0]).lean();
   }
 
   // ── Calculs ────────────────────────────────────
@@ -306,7 +309,7 @@ export async function buildPremiumPayload(accountId) {
     (sum, g) => sum + Number(g.remainingToTarget || 0), 0
   );
 
-  const accountType = Array.isArray(account.users) && account.users.length > 1
+  const accountType = Array.isArray(account.Users) && account.Users.length > 1
     ? "shared"
     : "personal";
 
@@ -319,8 +322,39 @@ export async function buildPremiumPayload(accountId) {
     paysRent:            Boolean(ownerUser?.paysRent     || false),
     hasRegularIncome:    Boolean(ownerUser?.hasRegularIncome ?? true),
     accountType,
-    membersCount:        Array.isArray(account.users) ? account.users.length : 0,
+    membersCount:        Array.isArray(account.Users) ? account.Users.length : 0,
   };
+
+  let personaSignal = null;
+
+  try {
+    personaSignal = await getPersonaSignal(accountId);
+    console.log("[Persona ML] signal =", personaSignal);
+  } catch (err) {
+    console.error("[Persona ML] prediction failed:", err.message);
+  }
+
+    let stressSignal = null;
+
+  try {
+    stressSignal = await getStressSignal({
+      financialSnapshot: {
+        ...financialSnapshotBase,
+        score: unifiedScore.score,
+        scoreTrend: unifiedScore.scoreTrend,
+        riskLevel,
+      },
+      userProfile: profile,
+      goals: mappedGoals,
+      goalProtection: {
+        status: "not_computed_yet",
+      },
+    });
+
+    console.log("[Stress ML] signal =", stressSignal);
+  } catch (err) {
+    console.error("[Stress ML] prediction failed:", err.message);
+  }
 
   // ── Payload final ──────────────────────────────
   // RÈGLE : tous les moteurs lisent CE payload. Aucune valeur n'est recalculée ailleurs.
@@ -362,11 +396,20 @@ export async function buildPremiumPayload(accountId) {
       normalizedGroup: op?.IdCategory?.normalizedGroup || "OTHER",
     })),
 
-    mlSignals: {
-      clusterLabel:      null,
-      riskProbability:   null,
-      stressProbability: null,
-      source:            "not_connected_yet",
+        mlSignals: {
+      clusterLabel:      personaSignal?.clusterLabel ?? null,
+      personaCluster:    personaSignal?.clusterId ?? null,
+
+      stressScore:       stressSignal?.stressScore ?? null,
+      stressLevel:       stressSignal?.stressLevel ?? null,
+
+      riskProbability:   stressSignal?.stressScore ?? null,
+      stressProbability: stressSignal?.stressScore ?? null,
+
+      source: {
+        persona: personaSignal?.source ?? "not_connected_yet",
+        stress:  stressSignal?.source ?? "not_connected_yet",
+      },
     },
 
     // ─ Meta : compteurs et flags calculés une fois ─

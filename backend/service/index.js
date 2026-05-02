@@ -47,3 +47,6 @@ export {coachBudgetV1Service} from "./CoachBudgetV1.js";
 //premiumCoach
 
 export { buildPremiumCoach } from "./premiumCoach/premiumCoachOrchestrator.js";
+
+//duck
+export { evaluateDuck, getDuckState } from "./Duck/duckScoreEngine.js";

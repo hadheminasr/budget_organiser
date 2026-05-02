@@ -18,6 +18,7 @@ import MessageRoutes from "./MessageRoutes.js";
 import AccountProfileRoutes from "./AccountProfileRoutes.js";
 import CoachBudgetV1Routes from "./CoachBudgetV1Routes.js";
 import PremiumCoachRoutes from "./PremiumCoachRoutes.js";
+import DuckRoutes from "./DuckRoutes.js";
 
 const router = express.Router();
 
@@ -45,5 +46,6 @@ router.use("/messages", MessageRoutes);
 router.use("/account-profile", AccountProfileRoutes);
 router.use("/coach-budget", CoachBudgetV1Routes);
 router.use("/premium-coach", PremiumCoachRoutes);
+router.use("/duck", DuckRoutes);
 
 export default router;

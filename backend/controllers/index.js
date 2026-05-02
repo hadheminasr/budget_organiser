@@ -39,3 +39,7 @@ export {getAccountProfile, updateAccountProfile, createAccountProfile} from "./A
 
 //coachBudgetV1
 export {getCoachBudgetData} from "./CoachBudgetV1.js";
+
+//premiumCoach nakes mrakahtloch l indexat dhuherli 
+//duck
+export { getDuck } from "./Duck/DuckController.js";
