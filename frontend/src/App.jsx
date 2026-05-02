@@ -21,6 +21,13 @@ import History from "./pages/User/history";
 import Note from "./pages/User/Note";
 import Report from "./pages/User/Report";
 import CoachBudgetPage from "./pages/User/CoachBudgetV1";
+import PremiumDashboardPage from "./pages/User/premium";
+// imports
+import DuckCompanion from "../src/components/Duck/DuckCompanion";
+
+
+
+
 
 import AdminLayout from "./layout/AdminLayout";
 import AdminDash from "./pages/Admin/AdminDash";
@@ -29,11 +36,16 @@ import FirstLogin from "./pages/User/FirstLoginPage";
 
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./context/AuthContext";
+import { useDuck } from "./hooks/useDuck";
+
+
+
+
+
 
 const UserAccountProfileGuard = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
-
   const isFirstLoginPage = location.pathname === "/user/first-login";
 
   if (
@@ -87,10 +99,20 @@ const RedirectAuthenticatedUser = ({ children }) => {
 };
 
 function App() {
-  const { isCheckingAuth } = useAuth();
+  const { isCheckingAuth, user, isAuthenticated } = useAuth();
+  const accountId = user?.accountId;
+  
+  const showDuck =
+  isAuthenticated &&
+  user?.isVerified &&
+  user?.role !== "admin" &&
+  !!accountId;
+  const duck = useDuck(accountId); 
+  console.log("Duck debug:", { accountId, showDuck, duckData: duck.data, loading: duck.loading });
 
   if (isCheckingAuth) return <LoadingSpinner />;
-
+  
+  
   return (
     <div className="min-h-screen w-screen bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 relative overflow-hidden">
       {/*<FloatingShape color="bg-rose-200/45" size="w-72 h-72" top="8%" left="10%" delay={0} />
@@ -187,13 +209,19 @@ function App() {
   <Route path="report" element={<Report />} />
   <Route path="first-login" element={<FirstLogin />} />
   <Route path="coach" element={<CoachBudgetPage />} />
+  <Route path="premium" element={<PremiumDashboardPage />} />
+
 </Route>
 
 
        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
+ {/* ── DuckCompanion ─────────────────────────────────────────────────────
+           EN DEHORS des Routes → visible sur toutes les pages user
+           Conditionnel : seulement si user connecté + vérifié + a un compte    */}
+      {showDuck && <DuckCompanion duck={duck} />}
+ 
       <Toaster />
     </div>
   );

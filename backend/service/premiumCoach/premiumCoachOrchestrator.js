@@ -97,12 +97,18 @@ export async function buildPremiumCoach(accountId) {
     weeklyPlan,
     alerts,
     metadata: {
-      clusterLabel:payload.mlSignals?.clusterLabel ?? null,
-      riskScore:payload.mlSignals?.riskProbability ?? (snap.score / 100),
-      recommendedPlanTemplate:coachingMode.recommendedPlanTemplate,
-      scoreTrend:snap.scoreTrend,
-      scoreSource:meta.scoreSource,
-      generatedAt:meta.generatedAt,
+      clusterLabel: payload.mlSignals?.clusterLabel ?? null,
+      personaCluster: payload.mlSignals?.personaCluster ?? null,
+
+      stressScore: payload.mlSignals?.stressScore ?? null,
+      stressLevel: payload.mlSignals?.stressLevel ?? null,
+
+      riskScore: payload.mlSignals?.riskProbability ?? (snap.score / 100),
+
+      recommendedPlanTemplate: coachingMode.recommendedPlanTemplate,
+      scoreTrend: snap.scoreTrend,
+      scoreSource: meta.scoreSource,
+      generatedAt: meta.generatedAt,
     },
   };
 }

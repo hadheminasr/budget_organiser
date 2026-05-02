@@ -82,6 +82,7 @@ const UserLayout = () => {
         
           <NavLink to="/user/history"     className={navStyle}>{t("layout.nav.history")}</NavLink>
           <NavLink to="/user/coach"       className={navStyle}>{t("layout.nav.coach")}</NavLink>
+          <NavLink to="/user/premium"     className={navStyle}>{t("layout.nav.premium")}</NavLink>
 
           <span className="text-[9px] uppercase tracking-widest text-pink-300 px-2 mt-4 mb-1">
             {t("layout.nav.account")}

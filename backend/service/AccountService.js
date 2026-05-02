@@ -7,6 +7,7 @@ import { Note } from "../models/Note.js";
 import { Operation } from "../models/Operation.js";
 import { Category } from "../models/Category.js";
 import { ActivityLogService } from "./ActivityLogService.js";
+import { evaluateDuck } from "../service/Duck/duckScoreEngine.js";
 import {
   computeBudgetCompliance,
   computeHealthScore,
@@ -29,7 +30,8 @@ function getReportPeriods() {
     previousMonth: toMonthKey(previousMonthDate),
   };
 }
-function computeMonthSummary({ operations, categories, nbNotes = 0 }) {
+
+function computeMonthSummary({ operations, categories, nbNotes = 0, goals = [] }) {
   const nbOperations = operations.length;
   const totalDepense = operations.reduce((sum, op) => sum + Number(op.amount || 0), 0);
 
@@ -43,7 +45,6 @@ function computeMonthSummary({ operations, categories, nbNotes = 0 }) {
     return acc;
   }, {});
 
-  let catsNonDepassees = 0;
   let montantNonDepense = 0;
 
   for (const cat of categories) {
@@ -51,25 +52,22 @@ function computeMonthSummary({ operations, categories, nbNotes = 0 }) {
     const budget = Number(cat.budget ?? 0);
 
     if (budget > 0 && depense <= budget) {
-      catsNonDepassees++;
       montantNonDepense += budget - depense;
     }
   }
 
-  const totalCats = categories.length;
-  const score =
-    totalCats > 0 ? Math.round((catsNonDepassees / totalCats) * 100) : 0;
+  const compliance = computeBudgetCompliance({ categories, operations });
 
   return {
     nbOperations,
     totalDepense,
     depenseParCat,
-    catsNonDepassees,
+    catsNonDepassees: compliance.catsOk,
     montantNonDepense,
-    score,
+    complianceRate: compliance.complianceRate,
     nbNotes,
   };
-};
+}
 function buildGoalsWidget(goalsActifs) {
   return goalsActifs.map((goal) => {
     const percent = Math.min(
@@ -232,6 +230,51 @@ async function buildReportBase(accountId, periods) {
     categories,
     nbNotes: previousNbNotes,
   });
+  const currentHealth = computeHealthScore({
+  complianceRate: currentSummary.complianceRate,
+  execRate:
+    totalBudget > 0
+      ? Math.round((currentSummary.totalDepense / totalBudget) * 100)
+      : 0,
+  savRate:
+    totalBudget > 0
+      ? Math.round((currentSummary.montantNonDepense / totalBudget) * 100)
+      : 0,
+  avgGoalPct:
+    goalsActifs.length > 0
+      ? Math.round(
+          goalsActifs.reduce((sum, g) => {
+            const current = Number(g.currentAmount ?? 0);
+            const target = Number(g.targetAmount ?? 0);
+            const pct = target > 0 ? (current / target) * 100 : 0;
+            return sum + Math.min(100, pct);
+          }, 0) / goalsActifs.length
+        )
+      : 0,
+});
+
+const previousHealth = computeHealthScore({
+  complianceRate: previousSummary.complianceRate,
+  execRate:
+    totalBudget > 0
+      ? Math.round((previousSummary.totalDepense / totalBudget) * 100)
+      : 0,
+  savRate:
+    totalBudget > 0
+      ? Math.round((previousSummary.montantNonDepense / totalBudget) * 100)
+      : 0,
+  avgGoalPct:
+    goalsActifs.length > 0
+      ? Math.round(
+          goalsActifs.reduce((sum, g) => {
+            const current = Number(g.currentAmount ?? 0);
+            const target = Number(g.targetAmount ?? 0);
+            const pct = target > 0 ? (current / target) * 100 : 0;
+            return sum + Math.min(100, pct);
+          }, 0) / goalsActifs.length
+        )
+      : 0,
+});
 
  
 
@@ -246,14 +289,14 @@ async function buildReportBase(accountId, periods) {
       label: periods.previousMonthDate.toLocaleDateString("fr-FR", { month: "short" }),
       totalDepense: previousSummary.totalDepense,
       montantNonDepense: previousSummary.montantNonDepense,
-      score: previousSummary.score,
+      score: previousHealth.healthScore
     },
     {
       month: periods.reportMonth,
       label: periods.reportMonthDate.toLocaleDateString("fr-FR", { month: "short" }),
       totalDepense: currentSummary.totalDepense,
       montantNonDepense: currentSummary.montantNonDepense,
-      score: currentSummary.score,
+      score: currentHealth.healthScore
     },
   ];
 
@@ -385,44 +428,27 @@ function buildBIBlock(base, periods) {
       ? fmt(goalsWidget.reduce((sum, g) => sum + g.percent, 0) / goalsWidget.length)
       : 0;
 
-  const scoreDiscipline =
-    execRate <= 100
-      ? Math.min(100, fmt(50 + execRate / 2))
-      : Math.max(0, fmt(100 - (execRate - 100) * 2));
+  const currentHealth = computeHealthScore({
+  complianceRate: currentSummary.complianceRate,
+  execRate,
+  savRate,
+  avgGoalPct,
+});
 
-  const scoreEpargne = Math.min(100, fmt(savRate * 5));
-  const scoreObjectifs = Math.min(100, avgGoalPct);
-  const scoreRegularite = currentSummary.score;
+const previousHealth = computeHealthScore({
+  complianceRate: previousSummary.complianceRate,
+  execRate: prevExecRate,
+  savRate: prevSavRate,
+  avgGoalPct: avgGoalPct,
+});
 
-  const scoreBiGlobal = fmt(
-    scoreDiscipline * 0.35 +
-      scoreEpargne * 0.25 +
-      scoreObjectifs * 0.25 +
-      scoreRegularite * 0.15
-  );
-
-  const prevScoreDiscipline =
-    prevExecRate <= 100
-      ? Math.min(100, fmt(50 + prevExecRate / 2))
-      : Math.max(0, fmt(100 - (prevExecRate - 100) * 2));
-
-  const prevScoreEpargne = Math.min(100, fmt(prevSavRate * 5));
-  const prevScoreObjectifs = avgGoalPct;
-
-  const prevScoreBiGlobal = fmt(
-    prevScoreDiscipline * 0.35 +
-      prevScoreEpargne * 0.25 +
-      prevScoreObjectifs * 0.25 +
-      previousSummary.score * 0.15
-  );
-
-  const biScore = {
-    global: scoreBiGlobal,
-    discipline: scoreDiscipline,
-    epargne: scoreEpargne,
-    objectifs: scoreObjectifs,
-    regularite: scoreRegularite,
-  };
+const biScore = {
+  global: currentHealth.healthScore,
+  discipline: currentHealth.breakdown.discipline,
+  epargne: currentHealth.breakdown.epargne,
+  objectifs: currentHealth.breakdown.objectifs,
+  regularite: currentHealth.breakdown.regularite,
+};
 
   const biKpis = [
     {
@@ -483,15 +509,15 @@ function buildBIBlock(base, periods) {
       deltaType: "neutral",
       note: `progression moy. ${avgGoalPct}%`,
     },
-    {
-      label: "Score BI global",
-      value: `${scoreBiGlobal} / 100`,
-      delta: `${sign(scoreBiGlobal - prevScoreBiGlobal)}${Math.abs(
-        scoreBiGlobal - prevScoreBiGlobal
-      )} pts`,
-      deltaType: deltaType(scoreBiGlobal, prevScoreBiGlobal),
-      note: `vs ${prevScoreBiGlobal} en ${previousLabel}`,
-    },
+  {
+  label: "Score BI global",
+  value: `${currentHealth.healthScore} / 100`,
+  delta: `${sign(currentHealth.healthScore - previousHealth.healthScore)}${Math.abs(
+    currentHealth.healthScore - previousHealth.healthScore
+  )} pts`,
+  deltaType: deltaType(currentHealth.healthScore, previousHealth.healthScore),
+  note: `vs ${previousHealth.healthScore} en ${previousLabel}`,
+},
   ];
 
   const waterfallItems = [
@@ -676,40 +702,52 @@ export const AccountService={
     };
   },
 
-  async addAccount(data,userId) {
-    
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      throw new Error(" invalid UserId");
-    }
-    const userExists = await User.exists({ _id: userId });
-    if (!userExists) {
-      throw new Error("User not found");
-    }
-    const name = data.nameAccount?.trim();
-    if (!name) throw new Error("nameAccount required");
-    const exists = await Account.exists({
-      nameAccount: name,
-      Users: userId, 
-    });
-    if (exists) {
-      throw new Error("this user has already an account with this name");
-    }
-    const code = await generateUniqueShareCode(Account);
-    console.log(code);
-    const createdAccount = await Account.create({
-      nameAccount: name,
-      solde: data.solde ?? 0,
-      nbUsers: 1,
-      isBlocked: data.isBlocked ?? false,
-      Users: [userId],
-      Sharingcode : code,
-      createdBy: userId,
-      description: data.description,
-    });
+  async addAccount(data, userId) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new Error("invalid UserId");
+  }
 
-    return createdAccount;
+  const userExists = await User.exists({ _id: userId });
+  if (!userExists) {
+    throw new Error("User not found");
+  }
+
+  const name = data.nameAccount?.trim();
+  if (!name) throw new Error("nameAccount required");
+
+  const exists = await Account.exists({
+    nameAccount: name,
+    Users: userId,
+  });
+  if (exists) {
+    throw new Error("this user has already an account with this name");
+  }
+
+  const code = await generateUniqueShareCode(Account);
+  console.log(code);
+
+  const createdAccount = await Account.create({
+    nameAccount: name,
+    solde: data.solde ?? 0,
+    nbUsers: 1,
+    isBlocked: data.isBlocked ?? false,
+    Users: [userId],
+    Sharingcode: code,
+    createdBy: userId,
+    description: data.description,
+
+    Duck: {
+      companionStateId: 0,
+      hearts: 0,
+      totalHearts: 0,
+      streak: 0,
+      lastEvaluatedMonth: null,
+      _healthScore: 0,
+    },
+  });
+
+  return createdAccount;
 },
-
   async updateAccount(id, updates, userId) {
     const account = await Account.findByIdAndUpdate(id, updates, { new: true });
   if (!account) throw new Error("Account not found");
@@ -819,31 +857,26 @@ async joinAccountByCode(code, userId) {
   return targetAccount;
 },
 async getDashboardData(accountId) {
- 
-  // ── Compte ───────────────────────────────────────────────────────────────
+  //compte 
   const account = await Account.findById(accountId);
   if (!account) throw new Error("Account not found");
- 
-  // ── Opérations du mois en cours (non archivées) ──────────────────────────
+  //operations du mois en cours (non archivés)
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
- 
   const operations = await Operation.find({
     IdAccount: accountId,
     archived:  { $ne: true },
     date:      { $gte: firstDayOfMonth },
   }).populate("IdCategory", "name color budget icon");
- 
   //Totaux
   const totalDepense = operations.reduce((sum, op) => sum + op.amount, 0);
- 
   //Dépenses groupées par catégorie
   // Sécurisé : si IdCategory est null (opération sans catégorie) on groupe sous "none"
   const byCategoryMap = operations.reduce((acc, op) => {
     const catId = op.IdCategory?._id?.toString() ?? "none";
     if (!acc[catId]) {
       acc[catId] = {
-        info:  op.IdCategory ?? null, // peut être null
+        info:  op.IdCategory ?? null, 
         total: 0,
       };
     }
@@ -944,45 +977,32 @@ async resetMensuel(accountId, userId, data) {
   if (member.role !== "gérant") {
     throw new Error("Accès refusé : seul le gérant peut réinitialiser le mois");
   }*/
-
-
-
   const currentMonth = new Date().toISOString().slice(0, 7);
-
   // ── solde accumulé du mois précédent (mars)
   const soldeAvantReset = Number(account.solde ?? 0);
-
   // ── nouveau salaire entré étape 1
   const salaireMois = Number(data.solde ?? 0);
   if (isNaN(salaireMois) || salaireMois < 0)
     throw new Error("Le salaire du mois est invalide");
-
   // ── total distribué sur objectifs (depuis solde de mars)
   const totalDistributions = (data.distributions ?? [])
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-
   if (totalDistributions > soldeAvantReset)
     throw new Error("Le montant distribué dépasse le solde du mois précédent");
-
   // ── total budgets catégories
   const totalBudgets = (data.budgets ?? [])
     .reduce((sum, item) => sum + Number(item.budget || 0), 0);
-
   if (totalBudgets > salaireMois)
     throw new Error("Le total des budgets dépasse le nouveau salaire");
-
   // ── nouveau solde = SEULEMENT le nouveau salaire
   const nouveauSolde = salaireMois;
-
   // ── nouveau reste = salaire - budgets
   const nouveauReste = salaireMois - totalBudgets;
-
   // ── archiver les opérations du mois précédent
   await Operation.updateMany(
     { IdAccount: accountId, archived: false },
     { archived: true }
   );
-
   // ── mettre à jour les budgets des catégories
   if (data.budgets?.length > 0) {
     for (const item of data.budgets) {
@@ -992,22 +1012,17 @@ async resetMensuel(accountId, userId, data) {
       );
     }
   }
-
   // ── distribuer sur les objectifs (depuis solde de mars)
   // ── distribuer sur les objectifs
 if (Array.isArray(data.distributions) && data.distributions.length > 0) {
   for (const item of data.distributions) {
     if (!item?.goalId) continue;
-
     const amount = Number(item.amount ?? 0);
     if (amount <= 0) continue;
-
     const goal = await Goal.findById(item.goalId);
     if (!goal) continue;
-
     const ancienMontant = Number(goal.currentAmount ?? 0);
     const targetAmount = Number(goal.targetAmount ?? 0);
-
     const nouveauMontant = ancienMontant + amount;
     const objectifAtteint = nouveauMontant >= targetAmount;
 
@@ -1017,13 +1032,40 @@ if (Array.isArray(data.distributions) && data.distributions.length > 0) {
     });
   }
 }
-
   // ── mettre à jour le compte
   await Account.findByIdAndUpdate(accountId, {
     solde:          nouveauSolde, // ← SEULEMENT le nouveau salaire
     reste:          nouveauReste, // ← salaire - budgets
     lastResetMonth: currentMonth,
   });
+
+  //duck 
+    // ── évaluer le vault après le reset mensuel ───────────────────────────
+  console.log("[RESET] before duck evaluation");
+  console.log("accountId =", accountId);
+  try {
+    const report = await this.getReport(accountId);
+    console.log("[RESET] reportMonth =", report.reportMonth);
+    console.log("[RESET] biScore =", report?.bi?.biScore);
+    const duckResult= await evaluateDuck(accountId, {
+      bi: {
+      biScore: {
+        // ton biScore utilise "global" pas "healthScore" — on mappe ici
+        discipline: report.bi.biScore.discipline,
+        epargne:    report.bi.biScore.epargne,
+        objectifs:  report.bi.biScore.objectifs,
+      }
+    },
+    currentSummary: {
+      score: report.score,
+    },
+    reportMonth: report.reportMonth,
+  });
+
+  console.log("[RESET] duckResult =", duckResult);
+} catch (err) {
+  console.error("[Duck] evaluateDuck failed:", err.message);
+}
 
   // ── log
   const user = await User.findById(userId).select("name");
@@ -1052,7 +1094,7 @@ async getReport(accountId) {
     reportMonth: base.reportMonth,
     nbOperations: base.currentSummary.nbOperations,
     totalDepense: base.currentSummary.totalDepense,
-    score: base.currentSummary.score,
+    score: bi.biScore.global,
     nbNotes: base.currentSummary.nbNotes,
     catsNonDepassees: base.currentSummary.catsNonDepassees,
     totalCats: base.totalCats,

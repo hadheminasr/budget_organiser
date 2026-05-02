@@ -47,16 +47,26 @@ export const accountProfileService = {
     const profile = await AccountProfile.create({
       accountId,
       filledBy: userId,
+
       householdSituation: body.householdSituation,
       housingType: body.housingType,
-      hasChildren: body.hasChildren,
-      hasCar: body.hasCar,
+      budgetCapacityLevel: body.budgetCapacityLevel,
+      accountIncomeRegularity: body.accountIncomeRegularity,
+
       eatingOutFrequency: body.eatingOutFrequency,
-      mainDifficulty: body.mainDifficulty,
       savingHabit: body.savingHabit,
+      mainDifficulty: body.mainDifficulty,
       mainGoal: body.mainGoal,
+
       adviceStyle: body.adviceStyle,
-      notes: body.notes ?? "",
+
+      transportContext: body.transportContext ?? "none",
+      familyChargeLevel: body.familyChargeLevel ?? "none",
+      financialPressureSources: body.financialPressureSources ?? [],
+
+      setsBudget: body.setsBudget,
+      tracksExpenses: body.tracksExpenses,
+      hasFinancialGoal: body.hasFinancialGoal,
     });
 
     return profile;
@@ -87,24 +97,48 @@ export const accountProfileService = {
 
     profile.householdSituation =
       body.householdSituation ?? profile.householdSituation;
+
     profile.housingType =
       body.housingType ?? profile.housingType;
-    profile.hasChildren =
-      body.hasChildren ?? profile.hasChildren;
-    profile.hasCar =
-      body.hasCar ?? profile.hasCar;
+
+    profile.budgetCapacityLevel =
+      body.budgetCapacityLevel ?? profile.budgetCapacityLevel;
+
+    profile.accountIncomeRegularity =
+      body.accountIncomeRegularity ?? profile.accountIncomeRegularity;
+
     profile.eatingOutFrequency =
       body.eatingOutFrequency ?? profile.eatingOutFrequency;
-    profile.mainDifficulty =
-      body.mainDifficulty ?? profile.mainDifficulty;
+
     profile.savingHabit =
       body.savingHabit ?? profile.savingHabit;
+
+    profile.mainDifficulty =
+      body.mainDifficulty ?? profile.mainDifficulty;
+
     profile.mainGoal =
       body.mainGoal ?? profile.mainGoal;
+
     profile.adviceStyle =
       body.adviceStyle ?? profile.adviceStyle;
-    profile.notes =
-      body.notes ?? profile.notes;
+
+    profile.transportContext =
+      body.transportContext ?? profile.transportContext;
+
+    profile.familyChargeLevel =
+      body.familyChargeLevel ?? profile.familyChargeLevel;
+
+    profile.financialPressureSources =
+      body.financialPressureSources ?? profile.financialPressureSources;
+
+    profile.setsBudget =
+      body.setsBudget ?? profile.setsBudget;
+
+    profile.tracksExpenses =
+      body.tracksExpenses ?? profile.tracksExpenses;
+
+    profile.hasFinancialGoal =
+      body.hasFinancialGoal ?? profile.hasFinancialGoal;
 
     await profile.save();
 

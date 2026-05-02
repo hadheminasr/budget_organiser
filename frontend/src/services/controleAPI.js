@@ -13,7 +13,7 @@ export const fetchControle = async (filters = {}) => {
   return res.data.data;
 };
 
-// ── toggle bloquer/débloquer
+// toggle bloquer/débloquer
 
 export const toggleBlock = async (accountId, isCurrentlyBlocked) => {
   const res = await axios.put(
@@ -24,7 +24,7 @@ export const toggleBlock = async (accountId, isCurrentlyBlocked) => {
   return res.data;
 };
 
-// ── supprimer un compte
+//supprimer un compte
 export const deleteCompte = async (accountId) => {
   await axios.delete(
     `${ACCOUNTS}/${accountId}`,
