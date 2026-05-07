@@ -31,11 +31,12 @@ const ForgotPasswordPage = () => {
   };
 
   return (
+    <div className="min-h-screen w-full flex items-start sm:items-center justify-center px-4 pt-24 sm:pt-8 pb-8 bg-gradient-to-br from-[#fbf7f5] via-[#fff7fb] to-[#f6eeee]">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-md w-full bg-rose-50/40 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden border border-rose-200/40"
+      className="w-full max-w-[380px] sm:max-w-md bg-rose-50/40 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden border border-rose-200/40"
     >
       <div className="p-8">
 
@@ -99,6 +100,7 @@ const ForgotPasswordPage = () => {
         </Link>
       </div>
     </motion.div>
+  </div>
   );
 };
 

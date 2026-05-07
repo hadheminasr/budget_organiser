@@ -99,18 +99,24 @@ console.log("account.reste :", account.reste);
     { amount, category: category.name, date }
   );
 
+  //ajout de ducks
 
-  console.log("account.reste :", account.reste);
-  console.log("montantDepasse :", montantDepasse);
+  const newReste = account.reste - (depassement ? montantDepasse : 0);
+
+  let duckSignal = null;
+  if (depassement)        duckSignal = "overspend";
+  else if (newReste <= 0) duckSignal = "broke";
+
   return {
-    operation:       op,
+    operation: op,
     depassement,
     budgetCategorie,
-    nouveauTotal:    totalDejaDepense + amount,
-    resteCategorie:  Math.max(0, restebudget - amount),
+    nouveauTotal:   totalDejaDepense + amount,
+    resteCategorie: Math.max(0, restebudget - amount),
     montantDepasse,
-  };
-},
+    duckSignal,  // ← seul ajout
+    };
+    },
 
 
   async DeleteOperation(IdOperation) {

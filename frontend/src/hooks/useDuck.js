@@ -2,38 +2,41 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Hook global du duck compagnon.
 // Gère : fetch de l'état, détection de changement d'état, mode modal au reset,
-//        et les événements réactifs (overspend, broke, etc.)
-//
-// Utilisation dans App.jsx :
-//   const duck = useDuck(accountId);
-//   <DuckCompanion duck={duck} />
+//        et les événements réactifs (overspend, broke, levelup, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const POLL_INTERVAL_MS = 60_000; // re-fetch toutes les 60 secondes
+const POLL_INTERVAL_MS = 60_000;
 
-// Messages réactifs selon l'événement
+// ── Constantes en dehors du hook (pas recréées à chaque render) ───────────────
 const REACTIVE_MESSAGES = {
   overspend:         "Oups ! Une catégorie vient de dépasser son budget. 👀",
   broke:             "Plus de budget disponible. Mode essentiel jusqu'au reset. 🛑",
   goal_contribution: "Super, ton objectif avance ! Continue comme ça. 🎯",
   recovered:         "La marge est revenue. Belle récupération ! ✨",
+  levelup:           "Nouvel état débloqué ! Tu progresses vraiment bien. 🌟",
+  leveldown:         "Ce mois était difficile. On repart ensemble ? 💪",
 };
 
-export function useDuck(accountId) {
-  const [data,        setData]        = useState(null);   // données duck depuis l'API
-  const [loading,     setLoading]     = useState(true);
-  const [isModal,     setIsModal]     = useState(false);  // true = mode grand modal
-  const [isWobbling,  setIsWobbling]  = useState(false);  // animation réactive
-  const [activeMsg,   setActiveMsg]   = useState(null);   // message bulle actif
-  const [isNewState,  setIsNewState]  = useState(false);  // changement d'état détecté
+// Événements qui ouvrent l'overlay plein écran (pas juste la bulle)
+const OVERLAY_EVENTS = new Set(["broke", "levelup", "leveldown", "welcome","overspend"]);
 
-  const prevStateId  = useRef(null);
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function useDuck(accountId) {
+  const [data,           setData]           = useState(null);
+  const [loading,        setLoading]        = useState(true);
+  const [isModal,        setIsModal]        = useState(false);
+  const [isWobbling,     setIsWobbling]     = useState(false);
+  const [activeMsg,      setActiveMsg]      = useState(null);
+  const [isNewState,     setIsNewState]     = useState(false);
+  const [activeReaction, setActiveReaction] = useState(null);
+
   const msgTimeout   = useRef(null);
   const pollInterval = useRef(null);
 
-  // ── Fetch de l'état duck ────────────────────────────────────────────────────
+  // ── Fetch de l'état duck ──────────────────────────────────────────────────
   const fetchDuck = useCallback(async () => {
     if (!accountId) return;
     try {
@@ -44,22 +47,16 @@ export function useDuck(accountId) {
       const incoming = json.data;
 
       setData((prev) => {
-        // Détecter un changement d'état (ex: après un reset mensuel)
-        if (
-          prev &&
-          incoming.companionStateId !== prev.companionStateId
-        ) {
+        // Détection changement d'état → levelup ou leveldown
+        if (prev && incoming.companionStateId !== prev.companionStateId) {
+          const isLevelUp = incoming.companionStateId > prev.companionStateId;
           setIsNewState(true);
-          setIsModal(true);   // ouvre le modal automatiquement
           setActiveMsg(incoming.message);
+          setActiveReaction(isLevelUp ? "levelup" : "leveldown"); // ← réaction auto
+          setIsModal(true); // overlay plein écran
         }
         return incoming;
       });
-
-      // Premier chargement
-      if (prevStateId.current === null) {
-        prevStateId.current = incoming.companionStateId;
-      }
     } catch (err) {
       console.warn("[Duck] fetch error:", err.message);
     } finally {
@@ -73,10 +70,8 @@ export function useDuck(accountId) {
     pollInterval.current = setInterval(fetchDuck, POLL_INTERVAL_MS);
     return () => clearInterval(pollInterval.current);
   }, [fetchDuck]);
-
-  // ── Afficher un message réactif (appelé depuis l'extérieur) ─────────────────
-  // Ex: après création d'une opération qui dépasse le budget
-  //   duck.triggerEvent("overspend")
+/*
+  // ── triggerEvent — appelé depuis Operations, UserDash, etc. ──────────────
   const triggerEvent = useCallback((eventType) => {
     const msg = REACTIVE_MESSAGES[eventType];
     if (!msg) return;
@@ -85,36 +80,70 @@ export function useDuck(accountId) {
 
     setActiveMsg(msg);
     setIsWobbling(true);
+    setActiveReaction(eventType);
 
-    // Arrêter le wobble après l'animation
     setTimeout(() => setIsWobbling(false), 600);
 
-    // Effacer le message après 5 secondes
-    msgTimeout.current = setTimeout(() => setActiveMsg(null), 5000);
+    if (OVERLAY_EVENTS.has(eventType)) {
+      // Overlay plein écran → reste jusqu'au clic de l'utilisateur
+      setIsModal(true);
+    } else {
+      // Bulle discrète → disparaît après 5 secondes
+      msgTimeout.current = setTimeout(() => {
+        setActiveMsg(null);
+        setActiveReaction(null);
+      }, 5000);
+    }
+  }, []);*/
+
+  // triggerEvent accepte maintenant un message custom optionnel
+  const triggerEvent = useCallback((eventType, customMsg = null) => {
+    const msg = customMsg ?? REACTIVE_MESSAGES[eventType];
+    if (!msg) return;
+
+    if (msgTimeout.current) clearTimeout(msgTimeout.current);
+
+    setActiveMsg(msg);
+    setIsWobbling(true);
+    setActiveReaction(eventType);
+    setTimeout(() => setIsWobbling(false), 600);
+
+    if (OVERLAY_EVENTS.has(eventType)) {
+      setIsModal(true);
+    } else {
+      msgTimeout.current = setTimeout(() => {
+        setActiveMsg(null);
+        setActiveReaction(null);
+      }, 5000);
+    }
   }, []);
 
-  // ── Ouvrir / fermer le modal manuellement (clic sur le duck) ───────────────
-  const openModal  = useCallback(() => {
+  // ── Ouvrir le modal manuellement (clic sur le duck) ──────────────────────
+  const openModal = useCallback(() => {
     setActiveMsg(data?.message ?? null);
+    setActiveReaction(null); // clic manuel → pas de réaction spéciale
     setIsModal(true);
   }, [data]);
 
+  // ── Fermer modal / overlay ────────────────────────────────────────────────
   const closeModal = useCallback(() => {
     setIsModal(false);
     setIsNewState(false);
     setActiveMsg(null);
+    setActiveReaction(null); // ← important : reset la réaction
   }, []);
 
   return {
-    data,           // { companionStateId, stateName, hearts, streak, ... }
+    data,
     loading,
     isModal,
     isWobbling,
-    isNewState,     // true = changement d'état ce reset
-    activeMsg,      // message bulle actif (null = pas de bulle)
+    isNewState,
+    activeMsg,
+    activeReaction,  // ← exposé pour DuckCompanion
     openModal,
     closeModal,
-    triggerEvent,   // duck.triggerEvent("overspend")
+    triggerEvent,
     refresh: fetchDuck,
   };
 }

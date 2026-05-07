@@ -160,32 +160,32 @@ export const AuthService = {
   },
 
   async resetPassword({ token, newPassword }) {
-    if (!newPassword) {
-      const err = new Error("newPassword is required");
-      err.status = 400;
-      throw err;
-    }
+  if (!newPassword) {
+    const err = new Error("newPassword is required");
+    err.status = 400;
+    throw err;
+  }
 
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordeExpriresAt: { $gt: Date.now() }, 
-    });
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordeExpriresAt: { $gt: Date.now() },
+  });
 
-    if (!user) {
-      const err = new Error("Invalid or expired password reset token");
-      err.status = 400;
-      throw err;
-    }
+  if (!user) {
+    const err = new Error("Invalid or expired password reset token");
+    err.status = 400;
+    throw err;
+  }
 
-    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+  const hashedPassword = await bcryptjs.hash(newPassword, 10);
 
-    user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordeExpriresAt = undefined;
-    await user.save();
+  user.password = hashedPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordeExpriresAt = undefined;
+  await user.save();
 
-    return { message: "Password has been reset successfully" };
-  },
+  return { message: "Password has been reset successfully" };
+},
 
   async checkAuth(userId) {
   const user = await User.findById(userId).select("-password");

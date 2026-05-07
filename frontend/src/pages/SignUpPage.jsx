@@ -72,12 +72,12 @@ const canSubmit = useMemo(() => {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 bg-gradient-to-br from-[#fbf7f5] via-[#fffdfc] to-[#f6eeee]">
+    <div className="min-h-screen w-full flex items-start sm:items-center justify-center px-4 pt-24 sm:pt-8 pb-8 bg-gradient-to-br from-[#fbf7f5] via-[#fff7fb] to-[#f6eeee]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md rounded-2xl overflow-hidden shadow-xl border border-black/5 bg-white/70 backdrop-blur-xl"
+        className="w-full max-w-[380px] sm:max-w-md rounded-2xl overflow-hidden shadow-xl border border-black/5 bg-white/70 backdrop-blur-xl"
       >
         <div className="p-8">
 

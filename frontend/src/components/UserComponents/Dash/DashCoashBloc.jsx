@@ -79,18 +79,18 @@ export default function DashCoachBloc({ coachData, loadingCoach, errorCoach, loc
   const projStatus  = coachData?.projection?.projectedStatus ?? "safe";
 
   return (
-    <div className={`rounded-xl border p-5 ${ui.wrap}`}>
+    <div className={`rounded-xl border p-4 sm:p-5 overflow-hidden ${ui.wrap}`}>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div
             className="w-9 h-9 rounded-lg flex items-center justify-center"
             style={{ background: "rgba(255,255,255,.75)", color: ui.iconColor }}
           >
             {ui.icon}
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-[14px] font-medium text-gray-900">{ui.title}</p>
             <p className="text-[11px] text-gray-400 mt-0.5">
               Analyse personnalisée · mise à jour en temps réel
@@ -98,7 +98,7 @@ export default function DashCoachBloc({ coachData, loadingCoach, errorCoach, loc
           </div>
         </div>
         {coachData?.status && (
-          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${ui.badge}`}>
+          <span className={`w-fit px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${ui.badge}`}>
             {coachData.status}
           </span>
         )}

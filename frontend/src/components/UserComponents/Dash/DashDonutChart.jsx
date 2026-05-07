@@ -15,7 +15,7 @@ export default function DashDonutChart({ byCategory = [], locale }) {
   const total = donutData.reduce((s, d) => s + d.value, 0);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
       <p className="text-[13px] font-medium text-gray-900 mb-1">Répartition des dépenses</p>
       <p className="text-[11px] text-gray-400 mb-2">Distribution du budget consommé ce mois</p>
 
@@ -24,12 +24,14 @@ export default function DashDonutChart({ byCategory = [], locale }) {
         {donutData.map((d, i) => {
           const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
           return (
-            <span key={i} className="flex items-center gap-1 text-[11px] text-gray-500">
+            <span key={i} className="flex items-center gap-1 text-[11px] text-gray-500 max-w-full">
               <span
-                className="w-2.5 h-2.5 rounded-sm inline-block"
+                className="w-2.5 h-2.5 rounded-sm inline-block flex-shrink-0"
                 style={{ background: d.color }}
               />
-              {d.name} {pct}%
+              <span className="truncate">
+                {d.name} {pct}%
+              </span>
             </span>
           );
         })}

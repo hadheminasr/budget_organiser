@@ -6,7 +6,7 @@ import {
 function CustomTooltip({ active, payload, label, locale }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-100 rounded-lg px-3 py-2 text-xs shadow-sm">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
       {label && <p className="text-gray-400 mb-1">{label}</p>}
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color ?? "#5F5E5A" }} className="font-medium">
@@ -31,7 +31,7 @@ export default function DashCategoryBar({ byCategory = [], locale }) {
     };
   });
 
-  const chartHeight = Math.max(160, hbarData.length * 38);
+  const chartHeight = Math.max(180, hbarData.length * 42);
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5">
@@ -55,8 +55,8 @@ export default function DashCategoryBar({ byCategory = [], locale }) {
           <YAxis
             type="category"
             dataKey="name"
-            tick={{ fontSize: 11, fill: "#5F5E5A" }}
-            width={80}
+            tick={{ fontSize: 10, fill: "#5F5E5A" }}
+            width={70}
             axisLine={false}
             tickLine={false}
           />

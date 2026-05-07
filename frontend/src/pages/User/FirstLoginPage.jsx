@@ -101,8 +101,28 @@ function Section({ step, total, emoji, title, sub, children }) {
     </div>
   );
 }
+function buildWelcomeMessage(form) {
+  // Selon mainGoal
+  if (form.mainGoal === "save_more") {
+    return "Je suis né ! Tu veux épargner plus — je vais t'aider à y arriver mois après mois. 🥚✨";
+  }
+  if (form.mainGoal === "prepare_project") {
+    return "Je suis né ! Tu prépares quelque chose de grand. On va construire ça ensemble. 🥚🏗️";
+  }
+  if (form.mainGoal === "reduce_expenses") {
+    return "Je suis né ! Réduire les dépenses, c'est mon domaine. Je t'observe sans te juger. 🥚👀";
+  }
+  if (form.mainGoal === "stabilize_budget") {
+    return "Je suis né ! La stabilité, c'est la base. On va poser des fondations solides. 🥚⚖️";
+  }
+  if (form.mainGoal === "repay_debt") {
+    return "Je suis né ! Rembourser une dette demande de la discipline. Je serai là chaque mois. 🥚💪";
+  }
+  // gain_visibility ou défaut
+  return "Je suis né ! Bienvenue. Ce mois-ci on apprend à se connaître — le prochain on construit. 🥚🌱";
+}
 
-export default function FirstLoginPage() {
+export default function FirstLoginPage({duck}) {
   const navigate = useNavigate();
   const { user, checkAuth } = useAuth();
   const { createProfile, loading, error } = useAccountProfile(user?.accountId);
@@ -187,6 +207,9 @@ export default function FirstLoginPage() {
     try {
       await createProfile(form);
       await checkAuth();
+      // ← Message de bienvenue selon le profil rempli
+      const welcomeMsg = buildWelcomeMessage(form);
+      duck?.triggerEvent("welcome", welcomeMsg);
       navigate("/user/userDash");
     } catch (err) {
       console.error(err);

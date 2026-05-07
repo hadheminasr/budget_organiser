@@ -17,7 +17,7 @@ export const addOperation = async (accountId, data) => {
     data,
     { withCredentials: true }
   );
-  return res.data; 
+  return res.data.operation; 
 };
 
 export const updateOperation = async (operationId, data) => {

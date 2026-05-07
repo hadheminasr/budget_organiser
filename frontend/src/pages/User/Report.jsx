@@ -4,7 +4,7 @@ import { useReport } from "../../hooks/UseReport";
 import { useState } from "react";
 
 import ReportKpis         from "../../components/UserComponents/Report/Report/ReportKpis";
-import ReportComparison   from "../../components/UserComponents/Report/Report/ReportComparison";
+//import ReportComparison   from "../../components/UserComponents/Report/Report/ReportComparison";
 import ReportLineChart    from "../../components/UserComponents/Report/Report/ReportLineChart";
 import ReportHistoryTable from "../../components/UserComponents/Report/Report/ReportHistoryTable";
 import CategoryAnalysis   from "../../components/UserComponents/Report/Report/CategoryAnalysis";
@@ -36,11 +36,10 @@ export default function Report() {
   if (!data) return null;
 
   return (
-    <div className="w-full flex flex-col gap-6">
-
+    <div className="w-full flex flex-col gap-4 sm:gap-6">
       {/* ── HEADER ─────────────────────────────────────────────── */}
-      <div>
-        <h1 className="font-medium text-xl text-gray-900">
+      <div className="min-w-0">
+        <h1 className="font-medium text-lg sm:text-xl text-gray-900 truncate">
           Rapport mensuel
         </h1>
         <p className="text-xs text-gray-400 mt-0.5">
@@ -59,11 +58,12 @@ export default function Report() {
       {data.plusGrosseDepense && (
         <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4">
           <p className="text-[11px] text-gray-400 mb-1">Plus grosse dépense</p>
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-sm text-gray-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+            <span className="font-medium text-sm text-gray-900 truncate">
               {data.plusGrosseDepense.category}
             </span>
-            <span className="font-medium text-[#E24B4A]">
+            <span className="font-medium text-[#E24B4A] whitespace-nowrap">
               −{data.plusGrosseDepense.amount.toLocaleString(locale)} DT
             </span>
           </div>

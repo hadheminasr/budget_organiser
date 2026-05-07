@@ -2,7 +2,7 @@ export default function DashGoalsProgress({ goals = [], locale }) {
   if (!goals.length) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
       <p className="text-[13px] font-medium text-gray-900 mb-1">Progression des objectifs</p>
       <p className="text-[11px] text-gray-400 mb-4">Avancement et délai estimé au rythme actuel</p>
 
@@ -15,7 +15,7 @@ export default function DashGoalsProgress({ goals = [], locale }) {
 
           return (
             <div key={goal._id}>
-              <div className="flex justify-between items-baseline mb-1.5 text-[12px]">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1.5 text-[12px]">
                 <span className="font-medium text-gray-900">
                   {goal.icon} {goal.name}
                 </span>
@@ -32,7 +32,7 @@ export default function DashGoalsProgress({ goals = [], locale }) {
                 />
               </div>
 
-              <div className="flex justify-between items-center mt-1.5 text-[10px] text-gray-400">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 mt-1.5 text-[10px] text-gray-400">
                 <span>
                   {pct}%
                   {goal.joursRestants != null && ` · ${goal.joursRestants} j restants`}

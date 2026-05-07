@@ -72,19 +72,27 @@ export const AuthController = {
   },
 
   async resetPassword(req, res) {
-    try {
-      const token = req.params.token;
-      const newPassword = req.body.newPassword;
+  try {
+    const token = req.params.token;
+    const newPassword = req.body.newPassword;
 
-      const data = await AuthService.resetPassword({ token, newPassword });
-      return res.status(200).json({ success: true, message: data.message });
-    } catch (error) {
-      return res.status(error.status || 500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  },
+    console.log("CONTROLLER RESET BODY:", req.body);
+
+    const data = await AuthService.resetPassword({ token, newPassword });
+
+    console.log("CONTROLLER RESET SUCCESS:", data);
+
+    return res.status(200).json({ success: true, message: data.message });
+  } catch (error) {
+    console.log("CONTROLLER RESET ERROR MESSAGE:", error.message);
+    console.log("CONTROLLER RESET ERROR FULL:", error);
+
+    return res.status(error.status || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+},
 
   async checkAuth(req, res) {
     try {
