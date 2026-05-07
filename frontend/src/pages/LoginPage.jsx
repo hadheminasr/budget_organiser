@@ -57,78 +57,81 @@ const LoginPage = () => {
 	};
 
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5 }}
-			className='max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'
-		>
-			<div className='p-8'>
-				<div className="flex justify-end mb-4">
-					<LanguageSwitcher/>
-				</div>
-				<h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-pink-300 to-rose-200 text-transparent bg-clip-text'>
-					{t('auth.welcomeBack')}
-				</h2>
+  <div className="min-h-screen w-full flex items-start sm:items-center justify-center px-4 pt-24 sm:pt-8 pb-8 bg-gradient-to-br from-[#fbf7f5] via-[#fff7fb] to-[#f6eeee]">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-[380px] sm:max-w-md bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden"
+    >
+      <div className="p-6 sm:p-8">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
 
-				<form onSubmit={handleLogin}>
-					<SharedInput
-						icon={Mail}
-						type='email'
-						placeholder={t('auth.email')}
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-					/>
-					{email.length > 0 && !isEmailValid && (
-					<p className='text-rose-400 text-xs mb-2'>
-						{t('auth.errors.invalidEmail')}
-					</p>
-					)}
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center bg-gradient-to-r from-pink-300 to-rose-200 text-transparent bg-clip-text">
+          {t('auth.welcomeBack')}
+        </h2>
 
-					<SharedInput
-						icon={Lock}
-						type='password'
-						placeholder={t('auth.password')}
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-					/>
-					{password.length > 0 && !isPasswordValid && (
-						<p className='text-rose-400 text-xs mb-2'>
-						{t('auth.errors.invalidPassword')}
-						</p>
-					)}
+        <form onSubmit={handleLogin}>
+          <SharedInput
+            icon={Mail}
+            type="email"
+            placeholder={t('auth.email')}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-					<div className='flex items-center mb-6'>
-						<Link to='/forgot-password' className='text-sm text-rose-200 hover:underline'>
-							{t('auth.forgotPassword')}
-						</Link>
-					</div>
+          {email.length > 0 && !isEmailValid && (
+            <p className="text-rose-400 text-xs mb-2">
+              {t('auth.errors.invalidEmail')}
+            </p>
+          )}
 
-					{error && <p className='text-red-500 font-semibold mb-2'>{error}</p>}
+          <SharedInput
+            icon={Lock}
+            type="password"
+            placeholder={t('auth.password')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-					
-					<SharedButton 
-						type="submit" 
-						loading={isLoading} 
-						//disabled={!canSubmit}
-						className="mt-2">
-						{t('auth.login')}
-					</SharedButton>
+          {password.length > 0 && !isPasswordValid && (
+            <p className="text-rose-400 text-xs mb-2">
+              {t('auth.errors.invalidPassword')}
+            </p>
+          )}
 
+          <div className="flex items-center mb-6">
+            <Link to="/forgot-password" className="text-sm text-rose-200 hover:underline">
+              {t('auth.forgotPassword')}
+            </Link>
+          </div>
 
-				</form>
-			</div>
+          {error && <p className="text-red-500 font-semibold mb-2">{error}</p>}
 
-			<div className='px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center'>
-				<p className='text-sm text-gray-300'>
-					{t('auth.noAccount')}{" "}
-					<Link to='/signup' className='text-rose-200 hover:underline font-semibold'>
-						{t('auth.goSignup')}
-					</Link>
-				</p>
-			</div>
-		</motion.div>
-	);
-};
+          <SharedButton
+            type="submit"
+            loading={isLoading}
+            className="mt-2"
+          >
+            {t('auth.login')}
+          </SharedButton>
+        </form>
+      </div>
+
+      <div className="px-6 sm:px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center">
+        <p className="text-sm text-gray-300 text-center">
+          {t('auth.noAccount')}{" "}
+          <Link to="/signup" className="text-rose-200 hover:underline font-semibold">
+            {t('auth.goSignup')}
+          </Link>
+        </p>
+      </div>
+    </motion.div>
+  </div>
+);
+
+}
 
 export default LoginPage;

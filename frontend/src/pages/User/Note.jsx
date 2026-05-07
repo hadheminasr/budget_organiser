@@ -313,9 +313,9 @@ export default function Note() {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-8 px-4 py-6">
+    <div className="w-full flex flex-col gap-4 sm:gap-6">
       {/* HEADER avec animation */}
-      <div className="text-center md:text-left">
+      <div className="text-left min-w-0">
         <div className="inline-flex items-center gap-2 mb-2">
           <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-rose-400 rounded-xl flex items-center justify-center">
             <FolderOpen className="w-4 h-4 text-white" />

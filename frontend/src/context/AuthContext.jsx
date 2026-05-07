@@ -81,12 +81,12 @@ export function AuthProvider({ children }) {
   };
   //  RESET PASSWORD
   const resetPassword = async (token, password) => {
-    setError(null);
-    const res = await axios.post(`${API_URL}/reset-password/${token}`, {
-      password,
-    });
-    return res.data;
-  };
+  const response = await axios.post(`/api/auth/reset-password/${token}`, {
+    newPassword: password,
+  });
+
+  return response.data;
+};
   const roleHome = (u = user) => {
     if (!u) return "/login";
     return u.role === "admin" ? "/admin" : "/user";

@@ -42,19 +42,24 @@ function computeProgressToNext(healthScore, currentStateId) {
 // ── Évaluation mensuelle du duck ──────────────────────────────────────────────
 export async function evaluateDuck(accountId, reportData) {
   const { bi, currentSummary, reportMonth } = reportData ?? {};
+   const account = await Account.findById(accountId).select("Duck").lean();
+  const current  = account?.Duck ?? {};  
 
+  const isFirstEvaluation = !current.lastEvaluatedMonth;  // ← après current
   const scoreResult = computeHealthScore({
     complianceRate: bi?.biScore?.discipline ?? currentSummary?.score ?? 0,
     execRate: bi?.execRate ?? 0,
     savRate: bi?.biScore?.epargne ?? 0,
     avgGoalPct: bi?.biScore?.objectifs ?? 0,
+    isFirstEvaluation,
   });
 
   const healthScore = scoreResult.healthScore;
   const state = scoreToState(healthScore);
 
-  const account = await Account.findById(accountId).select("Duck").lean();
-  const current = account?.Duck ?? {};
+ 
+
+  
 
   const prevHearts = current.hearts ?? 0;
   const prevTotalHearts = current.totalHearts ?? 0;

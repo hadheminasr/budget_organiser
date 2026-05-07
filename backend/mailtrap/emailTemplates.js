@@ -93,3 +93,54 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 </body>
 </html>
 `;
+
+export const WELCOME_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bienvenue sur Budget Organizer</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#111217; font-family:Arial, Helvetica, sans-serif; color:#ffffff;">
+  <div style="max-width:620px; margin:0 auto; background-color:#1b1c22; padding:40px 28px;">
+
+    <div style="text-align:center; margin-bottom:45px;">
+      <div style="font-size:34px; font-weight:bold; color:#f3a7bd; font-family:Georgia, serif;">
+        Budget
+      </div>
+      <div style="font-size:24px; color:#d8d0c8; margin-top:-8px;">
+        Organizer
+      </div>
+    </div>
+
+    <h1 style="font-size:28px; letter-spacing:1px; margin-bottom:20px; color:#ffffff;">
+      Bienvenue, {name} !
+    </h1>
+
+    <p style="font-size:17px; line-height:1.7; color:#ffffff; font-weight:bold;">
+      Merci d'avoir choisi Budget Organizer ! Ça nous fait vraiment plaisir de vous compter parmi nous. 💗
+    </p>
+
+    <p style="font-size:16px; line-height:1.7; color:#c9c9c9; margin-top:28px;">
+      On est très contents de vous avoir avec nous ! 🎉<br/>
+      À partir d’aujourd’hui, chaque dépense a une place, chaque objectif a un plan,
+      et votre budget devient enfin clair. 😉👇
+    </p>
+
+    <p style="font-size:16px; line-height:1.7; color:#c9c9c9;">
+      À très vite,<br/>
+      <strong style="color:#ffffff;">L’équipe Budget Organizer 💗</strong>
+    </p>
+
+    <div style="margin-top:45px; padding-top:25px; border-top:1px solid #333843;">
+      <p style="font-size:15px; color:#9ba6a6; line-height:1.6;">
+        Tes dépenses parlaient... on leur a donné un dashboard 📊
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
+`;

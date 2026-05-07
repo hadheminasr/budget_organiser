@@ -132,7 +132,7 @@ function OperationModal({ onClose, onSave, categories, initial = null }) {
 }
 
 
-export default function Operations() {
+export default function Operations({ duck }) {
   const { t }= useTranslation();
   const { user } = useAuth();
   const { categories }= useCategories();
@@ -144,32 +144,31 @@ export default function Operations() {
 
 
   const handleAdd = async (form) => {
-  try {
-    const res = await addOperation(user.accountId, form);
+      try {        
+        const res = await addOperation(user.accountId, form);
+        console.log("res complet:", res);           // ← voir la structure
+        console.log("duckSignal:", res?.duckSignal); // ← null ou "overspend" ?
+        console.log("duck:", duck);  
+        // ← SEUL AJOUT
+        if (res?.duckSignal) {
+          duck?.triggerEvent(res.duckSignal);
+        }
 
-    if (res.depassement) {
-      toast.error(t("operations.budgetExceeded", {
-        budget: res.budgetCategorie,
-        total:  res.nouveauTotal,
-      }));
-    }
+        if (res.depassement) {
+          toast.error(t("operations.budgetExceeded", {
+            budget: res.budgetCategorie,
+            total:  res.nouveauTotal,
+          }));
+        }
 
     const groups = await fetchOperationsGrouped(user.accountId);
     setOperations(groups);
 
   } catch (err) {
-    const message = err.response?.data?.message;
-    
-    if (message === "Solde insuffisant") {
-      toast.error(t("operations.insufficientBalance"));
-    } else if (message === "Reste insuffisant pour couvrir le dépassement") {
-      toast.error(t("operations.insufficientReste"));
-    } else {
-      toast.error(t("operations.addError"));
-    }
-    
+    toast.error(err?.response?.data?.message || t("common.serverError"));
   }
 };
+
   const handleUpdate = async (form) => {
     await updateOperation(editingOp._id, form);
     const groups = await fetchOperationsGrouped(user.accountId);
@@ -197,29 +196,39 @@ export default function Operations() {
   );
 
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-4 sm:gap-6">{/*gap-4 sm:gap-6 : espace plus petit sur mobile, plus grand sur desktop*/}
 
       {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-bold text-xl text-rose-900">{t("operations.title")}</h1>
+      {/* Sur mobile, le header devient vertical :
+Titre
+Bouton ajouter
+
+Sur desktop, il redevient horizontal :
+
+Titre                         Bouton ajouteravec flex flex-col sm:flex-row*/ }
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-bold text-lg sm:text-xl text-rose-900 truncate">
+            {t("operations.title")}
+          </h1>
           <p className="text-xs text-pink-300">
             {t("operations.count", { count: operations?.length })}
           </p>
         </div>
-        <div className="w-auto">
-          <SharedButton
-            variant="primary"
-            onClick={() => setShowModal(true)}
-            icon={<Plus className="w-4 h-4" />}
-            className="!w-auto px-4 py-2.5 text-sm">
-          </SharedButton>
-        </div>
+
+        <SharedButton
+          variant="primary"
+          onClick={() => setShowModal(true)}
+          icon={<Plus className="w-4 h-4" />}
+          className="w-full sm:!w-auto px-4 py-2.5 text-sm"
+        >
+          <span className="sm:hidden">{t("operations.modal.add")}</span>
+        </SharedButton>
       </div>
 
       {/* LISTE */}
       {operations.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-pink-100 p-12 text-center shadow-sm">
+        <div className="bg-white rounded-2xl border border-pink-100 p-6 sm:p-12 text-center shadow-sm">
           <p className="text-4xl mb-3">💸</p>
           <p className="text-pink-300 text-sm">{t("operations.noOperations")}</p>
           <p className="text-pink-200 text-xs mt-1">{t("operations.noOperationsHint")}</p>
@@ -235,12 +244,16 @@ export default function Operations() {
             <div key={info?._id ?? "none"} className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
 
               {/* Header catégorie */}
-              <div className="px-5 py-4 bg-pink-50 border-b border-pink-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: info?.color ?? "#D7A4A6" }} />
-                    <span className="font-semibold text-sm text-rose-900">{info?.name}</span>
+              <div className="px-4 sm:px-5 py-4 bg-pink-50 border-b border-pink-100">
+                <div className="flex items-start sm:items-center justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: info?.color ?? "#D7A4A6" }}
+                    />
+                    <span className="font-semibold text-sm text-rose-900 truncate">
+                      {info?.name}
+                    </span>
                   </div>
                   <span className="text-xs text-pink-300">
                     {t("operations.count", { count: ops.length })}
@@ -276,15 +289,17 @@ export default function Operations() {
               {/* Liste opérations */}
               <div className="flex flex-col divide-y divide-pink-50">
                 {ops.map(op => (
-                  <div key={op._id}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-pink-50/50 transition">
+                  <div
+                    key={op._id}
+                    className="flex items-center gap-3 px-4 sm:px-5 py-3 hover:bg-pink-50/50 transition"
+                  >
 
                     <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                       <TrendingDown className="w-4 h-4 text-red-400" />
                     </div>
 
-                    <div className="flex-1">
-                      <div className="text-sm font-bold text-red-400">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-red-400 truncate">
                         -{op.amount.toLocaleString(locale)} DT
                       </div>
                       <div className="text-xs text-pink-300">
@@ -312,8 +327,10 @@ export default function Operations() {
               </div>
 
               {/* Total catégorie */}
-              <div className="px-5 py-2 bg-pink-50/50 border-t border-pink-100 flex justify-between">
-                <span className="text-xs text-pink-300">{t("operations.totalSpent")}</span>
+              <div className="px-4 sm:px-5 py-2 bg-pink-50/50 border-t border-pink-100 flex items-center justify-between gap-3">
+                <span className="text-xs text-pink-300 truncate">
+                  {t("operations.totalSpent")}
+                </span>
                 <span className="text-xs font-bold text-red-400">
                   -{totalDepense.toLocaleString(locale)} DT
                 </span>

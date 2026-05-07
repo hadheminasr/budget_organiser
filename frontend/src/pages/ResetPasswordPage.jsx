@@ -42,19 +42,19 @@ const ResetPasswordPage = () => {
   };
 
   return (
+  <div className="min-h-screen w-full flex items-start sm:items-center justify-center px-4 pt-24 sm:pt-8 pb-8 bg-gradient-to-br from-[#fbf7f5] via-[#fff7fb] to-[#f6eeee]">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-md w-full bg-[#1a0f14]/50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden border border-white/10"
+      className="w-full max-w-[380px] sm:max-w-md bg-[#1a0f14]/50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden border border-white/10"
     >
-      <div className="p-8">
-
+      <div className="p-6 sm:p-8">
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>
 
-        <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#f2c6c9] via-[#e9b7b9] to-[#d7a4a6]">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#f2c6c9] via-[#e9b7b9] to-[#d7a4a6]">
           {t('auth.resetPassword')}
         </h2>
 
@@ -76,8 +76,8 @@ const ResetPasswordPage = () => {
             icon={Lock}
             type="password"
             placeholder={t('auth.confirmPassword')}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             required
           />
 
@@ -91,7 +91,9 @@ const ResetPasswordPage = () => {
         </form>
       </div>
     </motion.div>
-  );
+  </div>
+);
+
 };
 
 export default ResetPasswordPage;

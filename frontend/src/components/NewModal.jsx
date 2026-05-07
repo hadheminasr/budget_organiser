@@ -27,7 +27,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   const { goals } = useGoals();
 
   const [step, setStep] = useState(1);
-  const [solde, setSolde] = useState(""); // nouveau solde du mois
+  const [solde, setSolde] = useState("");
   const [budgets, setBudgets] = useState({});
   const [distributions, setDistributions] = useState({});
   const [loading, setLoading] = useState(false);
@@ -37,10 +37,8 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   // CALCULS MÉTIER
   // ──────────────────────────────────────────
 
-  // Nouveau solde du mois courant (étape 1)
   const nouveauSolde = Number(solde || 0);
 
-  // Étape 2 : budgets pris uniquement depuis le nouveau solde
   const totalBudgets = Object.values(budgets).reduce(
     (sum, val) => sum + (Number(val) || 0),
     0
@@ -49,7 +47,6 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   const budgetsDepassentSolde = totalBudgets > nouveauSolde;
   const resteApresBudgets = nouveauSolde - totalBudgets;
 
-  // Étape 3 : objectifs pris uniquement depuis le solde du mois précédent
   const montantDisponiblePourObjectifs = Number(soldeActuel ?? 0);
 
   const totalDistributions = Object.values(distributions).reduce(
@@ -66,9 +63,8 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-
     try {
-      await resetMensuel(user.accountId, {
+      const res = await resetMensuel(user.accountId, {
         solde: Number(solde),
         budgets: Object.entries(budgets).map(([categoryId, budget]) => ({
           categoryId,
@@ -80,7 +76,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
         })),
       });
 
-      onSuccess();
+      onSuccess(res);
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors du reset");
@@ -105,8 +101,8 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-xs font-bold text-amber-700">
               💰 Solde restant de {moisPrecedent}
             </p>
@@ -114,7 +110,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
               Ce montant sera utilisé seulement à l’étape objectifs
             </p>
           </div>
-          <span className="text-lg font-bold text-amber-700">
+          <span className="text-base sm:text-lg font-bold text-amber-700 whitespace-nowrap">
             {(soldeActuel ?? 0).toLocaleString("fr-FR")} DT
           </span>
         </div>
@@ -140,16 +136,18 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
             📊 Solde initial de {moisActuel}
           </p>
 
-          <div className="flex justify-between">
-            <span className="text-pink-400">Solde du nouveau mois</span>
-            <span className="font-semibold text-blue-600">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-pink-400 min-w-0">Solde du nouveau mois</span>
+            <span className="font-semibold text-blue-600 whitespace-nowrap">
               {nouveauSolde.toLocaleString("fr-FR")} DT
             </span>
           </div>
 
-          <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-            <span className="font-bold text-rose-900">Total enregistré en solde</span>
-            <span className="font-bold text-emerald-600 text-sm">
+          <div className="flex items-center justify-between gap-3 border-t border-pink-200 pt-2 mt-1">
+            <span className="font-bold text-rose-900 min-w-0">
+              Total enregistré en solde
+            </span>
+            <span className="font-bold text-emerald-600 text-sm whitespace-nowrap">
               {nouveauSolde.toLocaleString("fr-FR")} DT
             </span>
           </div>
@@ -173,12 +171,15 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 max-h-52 overflow-y-auto pr-1">
+      <div className="flex flex-col gap-3 max-h-52 overflow-y-auto overflow-x-hidden pr-1">
         {categories.map((cat) => (
-          <div key={cat._id} className="flex items-center gap-3">
-            <div className="flex items-center gap-2 flex-1">
-              <span className="text-lg">{cat.icon}</span>
-              <span className="text-xs font-semibold text-rose-900">
+          <div
+            key={cat._id}
+            className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3"
+          >
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-lg flex-shrink-0">{cat.icon}</span>
+              <span className="text-xs font-semibold text-rose-900 truncate">
                 {cat.name}
               </span>
             </div>
@@ -192,7 +193,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
                 }))
               }
               placeholder="0"
-              className="!mb-0 !w-28"
+              className="!mb-0 !w-full sm:!w-28"
             />
           </div>
         ))}
@@ -203,24 +204,24 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
           📊 Répartition du solde de {moisActuel}
         </p>
 
-        <div className="flex justify-between">
-          <span className="text-pink-400">Solde du nouveau mois</span>
-          <span className="font-semibold text-blue-600">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-pink-400 min-w-0">Solde du nouveau mois</span>
+          <span className="font-semibold text-blue-600 whitespace-nowrap">
             {nouveauSolde.toLocaleString("fr-FR")} DT
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="text-pink-400">- Budgets alloués</span>
-          <span className="font-semibold text-red-400">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-pink-400 min-w-0">- Budgets alloués</span>
+          <span className="font-semibold text-red-400 whitespace-nowrap">
             -{totalBudgets.toLocaleString("fr-FR")} DT
           </span>
         </div>
 
-        <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-          <span className="font-bold text-rose-900">Reste</span>
+        <div className="flex items-center justify-between gap-3 border-t border-pink-200 pt-2 mt-1">
+          <span className="font-bold text-rose-900 min-w-0">Reste</span>
           <span
-            className={`font-bold text-sm ${
+            className={`font-bold text-sm whitespace-nowrap ${
               resteApresBudgets < 0 ? "text-red-400" : "text-emerald-600"
             }`}
           >
@@ -253,11 +254,11 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs">
-        <div className="flex justify-between">
-          <span className="text-amber-600 font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="text-amber-600 font-semibold min-w-0">
             💰 Économies de {moisPrecedent} à distribuer
           </span>
-          <span className="font-bold text-amber-700">
+          <span className="font-bold text-amber-700 whitespace-nowrap">
             {montantDisponiblePourObjectifs.toLocaleString("fr-FR")} DT
           </span>
         </div>
@@ -271,7 +272,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3 max-h-48 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-3 max-h-48 overflow-y-auto overflow-x-hidden pr-1">
           {goals
             .filter((g) => !g.isAchieved)
             .map((goal) => {
@@ -281,14 +282,17 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
               );
 
               return (
-                <div key={goal._id} className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 flex-1">
-                    <span className="text-lg">{goal.icon}</span>
-                    <div>
-                      <p className="text-xs font-semibold text-rose-900">
+                <div
+                  key={goal._id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3"
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-lg flex-shrink-0">{goal.icon}</span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-rose-900 truncate">
                         {goal.name}
                       </p>
-                      <p className="text-[10px] text-pink-300">
+                      <p className="text-[10px] text-pink-300 truncate">
                         {(goal.currentAmount ?? 0).toLocaleString("fr-FR")} /
                         {goal.targetAmount.toLocaleString("fr-FR")} DT · {percent}%
                       </p>
@@ -304,7 +308,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
                       }))
                     }
                     placeholder="0"
-                    className="!mb-0 !w-28"
+                    className="!mb-0 !w-full sm:!w-28"
                   />
                 </div>
               );
@@ -317,24 +321,30 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
           📊 Utilisation du solde précédent
         </p>
 
-        <div className="flex justify-between">
-          <span className="text-pink-400">Solde précédent disponible</span>
-          <span className="font-semibold text-amber-600">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-pink-400 min-w-0">
+            Solde précédent disponible
+          </span>
+          <span className="font-semibold text-amber-600 whitespace-nowrap">
             {montantDisponiblePourObjectifs.toLocaleString("fr-FR")} DT
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="text-pink-400">- Distribué sur objectifs</span>
-          <span className="font-semibold text-red-400">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-pink-400 min-w-0">
+            - Distribué sur objectifs
+          </span>
+          <span className="font-semibold text-red-400 whitespace-nowrap">
             -{totalDistributions.toLocaleString("fr-FR")} DT
           </span>
         </div>
 
-        <div className="flex justify-between border-t border-pink-200 pt-2 mt-1">
-          <span className="font-bold text-rose-900">Montant restant de mars</span>
+        <div className="flex items-center justify-between gap-3 border-t border-pink-200 pt-2 mt-1">
+          <span className="font-bold text-rose-900 min-w-0">
+            Montant restant de mars
+          </span>
           <span
-            className={`font-bold text-sm ${
+            className={`font-bold text-sm whitespace-nowrap ${
               montantReporte < 0 ? "text-red-400" : "text-emerald-600"
             }`}
           >
@@ -388,7 +398,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
       }
       loading={loading}
     >
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         {[1, 2, 3].map((n) => (
           <div key={n} className="flex items-center gap-2">
             <div
@@ -400,13 +410,13 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
             </div>
             {n < 3 && (
               <div
-                className={`h-0.5 w-8 rounded transition
+                className={`h-0.5 w-6 sm:w-8 rounded transition
                 ${step > n ? "bg-pink-400" : "bg-pink-100"}`}
               />
             )}
           </div>
         ))}
-        <span className="text-xs text-pink-300 ml-2">
+        <span className="text-xs text-pink-300 sm:ml-2">
           {step === 1 ? "Salaire" : step === 2 ? "Budgets" : "Objectifs"}
         </span>
       </div>
@@ -420,7 +430,7 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
             setError(null);
             setStep((s) => s - 1);
           }}
-          className="text-xs text-pink-300 hover:text-pink-500 mt-2 cursor-pointer"
+          className="w-full sm:w-auto text-xs text-pink-300 hover:text-pink-500 mt-2 cursor-pointer text-left"
         >
           ← Retour
         </button>

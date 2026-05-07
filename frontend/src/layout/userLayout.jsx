@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate , useLocation } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next"; // ← ajout
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -6,7 +7,7 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 
 import { useState, useEffect, useRef } from "react";
 import { useMessages } from "../hooks/useMessages";
-import { fetchMessagesForAccount, markAsRead } from "../services/messageAPI";
+//import { fetchMessagesForAccount, markAsRead } from "../services/messageAPI";
 
 
 const UserLayout = () => {
@@ -17,6 +18,8 @@ const UserLayout = () => {
   const locale           = t("common.locale");
 
   const [showPanel, setShowPanel]       = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const panelRef                        = useRef(null);
 
@@ -52,14 +55,40 @@ const UserLayout = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-rose-50">
+    <div className="min-h-screen bg-rose-50 flex overflow-hidden">
 
       {/* ── SIDEBAR ── */}
-      <aside className="w-56 bg-white border-r border-pink-100 flex flex-col py-6 shadow-sm flex-shrink-0">
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-40
+          w-64 lg:w-56 bg-white border-r border-pink-100
+          flex flex-col py-6 shadow-sm flex-shrink-0
+          transform transition-transform duration-300
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
+
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
         {/* Logo */}
-        <div className="px-5 pb-5 border-b border-pink-100">
-          <img src="../../public/logo.png" alt="Budget Organizer" className="h-150 w-150 object-contain" />
+        <div className="px-5 pb-5 border-b border-pink-100 flex items-start justify-between">
+        <img
+          src="/Logo.png"
+          alt="Budget Organizer"
+          className="h-50 w-50 object-contain"
+        />
+
+        <button
+          className="lg:hidden p-2 rounded-xl hover:bg-pink-50 text-pink-400"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <X size={20} />
+        </button>
         </div>
 
         {/* Navigation */}
@@ -69,12 +98,19 @@ const UserLayout = () => {
             {t("layout.nav.principal")}
           </span>
 
-          <NavLink to="/user/dashboard"  className={navStyle}>{t("layout.nav.dashboard")}</NavLink>
-          <NavLink to="/user/operations" className={navStyle}>{t("layout.nav.operations")}</NavLink>
-          <NavLink to="/user/categories" className={navStyle}>{t("layout.nav.categories")}</NavLink>
-          <NavLink to="/user/goals"      className={navStyle}>{t("layout.nav.goals")}</NavLink>
-          <NavLink to="/user/note"       className={navStyle}>{t("layout.nav.notes")}</NavLink>
-          <NavLink to="/user/report" className={navStyle}> {t("layout.nav.report")}</NavLink>
+          
+          <NavLink
+            to="/user/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className={navStyle}
+          >
+            {t("layout.nav.dashboard")}
+          </NavLink>
+          <NavLink to="/user/operations" onClick={() => setSidebarOpen(false)} className={navStyle}>{t("layout.nav.operations")}</NavLink>
+          <NavLink to="/user/categories" onClick={() => setSidebarOpen(false)} className={navStyle}>{t("layout.nav.categories")}</NavLink>
+          <NavLink to="/user/goals"    onClick={() => setSidebarOpen(false)}  className={navStyle}>{t("layout.nav.goals")}</NavLink>
+          <NavLink to="/user/note"   onClick={() => setSidebarOpen(false)}    className={navStyle}>{t("layout.nav.notes")}</NavLink>
+          <NavLink to="/user/report" onClick={() => setSidebarOpen(false)} className={navStyle}> {t("layout.nav.report")}</NavLink>
           <span className="text-[9px] uppercase tracking-widest text-pink-300 px-2 mt-4 mb-1">
             {t("layout.nav.automation")}
           </span>
@@ -113,11 +149,17 @@ const UserLayout = () => {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
 
         {/* Topbar */}
-        <div className="bg-white border-b border-pink-100 px-7 py-4 flex items-center justify-between flex-shrink-0">
-          <div>
+        <div className="bg-white border-b border-pink-100 px-4 sm:px-7 py-4 flex items-center justify-between gap-3 flex-shrink-0">
+          <button
+            className="lg:hidden p-2 rounded-xl hover:bg-pink-50 text-pink-500"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu size={22} />
+          </button>
+          <div className="min-w-0 flex-1">
             <h1 className="font-bold text-lg text-rose-900">
               {t("layout.hello", { name: user?.name })}
             </h1>
@@ -143,7 +185,7 @@ const UserLayout = () => {
 
   {/* Panel messages */}
   {showPanel && (
-    <div className="absolute right-0 top-11 w-80 bg-white rounded-2xl shadow-xl border border-pink-100 z-50 overflow-hidden">
+    <div className="absolute right-0 top-11 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-white rounded-2xl shadow-xl border border-pink-100 z-50 overflow-hidden">
 
       {/* header panel */}
       <div className="px-4 py-3 border-b border-pink-100 flex items-center justify-between">
@@ -243,7 +285,7 @@ const UserLayout = () => {
         </div>
 
         {/* Page content */}
-        <div className="flex-1 overflow-y-auto p-7">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-7">
           <Outlet />
         </div>
 

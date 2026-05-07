@@ -965,7 +965,6 @@ async getDashboardData(accountId) {
 async resetMensuel(accountId, userId, data) {
   const account = await Account.findById(accountId);
   if (!account) throw new Error("Compte introuvable");
-
   /*const member = account.members.find(
     (m) => String(m.userId) === String(userId)
   );
@@ -1003,7 +1002,7 @@ async resetMensuel(accountId, userId, data) {
     { IdAccount: accountId, archived: false },
     { archived: true }
   );
-  // ── mettre à jour les budgets des catégories
+  // ── mettre à jour les budgets des catégories : chaque catégorie reçoit son nouveau budget pour le mois qui commence
   if (data.budgets?.length > 0) {
     for (const item of data.budgets) {
       await Category.findByIdAndUpdate(
@@ -1032,6 +1031,20 @@ if (Array.isArray(data.distributions) && data.distributions.length > 0) {
     });
   }
 }
+
+// Après la boucle distributions, ajoute ce flag :
+let hadGoalContribution = false;
+
+if (Array.isArray(data.distributions) && data.distributions.length > 0) {
+  for (const item of data.distributions) {
+    if (!item?.goalId) continue;
+    const amount = Number(item.amount ?? 0);
+    if (amount <= 0) continue;
+    hadGoalContribution = true; // ← nouveau
+    // ... reste du code inchangé
+  }
+}
+  
   // ── mettre à jour le compte
   await Account.findByIdAndUpdate(accountId, {
     solde:          nouveauSolde, // ← SEULEMENT le nouveau salaire
@@ -1040,7 +1053,7 @@ if (Array.isArray(data.distributions) && data.distributions.length > 0) {
   });
 
   //duck 
-    // ── évaluer le vault après le reset mensuel ───────────────────────────
+  // ── évaluer le Duck après le reset mensuel ───────────────────────────
   console.log("[RESET] before duck evaluation");
   console.log("accountId =", accountId);
   try {
@@ -1059,7 +1072,7 @@ if (Array.isArray(data.distributions) && data.distributions.length > 0) {
     currentSummary: {
       score: report.score,
     },
-    reportMonth: report.reportMonth,
+    reportMonth: currentMonth,
   });
 
   console.log("[RESET] duckResult =", duckResult);
@@ -1081,6 +1094,8 @@ if (Array.isArray(data.distributions) && data.distributions.length > 0) {
     solde:   nouveauSolde,
     totalBudgets,
     reste:   nouveauReste,
+    duckSignal: hadGoalContribution ? "goal_contribution" : null,
+
   };
 },
 

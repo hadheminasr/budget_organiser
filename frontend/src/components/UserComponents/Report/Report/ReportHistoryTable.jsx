@@ -2,13 +2,13 @@ export default function ReportHistoryTable({ data, locale }) {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-5">
+    <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-4 sm:p-5 overflow-hidden">
       <h2 className="font-bold text-sm text-rose-900 mb-4">
         Tableau historique
       </h2>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+        <table className="min-w-[680px] w-full text-xs">
           <thead>
             <tr className="border-b border-pink-100">
               <th className="text-left text-pink-400 font-semibold pb-2">Mois</th>

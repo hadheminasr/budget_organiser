@@ -38,53 +38,53 @@ const EmailVerificationPage = () => {
   };
 
   return (
-    <div className="max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md"
-      >
-  
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher />
-        </div>
+  <div className="min-h-screen w-full flex items-start sm:items-center justify-center px-4 pt-24 sm:pt-8 pb-8 bg-gradient-to-br from-[#fbf7f5] via-[#fff7fb] to-[#f6eeee]">
+    <motion.div
+      initial={{ opacity: 0, y: -30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-[380px] sm:max-w-mdbg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl p-6 sm:p-8 overflow-hidden"
+    >
+      <div className="flex justify-end mb-4">
+        <LanguageSwitcher />
+      </div>
 
-        <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#F3C6C6] via-[#E9B7B7] to-[#D7A4A6]">
-          {t('auth.verifyEmailTitle')}
-        </h2>
-        <p className="text-center text-white/70 mb-6">
-          {t('auth.verifyEmailSubtitle')}
-        </p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#F3C6C6] via-[#E9B7B7] to-[#D7A4A6]">
+        {t('auth.verifyEmailTitle')}
+      </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <SharedInput
-            type="text"
-            maxLength="6"
-            placeholder="123456"
-            value={code}
-            onChange={(e) => {
-              const valeur = e.target.value;
-              if (/^\d*$/.test(valeur)) setCode(valeur);
-            }}
-            className="text-center text-2xl font-bold tracking-[1rem] bg-white/5 text-white border-white/15"
-          />
+      <p className="text-center text-white/70 mb-6 text-sm sm:text-base">
+        {t('auth.verifyEmailSubtitle')}
+      </p>
 
-          {error && (
-            <p className="text-red-300 font-semibold mt-2">{error}</p>
-          )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <SharedInput
+          type="text"
+          maxLength="6"
+          placeholder="123456"
+          value={code}
+          onChange={(e) => {
+            const valeur = e.target.value;
+            if (/^\d*$/.test(valeur)) setCode(valeur);
+          }}
+          className="text-center text-xl sm:text-2xl font-bold tracking-[0.6rem] sm:tracking-[1rem] bg-white/5 text-white border-white/15"
+        />
 
-          <SharedButton
-            type="submit"
-            disabled={isLoading || code.length !== 6}
-            loading={isLoading}
-          >
-            {t('auth.verify')}
-          </SharedButton>
-        </form>
-      </motion.div>
-    </div>
-  );
+        {error && (
+          <p className="text-red-300 font-semibold mt-2 text-sm">{error}</p>
+        )}
+
+        <SharedButton
+          type="submit"
+          disabled={isLoading || code.length !== 6}
+          loading={isLoading}
+        >
+          {t('auth.verify')}
+        </SharedButton>
+      </form>
+    </motion.div>
+  </div>
+);
 };
 
 export default EmailVerificationPage;

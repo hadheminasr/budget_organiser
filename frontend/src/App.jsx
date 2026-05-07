@@ -198,16 +198,16 @@ function App() {
       }
     >
   <Route index element={<Navigate to="UserDash" replace />} />
-  <Route path="userDash"   element={<UserDash />} />
+  <Route path="userDash"   element={<UserDash duck={duck}/>} />
   <Route path="account"      element={<Account />} />
   <Route path="partage" element={<Share />} />
-  <Route path="operations" element={<Operations />} />
+  <Route path="operations" element={<Operations duck={duck} />} />
   <Route path="categories" element={<Categories />} />
   <Route path="goals" element={<Goals />} />
   <Route path="history" element={<History />} />
   <Route path="note" element={<Note />} />
   <Route path="report" element={<Report />} />
-  <Route path="first-login" element={<FirstLogin />} />
+  <Route path="first-login" element={<FirstLogin duck={duck} />} />
   <Route path="coach" element={<CoachBudgetPage />} />
   <Route path="premium" element={<PremiumDashboardPage />} />
 

@@ -64,7 +64,7 @@ function CategoryModal({ onClose, onSave, initial = null }) {
       submitDisabled={!canSubmit}
     >
       {/* Nom */}
-      <div>
+      <div className="space-y-4">
         <label className="text-xs text-pink-400 font-semibold mb-1 block">
           {t("categories.modal.name")}
         </label>
@@ -144,7 +144,7 @@ function CategoryModal({ onClose, onSave, initial = null }) {
         <label className="text-xs text-pink-400 font-semibold mb-1 block">
           {t("categories.modal.color")}
         </label>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <input
             type="color"
             value={color}
@@ -152,7 +152,7 @@ function CategoryModal({ onClose, onSave, initial = null }) {
             className="w-10 h-10 rounded-xl border border-pink-200 cursor-pointer"
           />
           <div
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white text-xs font-semibold"
+            className="w-fit max-w-full flex items-center gap-1 px-3 py-1.5 rounded-full text-white text-xs font-semibold"
             style={{ backgroundColor: color }}
           >
             {icon} {name || t("categories.preview")}
@@ -160,6 +160,7 @@ function CategoryModal({ onClose, onSave, initial = null }) {
         </div>
       </div>
     </SharedModal>
+    
   );
 }
 
@@ -199,26 +200,28 @@ export default function Categories() {
   );
 
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-4 sm:gap-6">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-bold text-xl text-rose-900">{t("categories.title")}</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-bold text-lg sm:text-xl text-rose-900 truncate">
+            {t("categories.title")}
+          </h1>
           <p className="text-xs text-pink-300">{t("categories.count", { count: categories.length })}</p>
         </div>
         <SharedButton
           variant="primary"
           onClick={() => setShowModal(true)}
           icon={<Plus className="w-4 h-4" />}
-          className="!w-auto px-4">
+          className="w-full sm:!w-auto px-4">
           {t("categories.add")}
         </SharedButton>
       </div>
 
       {/* LISTE */}
       {categories.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-pink-100 p-12 text-center shadow-sm">
+        <div className="bg-white rounded-2xl border border-pink-100 p-6 sm:p-12 text-center shadow-sm">
           <p className="text-4xl mb-3">🏷️</p>
           <p className="text-pink-300 text-sm">{t("categories.noCategories")}</p>
         </div>
@@ -226,24 +229,24 @@ export default function Categories() {
         <div className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
           {categories.map(cat => (
             <div key={cat._id}
-              className="flex items-center gap-3 px-5 py-4 hover:bg-pink-50/50 transition border-b border-pink-50 last:border-0">
+              className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-5 py-4 hover:bg-pink-50/50 transition border-b border-pink-50 last:border-0">
 
-              <span className="text-xl">{cat.icon ?? "🏷️"}</span>
+              <span className="text-xl flex-shrink-0">{cat.icon ?? "🏷️"}</span>
 
-              <div className="flex-1">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-semibold"
+              <div className="w-full sm:flex-1 min-w-0">
+                <span className="max-w-full inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-semibold"
                   style={{ backgroundColor: cat.color }}>
-                  {cat.name}
+                  <span className="truncate">{cat.name}</span>
                 </span>
                 {cat.budget > 0 && (
-                  <span className="ml-2 text-xs text-pink-300">
+                  <span className="block sm:inline sm:ml-2 mt-1 sm:mt-0 text-xs text-pink-300 whitespace-nowrap">
                     {cat.budget.toLocaleString(locale)} {t("categories.perMonth")}
                   </span>
                 )}
               </div>
 
               {!cat.isDefault && (
-                <div className="flex gap-1">
+                <div className="w-full sm:w-auto flex justify-end gap-1 flex-shrink-0">
                   <SharedButton
                     type="button"
                     variant="ghost"

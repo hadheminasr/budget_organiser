@@ -23,8 +23,8 @@ export default function DashProjectionArea({ totalBudget = 0, consumed = 0, loca
   }, [consumed, totalBudget, today, daysInMonth]);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="flex items-start justify-between mb-1">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-1">
         <div>
           <p className="text-[13px] font-medium text-gray-900">Projection de fin de mois</p>
           <p className="text-[11px] text-gray-400 mt-0.5">
@@ -45,7 +45,7 @@ export default function DashProjectionArea({ totalBudget = 0, consumed = 0, loca
         </span>
       </div>
 
-      <div className="flex gap-4 mb-3 text-[11px] text-gray-500">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3 text-[11px] text-gray-500">
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-[2px] inline-block" style={{ background: "#85B7EB" }} />
           Budget projeté linéaire

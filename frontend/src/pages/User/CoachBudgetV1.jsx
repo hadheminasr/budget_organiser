@@ -1,12 +1,40 @@
 import { useAuth } from "../../context/AuthContext";
 import { useCoachBudget } from "../../hooks/useCoachBudget";
+import {
+  CheckCircle,
+  AlertTriangle,
+  ShieldAlert,
+  Gauge,
+  Wallet,
+  Zap,
+  Star,
+  TrendingUp,
+  Shield,
+  Lightbulb,
+  FolderPlus,
+  Target,
+  Sparkles,
+  TrendingDown,
+} from "lucide-react";
+
+const IconCheck = () => <CheckCircle className="w-5 h-5" strokeWidth={1.8} />;
+const IconAlert = () => <AlertTriangle className="w-5 h-5" strokeWidth={1.8} />;
+const IconWarning = () => <ShieldAlert className="w-5 h-5" strokeWidth={1.8} />;
+
+const IconGauge = () => <Gauge className="w-4 h-4" strokeWidth={1.8} />;
+const IconWallet = () => <Wallet className="w-4 h-4" strokeWidth={1.8} />;
+const IconZap = () => <Zap className="w-4 h-4" strokeWidth={1.8} />;
+const IconStar = () => <Star className="w-4 h-4" strokeWidth={1.8} />;
+const IconTrendingUp = () => <TrendingUp className="w-4 h-4" strokeWidth={1.8} />;
+const IconShield = () => <Shield className="w-4 h-4" strokeWidth={1.8} />;
+const IconLightbulb = () => <Lightbulb className="w-4 h-4" strokeWidth={1.8} />;
+const IconFolder = () => <FolderPlus className="w-4 h-4" strokeWidth={1.8} />;
+const IconTarget = () => <Target className="w-4 h-4" strokeWidth={1.8} />;
+const IconSparkles = () => <Sparkles className="w-4 h-4" strokeWidth={1.8} />;
+const IconTrendingDown = () => <TrendingDown className="w-4 h-4" strokeWidth={1.8} />;
 
 // ── Inline SVG icons (no Lucide dependency needed) ──────────────────────────
-const IconRefresh = () => (
-  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.6 0 3 .68 4 1.76M13.5 2.5v2.5H11" />
-  </svg>
-);
+/*
 const IconCheck = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
@@ -81,7 +109,7 @@ const IconTrendingDown = () => (
   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
   </svg>
-);
+);*/
 
 // ── Config maps ──────────────────────────────────────────────────────────────
 const statusConfig = {
@@ -162,8 +190,8 @@ function SectionHeader({ icon, title, subtitle }) {
   return (
     <div className="flex items-start gap-2 mb-4">
       <span className="mt-0.5 shrink-0">{icon}</span>
-      <div>
-        <h3 className="text-[15px] font-medium text-gray-900">{title}</h3>
+      <div className="min-w-0">
+        <h3 className="text-[15px] font-medium text-gray-900 truncate">{title}</h3>
         {subtitle && (
           <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
         )}
@@ -182,7 +210,7 @@ function RecGroup({ label, dot, items, emptyText, itemClass }) {
       {items?.length > 0 ? (
         <div className="flex flex-col gap-1.5">
           {items.map((item, i) => (
-            <div key={i} className={`rounded-lg border px-3.5 py-2.5 text-sm leading-relaxed text-gray-700 ${itemClass}`}>
+            <div key={i} className={`rounded-lg border px-3 py-2.5 text-sm leading-relaxed text-gray-700 break-words ${itemClass}`}>
               {item}
             </div>
           ))}
@@ -262,7 +290,7 @@ export default function CoachBudgetPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="w-full flex flex-col gap-4 sm:gap-5">
 
       {/* ── HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -272,13 +300,6 @@ export default function CoachBudgetPage() {
             Diagnostic personnalisé, recommandations et projection de fin de mois.
           </p>
         </div>
-        <button
-          onClick={fetchCoachBudget}
-          className="inline-flex items-center gap-2 self-start px-3.5 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <IconRefresh />
-          Actualiser
-        </button>
       </div>
 
       {/* ── SYNTHÈSE PRINCIPALE ── */}
@@ -305,7 +326,7 @@ export default function CoachBudgetPage() {
         </div>
 
         {/* Messages */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="rounded-xl bg-white/60 border border-white/80 p-4">
             <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-2">
               Message principal
@@ -325,9 +346,9 @@ export default function CoachBudgetPage() {
       </section>
 
       {/* ── KPI CARDS ── */}
-      <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
         {/* Budget consommé */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#E24B4A]">
             <IconGauge />
             <p className="text-xs text-gray-500">Budget consommé</p>
@@ -339,7 +360,7 @@ export default function CoachBudgetPage() {
         </div>
 
         {/* Marge restante */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#639922]">
             <IconWallet />
             <p className="text-xs text-gray-500">Marge restante</p>
@@ -354,7 +375,7 @@ export default function CoachBudgetPage() {
         </div>
 
         {/* Risque budgétaire */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#BA7517]">
             <IconZap />
             <p className="text-xs text-gray-500">Risque budgétaire</p>
@@ -368,7 +389,7 @@ export default function CoachBudgetPage() {
         </div>
 
         {/* Score santé */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#7F77DD]">
             <IconStar />
             <p className="text-xs text-gray-500">Score santé budget</p>
@@ -384,13 +405,13 @@ export default function CoachBudgetPage() {
       </section>
 
       {/* ── PROJECTION ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
         <SectionHeader
           icon={<span className="text-[#185FA5]"><IconTrendingUp /></span>}
           title="Projection de fin de mois"
           subtitle={`Basée sur le rythme actuel — Jour ${coachData.projection?.currentDay ?? "—"}/${coachData.projection?.daysInMonth ?? "—"}`}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="rounded-xl bg-[#E6F1FB] border border-[#B5D4F4] p-4">
             <p className="text-[11px] text-gray-500 mb-1.5">Dépense projetée</p>
             <p className="text-lg font-medium text-gray-900">
@@ -421,7 +442,7 @@ export default function CoachBudgetPage() {
       {/* ── ALERTES + RECOMMANDATIONS ── */}
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Alertes */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#E24B4A]"><IconShield /></span>}
             title="Alertes détectées"
@@ -472,9 +493,9 @@ export default function CoachBudgetPage() {
       </section>
 
       {/* ── FOCUS PERSONNALISÉS ── */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Catégorie sensible */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#E24B4A]"><IconFolder /></span>}
             title="Catégorie sensible"
@@ -495,13 +516,13 @@ export default function CoachBudgetPage() {
                   coachData.insights.topCategorieProbleme.severity}
               </span>
               <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3">
-                <div className="flex justify-between items-baseline">
+                <div className="flex items-baseline justify-between gap-3">
                   <span className="text-xs text-gray-400">Dépassement</span>
-                  <span className="text-sm font-medium text-[#E24B4A]">
+                  <span className="text-sm font-medium text-[#E24B4A] whitespace-nowrap">
                     +{(coachData.insights.topCategorieProbleme.depassement ?? 0).toLocaleString(locale)} DT
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline">
+                <div className="flex justify-between items-baseline whitespace-nowrap">
                   <span className="text-xs text-gray-400">Consommation</span>
                   <span className="text-sm font-medium text-[#993556]">
                     {(coachData.insights.topCategorieProbleme.consumptionRate ?? 0).toFixed(0)}%
@@ -518,7 +539,7 @@ export default function CoachBudgetPage() {
         </div>
 
         {/* Objectif à relancer */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#639922]"><IconTarget /></span>}
             title="Objectif à relancer"
@@ -530,13 +551,15 @@ export default function CoachBudgetPage() {
               </p>
               <div className="space-y-1.5 border-t border-gray-100 pt-3">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-gray-400">Progression</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">
+                    Progression</span>
                   <span className="text-sm font-medium text-[#BA7517]">
                     {((coachData.insights.objectifLeMoinsAvance.progressRate ?? 0) * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-gray-400">Montant actuel</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">
+                    Montant actuel</span>
                   <span className="text-sm font-medium text-[#993556]">
                     {(coachData.insights.objectifLeMoinsAvance.currentAmount ?? 0).toLocaleString(locale)} DT
                   </span>
@@ -552,7 +575,7 @@ export default function CoachBudgetPage() {
         </div>
 
         {/* Profil de conseil */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#7F77DD]"><IconSparkles /></span>}
             title="Profil de conseil"
@@ -564,9 +587,9 @@ export default function CoachBudgetPage() {
               { label: "Habitude d'épargne",  value: coachData.accountProfile?.savingHabit,    fallback: "Non renseignée" },
               { label: "Objectif principal",  value: coachData.accountProfile?.mainGoal,       fallback: "Non renseigné" },
             ].map(({ label, value, fallback }) => (
-              <div key={label}>
+              <div key={label} className="min-w-0">
                 <p className="text-[11px] text-gray-400 mb-0.5">{label}</p>
-                <p className="text-sm font-medium text-gray-800">
+                <p className="text-sm font-medium text-gray-800 break-words">
                   {profileLabels[value] || value || fallback}
                 </p>
               </div>
@@ -576,7 +599,7 @@ export default function CoachBudgetPage() {
       </section>
 
       {/* ── DÉTAIL DES RÈGLES ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-5">
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
         <SectionHeader
           icon={<span className="text-[#185FA5]"><IconTrendingDown /></span>}
           title="Détail du diagnostic"
@@ -584,7 +607,7 @@ export default function CoachBudgetPage() {
         />
         {coachData.triggeredRules?.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="min-w-[560px] w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="py-2.5 pr-4 text-left text-[10px] font-medium uppercase tracking-widest text-gray-400">

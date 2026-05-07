@@ -32,3 +32,21 @@ export const updateUserSchema = Joi.object({
   })
 }); 
 //.min(1)
+export const resetPasswordSchema = Joi.object({
+  body: Joi.object({
+    newPassword: Joi.string()
+      .min(6)
+      .required()
+      .messages({
+        "string.empty": "Password is required",
+        "string.min": "At least 6 characters",
+        "any.required": "Password is required",
+      }),
+  }).required(),
+
+  params: Joi.object({
+    token: Joi.string().required(),
+  }).required(),
+
+  query: Joi.object({}).unknown(true),
+});

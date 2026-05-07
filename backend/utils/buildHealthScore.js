@@ -47,7 +47,15 @@ export function computeHealthScore({
   execRate = 0,
   savRate = 0,
   avgGoalPct = 0,
+  isFirstEvaluation = false,
 }) {
+  // Mois vide + premier mois seulement → score 0
+  if (execRate === 0 && isFirstEvaluation) {
+    return {
+      healthScore: 0,
+      breakdown: { discipline: 0, epargne: 0, objectifs: 0, regularite: 0 }
+    };
+  }
   const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)));
 
   const discipline = clamp(complianceRate);

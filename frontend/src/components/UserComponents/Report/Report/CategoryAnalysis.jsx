@@ -24,7 +24,7 @@ export default function CategoryAnalysis({
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-5">
+    <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-4 sm:p-5 overflow-hidden">
       <h2 className="font-bold text-sm text-rose-900 mb-4">
         Analyse par catégorie
       </h2>
@@ -43,23 +43,28 @@ export default function CategoryAnalysis({
 
       {catSelectionnee && (
         <>
-          <div className="bg-pink-50 rounded-xl px-4 py-3 flex items-center justify-between mb-4">
-            <span className="text-xs text-pink-400">
-              Dépense moyenne mensuelle
-            </span>
+        <div className="bg-pink-50 rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <span className="text-xs text-pink-400 min-w-0">
+            Dépense moyenne mensuelle
+          </span>
 
-            <span className="text-sm font-bold text-rose-900">
-              {catSelectionnee.moyenne.toLocaleString(locale)} DT
-            </span>
+          <span className="text-sm font-bold text-rose-900 whitespace-nowrap">
+            {catSelectionnee.moyenne.toLocaleString(locale)} DT
+          </span>
 
-            <span className="text-xs text-pink-300">
-              sur un budget de {catSelectionnee.budget.toLocaleString(locale)} DT
-            </span>
-          </div>
+          <span className="text-xs text-pink-300 min-w-0 sm:text-right">
+            sur un budget de {catSelectionnee.budget.toLocaleString(locale)} DT
+          </span>
+        </div>
+
 
           {catSelectionnee.history.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={catSelectionnee.history} barCategoryGap="30%">
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart
+                data={catSelectionnee.history}
+                barCategoryGap="30%"
+                margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+              >
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip formatter={(value) => `${value.toLocaleString(locale)} DT`} />

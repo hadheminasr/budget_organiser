@@ -2,7 +2,7 @@ export default function GoalsProgress({ goalsWidget, locale }) {
   if (!goalsWidget || goalsWidget.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-5">
+    <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-4 sm:p-5 overflow-hidden">
       <h2 className="font-bold text-sm text-rose-900 mb-4">
         Progression des objectifs
       </h2>
@@ -10,10 +10,10 @@ export default function GoalsProgress({ goalsWidget, locale }) {
       <div className="flex flex-col gap-4">
         {goalsWidget.map((goal) => (
           <div key={goal._id}>
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 mb-1">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="text-lg">{goal.icon}</span>
-                <span className="text-xs font-bold text-rose-900">
+                <span className="text-xs font-bold text-rose-900 truncate">
                   {goal.name}
                 </span>
 
@@ -24,7 +24,7 @@ export default function GoalsProgress({ goalsWidget, locale }) {
                 )}
               </div>
 
-              <span className="text-xs text-pink-400">
+              <span className="text-xs text-pink-400 whitespace-nowrap">
                 {goal.currentAmount.toLocaleString(locale)} / {goal.targetAmount.toLocaleString(locale)} DT
               </span>
             </div>
@@ -39,7 +39,7 @@ export default function GoalsProgress({ goalsWidget, locale }) {
               />
             </div>
 
-            <div className="flex justify-between text-[10px] mt-1">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-[10px] mt-1">
               <span
                 className="font-bold"
                 style={{
