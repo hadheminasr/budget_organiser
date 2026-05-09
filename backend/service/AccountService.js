@@ -965,44 +965,37 @@ async getDashboardData(accountId) {
 async resetMensuel(accountId, userId, data) {
   const account = await Account.findById(accountId);
   if (!account) throw new Error("Compte introuvable");
-  /*const member = account.members.find(
-    (m) => String(m.userId) === String(userId)
-  );
 
-  if (!member) {
-    throw new Error("Utilisateur non rattaché à ce compte");
-  }
-
-  if (member.role !== "gérant") {
-    throw new Error("Accès refusé : seul le gérant peut réinitialiser le mois");
-  }*/
   const currentMonth = new Date().toISOString().slice(0, 7);
-  // ── solde accumulé du mois précédent (mars)
+
   const soldeAvantReset = Number(account.solde ?? 0);
-  // ── nouveau salaire entré étape 1
   const salaireMois = Number(data.solde ?? 0);
+
   if (isNaN(salaireMois) || salaireMois < 0)
     throw new Error("Le salaire du mois est invalide");
-  // ── total distribué sur objectifs (depuis solde de mars)
+
   const totalDistributions = (data.distributions ?? [])
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
   if (totalDistributions > soldeAvantReset)
     throw new Error("Le montant distribué dépasse le solde du mois précédent");
-  // ── total budgets catégories
+
   const totalBudgets = (data.budgets ?? [])
     .reduce((sum, item) => sum + Number(item.budget || 0), 0);
+
   if (totalBudgets > salaireMois)
     throw new Error("Le total des budgets dépasse le nouveau salaire");
-  // ── nouveau solde = SEULEMENT le nouveau salaire
+
   const nouveauSolde = salaireMois;
-  // ── nouveau reste = salaire - budgets
   const nouveauReste = salaireMois - totalBudgets;
-  // ── archiver les opérations du mois précédent
+
+  // ── archiver les opérations
   await Operation.updateMany(
     { IdAccount: accountId, archived: false },
     { archived: true }
   );
-  // ── mettre à jour les budgets des catégories : chaque catégorie reçoit son nouveau budget pour le mois qui commence
+
+  // ── mettre à jour les budgets catégories
   if (data.budgets?.length > 0) {
     for (const item of data.budgets) {
       await Category.findByIdAndUpdate(
@@ -1011,91 +1004,89 @@ async resetMensuel(accountId, userId, data) {
       );
     }
   }
-  // ── distribuer sur les objectifs (depuis solde de mars)
-  // ── distribuer sur les objectifs
-if (Array.isArray(data.distributions) && data.distributions.length > 0) {
-  for (const item of data.distributions) {
-    if (!item?.goalId) continue;
-    const amount = Number(item.amount ?? 0);
-    if (amount <= 0) continue;
-    const goal = await Goal.findById(item.goalId);
-    if (!goal) continue;
-    const ancienMontant = Number(goal.currentAmount ?? 0);
-    const targetAmount = Number(goal.targetAmount ?? 0);
-    const nouveauMontant = ancienMontant + amount;
-    const objectifAtteint = nouveauMontant >= targetAmount;
 
-    await Goal.findByIdAndUpdate(item.goalId, {
-      currentAmount: nouveauMontant,
-      isAchieved: objectifAtteint,
-    });
+  // ── distribuer sur les objectifs — UNE SEULE loop
+  let hadGoalContribution = false;
+  let hadGoalAchieved     = false;
+
+  if (Array.isArray(data.distributions) && data.distributions.length > 0) {
+    for (const item of data.distributions) {
+      if (!item?.goalId) continue;
+      const amount = Number(item.amount ?? 0);
+      if (amount <= 0) continue;
+
+      const goal = await Goal.findById(item.goalId);
+      if (!goal) continue;
+
+      const ancienMontant  = Number(goal.currentAmount ?? 0);
+      const targetAmount   = Number(goal.targetAmount  ?? 0);
+      const nouveauMontant = ancienMontant + amount;
+
+      const wasAlreadyAchieved = goal.isAchieved === true ||
+        (targetAmount > 0 && ancienMontant >= targetAmount);
+
+      const objectifAtteintNow = targetAmount > 0 && nouveauMontant >= targetAmount;
+
+      hadGoalContribution = true;
+      if (!wasAlreadyAchieved && objectifAtteintNow) {
+        hadGoalAchieved = true;
+      }
+
+      await Goal.findByIdAndUpdate(item.goalId, {
+        currentAmount: nouveauMontant,
+        isAchieved:    objectifAtteintNow,
+      });
+    }
   }
-}
 
-// Après la boucle distributions, ajoute ce flag :
-let hadGoalContribution = false;
-
-if (Array.isArray(data.distributions) && data.distributions.length > 0) {
-  for (const item of data.distributions) {
-    if (!item?.goalId) continue;
-    const amount = Number(item.amount ?? 0);
-    if (amount <= 0) continue;
-    hadGoalContribution = true; // ← nouveau
-    // ... reste du code inchangé
-  }
-}
-  
   // ── mettre à jour le compte
   await Account.findByIdAndUpdate(accountId, {
-    solde:          nouveauSolde, // ← SEULEMENT le nouveau salaire
-    reste:          nouveauReste, // ← salaire - budgets
+    solde:          nouveauSolde,
+    reste:          nouveauReste,
     lastResetMonth: currentMonth,
   });
 
-  //duck 
-  // ── évaluer le Duck après le reset mensuel ───────────────────────────
-  console.log("[RESET] before duck evaluation");
-  console.log("accountId =", accountId);
+  // ── évaluer le Duck
   try {
     const report = await this.getReport(accountId);
-    console.log("[RESET] reportMonth =", report.reportMonth);
-    console.log("[RESET] biScore =", report?.bi?.biScore);
-    const duckResult= await evaluateDuck(accountId, {
+    await evaluateDuck(accountId, {
       bi: {
-      biScore: {
-        // ton biScore utilise "global" pas "healthScore" — on mappe ici
-        discipline: report.bi.biScore.discipline,
-        epargne:    report.bi.biScore.epargne,
-        objectifs:  report.bi.biScore.objectifs,
-      }
-    },
-    currentSummary: {
-      score: report.score,
-    },
-    reportMonth: currentMonth,
-  });
+        biScore: {
+          discipline: report.bi.biScore.discipline,
+          epargne:    report.bi.biScore.epargne,
+          objectifs:  report.bi.biScore.objectifs,
+        }
+      },
+      currentSummary: { score: report.score },
+      reportMonth: currentMonth,
+    });
+  } catch (err) {
+    console.error("[Duck] evaluateDuck failed:", err.message);
+  }
 
-  console.log("[RESET] duckResult =", duckResult);
-} catch (err) {
-  console.error("[Duck] evaluateDuck failed:", err.message);
-}
-
-  // ── log
-  const user = await User.findById(userId).select("name");
-  await ActivityLogService.log(
-    accountId, userId, user?.name,
-    "account.newMonth", "account", accountId,
-    { month: currentMonth, salaireMois, totalBudgets, nouveauReste }
-  );
+  // ── activity log
+  try {
+    const user = await User.findById(userId).select("name");
+    await ActivityLogService.log(
+      accountId, userId, user?.name,
+      "account.newMonth", "account", accountId,
+      { month: currentMonth, salaireMois, totalBudgets, nouveauReste }
+    );
+  } catch (logErr) {
+    console.warn("[ActivityLog] non-blocking error:", logErr.message);
+  }
 
   return {
-    success: true,
-    month:   currentMonth,
-    solde:   nouveauSolde,
+    success:    true,
+    month:      currentMonth,
+    solde:      nouveauSolde,
     totalBudgets,
-    reste:   nouveauReste,
-    duckSignal: hadGoalContribution ? "goal_contribution" : null,
-
+    reste:      nouveauReste,
+    duckSignal: hadGoalAchieved
+      ? "goal_achieved"
+      : hadGoalContribution
+      ? "goal_contribution"
+      : null,
   };
 },
 

@@ -106,7 +106,8 @@ function App() {
   isAuthenticated &&
   user?.isVerified &&
   user?.role !== "admin" &&
-  !!accountId;
+  !!accountId &&
+  !location.pathname.includes("first-login");
   const duck = useDuck(accountId); 
   console.log("Duck debug:", { accountId, showDuck, duckData: duck.data, loading: duck.loading });
 

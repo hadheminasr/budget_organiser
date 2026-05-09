@@ -105,7 +105,7 @@ console.log("account.reste :", account.reste);
 
   let duckSignal = null;
   if (depassement)        duckSignal = "overspend";
-  else if (newReste <= 0) duckSignal = "broke";
+  
 
   return {
     operation: op,

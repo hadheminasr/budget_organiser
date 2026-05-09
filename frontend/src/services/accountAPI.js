@@ -28,13 +28,21 @@ export const deleteAccount = async (accountId) => {
   await axios.delete(`${BASE}/${accountId}`, { withCredentials: true });
 };
 
-export const resetMensuel = async (accountId, data) => {
-  const res = await axios.post(
+export const resetMensuel = async (accountId, payload) => {
+  const response = await axios.post(
     `${BASE}/${accountId}/monthly-reset`,
-    data,
+    payload,
     { withCredentials: true }
   );
-  return res.data;
+
+  console.log("[RESET API] raw response =", response.data);
+
+  const resetData = response.data?.result || response.data;
+
+  console.log("[RESET API] normalized data =", resetData);
+  console.log("[RESET API] duckSignal reçu =", resetData?.duckSignal);
+
+  return resetData;
 };
 
 export const fetchDashboardData = async (accountId) => {

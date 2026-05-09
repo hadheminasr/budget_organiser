@@ -1,4 +1,3 @@
-// Orchestrateur — contient uniquement : banner, KPIs live, imports des composants
 import { useAuth }        from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useDashboard }   from "../../hooks/UseDashboard";
@@ -21,9 +20,9 @@ const IconCalendar = () => (
   </svg>
 );
 
-export default function UserDash({duck}) {
+export default function UserDash({ duck }) {
   const { user }  = useAuth();
-  const isGerant = user?.role === "gérant";
+  const isGerant  = user?.role === "gérant";
   const { t }     = useTranslation();
   const { data, loading, error }                = useDashboard(user?.accountId);
   const { coachData, loadingCoach, errorCoach } = useCoachBudget(user?.accountId);
@@ -45,11 +44,10 @@ export default function UserDash({duck}) {
 
   if (!data) return null;
 
-  //Calculs pour les KPIs live 
-  const totalBudget = data.totalBudgets ?? 0;
-  const consumed= data.totalDepense ?? 0;
-  const remaining= data.reste?? 0;
-  const consumedPct = totalBudget > 0 ? Math.round((consumed / totalBudget) * 100) : 0;
+  const totalBudget   = data.totalBudgets ?? 0;
+  const consumed      = data.totalDepense ?? 0;
+  const remaining     = data.reste ?? 0;
+  const consumedPct   = totalBudget > 0 ? Math.round((consumed / totalBudget) * 100) : 0;
 
   const today         = new Date().getDate();
   const daysInMonth   = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
@@ -81,7 +79,7 @@ export default function UserDash({duck}) {
         </div>
       )}
 
-      {/* KPIs LIVE*/}
+      {/* KPIs LIVE */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         <SharedKpiLive
           label="Solde du mois"
@@ -113,7 +111,7 @@ export default function UserDash({duck}) {
         />
       </div>
 
-      {/* BLOC COACH*/}
+      {/* BLOC COACH */}
       <DashCoachBloc
         coachData={coachData}
         loadingCoach={loadingCoach}
@@ -134,21 +132,23 @@ export default function UserDash({duck}) {
         locale={locale}
       />
 
-      {/* OBJECTIFS*/}
+      {/* OBJECTIFS */}
       <DashGoalsProgress goals={data.goals} locale={locale} />
 
+      {/* MODAL NOUVEAU MOIS */}
       {showResetModal && (
-      <NewMonthModal
-        onClose={() => setShowResetModal(false)}
-        onSuccess={(res) => {
-          if (res?.duckSignal) {
-            duck?.triggerEvent(res.duckSignal);
-          }
-          window.location.reload();
-        }}
-        soldeActuel={data.solde ?? 0}
-      />
-)}
+        <NewMonthModal
+          onClose={() => setShowResetModal(false)}
+          soldeActuel={data.solde ?? 0}
+          duck={duck}
+          onSuccess={(res) => {
+            setTimeout(() => {
+              window.location.reload();
+            }, res?.duckSignal ? 4000 : 300);
+          }}
+        />
+      )}
+
     </div>
   );
 }

@@ -34,12 +34,12 @@ const NEXT_STATE = {
 // ── Image de réaction selon l'événement ──────────────────────────────────────
 // Quand le designer livre les GIFs → changer .png → .gif ici uniquement
 const REACTION_IMAGES = {
-  overspend:        "/assets/duck/duck-shake.png",
-  broke:            "/assets/duck/duck-cry.png",
-  goal_contribution:"/assets/duck/duck-celebrate.png",
-  levelup:          "/assets/duck/duck-levelup.png",
-  leveldown:        "/assets/duck/duck-cry.png",
-  welcome:           "/assets/duck/duck-born.png",
+  overspend:        "/assets/duck/duck-shake.png",//tester et aaprover
+  goal_contribution:"/assets/duck/duck-celebrate.png",//pas encore tester
+  levelup:          "/assets/duck/duck-levelup.png",//tester
+  leveldown:        "/assets/duck/duck-cry.png",//tester
+  welcome:           "/assets/duck/duck-born.png",//tester et approver
+  goal_achieved:     "/assets/duck/duck-celebrate.png",//tester et approver
 };
 
 // Événements qui déclenchent l'overlay plein écran (pas juste la bulle)

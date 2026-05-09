@@ -21,7 +21,7 @@ const moisPrecedent = new Date(
   year: "numeric",
 });
 
-export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
+export default function NewMonthModal({ onClose, onSuccess, soldeActuel, duck }) {
   const { user } = useAuth();
   const { categories } = useCategories();
   const { goals } = useGoals();
@@ -60,30 +60,52 @@ export default function NewMonthModal({ onClose, onSuccess, soldeActuel }) {
   const montantReporte = montantDisponiblePourObjectifs - totalDistributions;
 
   // ── soumission
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await resetMensuel(user.accountId, {
-        solde: Number(solde),
-        budgets: Object.entries(budgets).map(([categoryId, budget]) => ({
-          categoryId,
-          budget: Number(budget),
-        })),
-        distributions: Object.entries(distributions).map(([goalId, amount]) => ({
-          goalId,
-          amount: Number(amount),
-        })),
-      });
+  // Props : ajouter duck en prop
+// export default function NewMonthModal({ onClose, onSuccess, soldeActuel, duck })
 
-      onSuccess(res);
-      onClose();
-    } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors du reset");
-    } finally {
-      setLoading(false);
+const handleSubmit = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await resetMensuel(user.accountId, {
+  userId: user._id,          // ← ajouter cette ligne
+  solde: Number(solde),
+  budgets: Object.entries(budgets).map(([categoryId, budget]) => ({
+    categoryId,
+    budget: Number(budget),
+  })),
+  distributions: Object.entries(distributions).map(([goalId, amount]) => ({
+    goalId,
+    amount: Number(amount),
+  })),
+});
+console.log("[PAYLOAD]", {
+  solde: Number(solde),
+  budgets: Object.entries(budgets).map(([categoryId, budget]) => ({ categoryId, budget: Number(budget) })),
+  distributions: Object.entries(distributions).map(([goalId, amount]) => ({ goalId, amount: Number(amount) })),
+});
+    console.log("[3] res complet      =", res)
+    console.log("[3] res.duckSignal   =", res?.duckSignal)
+    console.log("[3] duck object      =", duck)
+    console.log("[3] duck.triggerEvent exist ?", typeof duck?.triggerEvent)
+
+    // 1. Fermer le modal d'abord
+    onClose();
+
+    // 2. Déclencher le duck signal si présent
+    if (res?.duckSignal && duck?.triggerEvent) {
+      duck.triggerEvent(res.duckSignal);
     }
-  };
+
+    // 3. Notifier le parent (sans reload immédiat)
+    onSuccess(res);
+
+  } catch (err) {
+    setError(err.response?.data?.message || "Erreur lors du reset");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ──────────────────────────────────────────
   // ÉTAPE 1 — Nouveau solde
