@@ -1,9 +1,7 @@
 // src/hooks/useDuck.js
-// ─────────────────────────────────────────────────────────────────────────────
 // Hook global du duck compagnon.
 // Gère : fetch de l'état, détection de changement d'état, mode modal au reset,
-//        et les événements réactifs (overspend, broke, levelup, etc.)
-// ─────────────────────────────────────────────────────────────────────────────
+// et les événements réactifs (overspend, broke, levelup, etc.)
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
@@ -12,17 +10,16 @@ const POLL_INTERVAL_MS = 60_000;
 // ── Constantes en dehors du hook (pas recréées à chaque render) ───────────────
 const REACTIVE_MESSAGES = {
   overspend:         "Oups ! Une catégorie vient de dépasser son budget. 👀",
-  broke:             "Plus de budget disponible. Mode essentiel jusqu'au reset. 🛑",
   goal_contribution: "Super, ton objectif avance ! Continue comme ça. 🎯",
+  goal_achieved: "Bravo ! Objectif atteint, ton Duck célèbre avec toi ! 🏆🎉",
   recovered:         "La marge est revenue. Belle récupération ! ✨",
   levelup:           "Nouvel état débloqué ! Tu progresses vraiment bien. 🌟",
   leveldown:         "Ce mois était difficile. On repart ensemble ? 💪",
 };
 
 // Événements qui ouvrent l'overlay plein écran (pas juste la bulle)
-const OVERLAY_EVENTS = new Set(["broke", "levelup", "leveldown", "welcome","overspend"]);
+const OVERLAY_EVENTS = new Set(["levelup", "leveldown", "welcome","overspend","goal_achieved","goal_contribution"]);
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function useDuck(accountId) {
   const [data,           setData]           = useState(null);
@@ -36,7 +33,7 @@ export function useDuck(accountId) {
   const msgTimeout   = useRef(null);
   const pollInterval = useRef(null);
 
-  // ── Fetch de l'état duck ──────────────────────────────────────────────────
+  //Fetch de l'état duck ──────────────────────────────────────────────────
   const fetchDuck = useCallback(async () => {
     if (!accountId) return;
     try {
@@ -70,34 +67,12 @@ export function useDuck(accountId) {
     pollInterval.current = setInterval(fetchDuck, POLL_INTERVAL_MS);
     return () => clearInterval(pollInterval.current);
   }, [fetchDuck]);
-/*
-  // ── triggerEvent — appelé depuis Operations, UserDash, etc. ──────────────
-  const triggerEvent = useCallback((eventType) => {
-    const msg = REACTIVE_MESSAGES[eventType];
-    if (!msg) return;
 
-    if (msgTimeout.current) clearTimeout(msgTimeout.current);
-
-    setActiveMsg(msg);
-    setIsWobbling(true);
-    setActiveReaction(eventType);
-
-    setTimeout(() => setIsWobbling(false), 600);
-
-    if (OVERLAY_EVENTS.has(eventType)) {
-      // Overlay plein écran → reste jusqu'au clic de l'utilisateur
-      setIsModal(true);
-    } else {
-      // Bulle discrète → disparaît après 5 secondes
-      msgTimeout.current = setTimeout(() => {
-        setActiveMsg(null);
-        setActiveReaction(null);
-      }, 5000);
-    }
-  }, []);*/
 
   // triggerEvent accepte maintenant un message custom optionnel
   const triggerEvent = useCallback((eventType, customMsg = null) => {
+    //─────────────────────────────────────────────────────────────
+    console.log("[4] triggerEvent appelé avec :", eventType, "| msg =", customMsg ?? REACTIVE_MESSAGES[eventType]);
     const msg = customMsg ?? REACTIVE_MESSAGES[eventType];
     if (!msg) return;
 

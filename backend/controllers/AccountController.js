@@ -151,8 +151,9 @@ export const getDashboardData = async (req, res) => {
 export const resetMensuel = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user.userId ?? req.user._id;
     const result = await AccountService.resetMensuel(id, userId, req.body);
+
     res.json({ success: true, result });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });

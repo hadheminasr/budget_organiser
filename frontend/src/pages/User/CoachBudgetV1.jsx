@@ -1,122 +1,27 @@
 import { useAuth } from "../../context/AuthContext";
 import { useCoachBudget } from "../../hooks/useCoachBudget";
 import {
-  CheckCircle,
-  AlertTriangle,
-  ShieldAlert,
-  Gauge,
-  Wallet,
-  Zap,
-  Star,
-  TrendingUp,
-  Shield,
-  Lightbulb,
-  FolderPlus,
-  Target,
-  Sparkles,
-  TrendingDown,
+  CheckCircle as IconCheck,
+  AlertTriangle as IconAlert,
+  ShieldAlert as IconWarning,
+  Gauge as IconGauge,
+  Wallet as IconWallet,
+  Zap as IconZap,
+  Star as IconStar,
+  TrendingUp as IconTrendingUp,
+  Shield as IconShield,
+  Lightbulb as IconLightbulb,
+  FolderPlus as IconFolder,
+  Target as IconTarget,
+  Sparkles as IconSparkles,
+  TrendingDown as IconTrendingDown,
 } from "lucide-react";
-
-const IconCheck = () => <CheckCircle className="w-5 h-5" strokeWidth={1.8} />;
-const IconAlert = () => <AlertTriangle className="w-5 h-5" strokeWidth={1.8} />;
-const IconWarning = () => <ShieldAlert className="w-5 h-5" strokeWidth={1.8} />;
-
-const IconGauge = () => <Gauge className="w-4 h-4" strokeWidth={1.8} />;
-const IconWallet = () => <Wallet className="w-4 h-4" strokeWidth={1.8} />;
-const IconZap = () => <Zap className="w-4 h-4" strokeWidth={1.8} />;
-const IconStar = () => <Star className="w-4 h-4" strokeWidth={1.8} />;
-const IconTrendingUp = () => <TrendingUp className="w-4 h-4" strokeWidth={1.8} />;
-const IconShield = () => <Shield className="w-4 h-4" strokeWidth={1.8} />;
-const IconLightbulb = () => <Lightbulb className="w-4 h-4" strokeWidth={1.8} />;
-const IconFolder = () => <FolderPlus className="w-4 h-4" strokeWidth={1.8} />;
-const IconTarget = () => <Target className="w-4 h-4" strokeWidth={1.8} />;
-const IconSparkles = () => <Sparkles className="w-4 h-4" strokeWidth={1.8} />;
-const IconTrendingDown = () => <TrendingDown className="w-4 h-4" strokeWidth={1.8} />;
-
-// ── Inline SVG icons (no Lucide dependency needed) ──────────────────────────
-/*
-const IconCheck = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-  </svg>
-);
-const IconAlert = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-const IconWarning = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    <line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
-const IconGauge = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-    <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-  </svg>
-);
-const IconWallet = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-const IconZap = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>
-);
-const IconStar = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-  </svg>
-);
-const IconTrendingUp = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
-  </svg>
-);
-const IconShield = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-const IconLightbulb = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="2" x2="12" y2="6" />
-    <path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z" />
-    <line x1="12" y1="22" x2="12" y2="18" />
-  </svg>
-);
-const IconFolder = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    <line x1="12" y1="11" x2="12" y2="17" /><line x1="9" y1="14" x2="15" y2="14" />
-  </svg>
-);
-const IconTarget = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
-  </svg>
-);
-const IconSparkles = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-  </svg>
-);
-const IconTrendingDown = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
-  </svg>
-);*/
-
 // ── Config maps ──────────────────────────────────────────────────────────────
 const statusConfig = {
   alert: {
     card: "border-[#F7C1C1] bg-[#fdf2f2]",
     badge: "bg-[#FCEBEB] text-[#501313] border-[#F7C1C1]",
-    icon: <IconAlert />,
+    icon: <IconAlert className="w-5 h-5" />,
     iconColor: "text-[#A32D2D]",
     title: "Situation critique",
     subtitle: "Le coach a détecté des signaux nécessitant une correction rapide.",
@@ -124,7 +29,7 @@ const statusConfig = {
   warning: {
     card: "border-[#FAC775] bg-[#fdf8ee]",
     badge: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
-    icon: <IconWarning />,
+    icon: <IconWarning className="w-5 h-5" />,
     iconColor: "text-[#854F0B]",
     title: "Situation à surveiller",
     subtitle: "Votre budget reste globalement gérable, mais certains points demandent de l'attention.",
@@ -132,7 +37,7 @@ const statusConfig = {
   good: {
     card: "border-[#9FE1CB] bg-[#f0faf6]",
     badge: "bg-[#E1F5EE] text-[#085041] border-[#9FE1CB]",
-    icon: <IconCheck />,
+    icon: <IconCheck className="w-5 h-5" />,
     iconColor: "text-[#0F6E56]",
     title: "Situation globalement saine",
     subtitle: "Votre budget est sous contrôle selon les règles actuelles du coach.",
@@ -350,7 +255,7 @@ export default function CoachBudgetPage() {
         {/* Budget consommé */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#E24B4A]">
-            <IconGauge />
+            <IconGauge className="w-4 h-4" />
             <p className="text-xs text-gray-500">Budget consommé</p>
           </div>
           <p className="text-2xl font-medium text-gray-900">{budgetConsumption.toFixed(1)}%</p>
@@ -362,7 +267,7 @@ export default function CoachBudgetPage() {
         {/* Marge restante */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#639922]">
-            <IconWallet />
+            <IconWallet className="w-4 h-4" />
             <p className="text-xs text-gray-500">Marge restante</p>
           </div>
           <p className="text-2xl font-medium text-gray-900">
@@ -377,7 +282,7 @@ export default function CoachBudgetPage() {
         {/* Risque budgétaire */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#BA7517]">
-            <IconZap />
+            <IconZap className="w-4 h-4" />
             <p className="text-xs text-gray-500">Risque budgétaire</p>
           </div>
           <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium border ${riskStyles[riskLevel] || riskStyles.low}`}>
@@ -391,7 +296,7 @@ export default function CoachBudgetPage() {
         {/* Score santé */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#7F77DD]">
-            <IconStar />
+            <IconStar className="w-4 h-4" />
             <p className="text-xs text-gray-500">Score santé budget</p>
           </div>
           <p className="text-2xl font-medium text-gray-900">
@@ -407,7 +312,7 @@ export default function CoachBudgetPage() {
       {/* ── PROJECTION ── */}
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
         <SectionHeader
-          icon={<span className="text-[#185FA5]"><IconTrendingUp /></span>}
+          icon={<span className="text-[#185FA5]"><IconTrendingUp className="w-4 h-4" /></span>}
           title="Projection de fin de mois"
           subtitle={`Basée sur le rythme actuel — Jour ${coachData.projection?.currentDay ?? "—"}/${coachData.projection?.daysInMonth ?? "—"}`}
         />
@@ -444,7 +349,7 @@ export default function CoachBudgetPage() {
         {/* Alertes */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
-            icon={<span className="text-[#E24B4A]"><IconShield /></span>}
+            icon={<span className="text-[#E24B4A]"><IconShield className="w-4 h-4" /></span>}
             title="Alertes détectées"
           />
           {coachData.alerts?.length > 0 ? (
@@ -465,7 +370,7 @@ export default function CoachBudgetPage() {
         {/* Recommandations */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <SectionHeader
-            icon={<span className="text-[#BA7517]"><IconLightbulb /></span>}
+            icon={<span className="text-[#BA7517]"><IconLightbulb className="w-4 h-4" /></span>}
             title="Recommandations du coach"
           />
           <RecGroup
@@ -497,7 +402,7 @@ export default function CoachBudgetPage() {
         {/* Catégorie sensible */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
-            icon={<span className="text-[#E24B4A]"><IconFolder /></span>}
+            icon={<span className="text-[#E24B4A]"><IconFolder className="w-4 h-4" /></span>}
             title="Catégorie sensible"
           />
           {coachData.insights?.topCategorieProbleme ? (
@@ -541,7 +446,7 @@ export default function CoachBudgetPage() {
         {/* Objectif à relancer */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
-            icon={<span className="text-[#639922]"><IconTarget /></span>}
+            icon={<span className="text-[#639922]"><IconTarget className="w-4 h-4" /></span>}
             title="Objectif à relancer"
           />
           {coachData.insights?.objectifLeMoinsAvance ? (
@@ -577,7 +482,7 @@ export default function CoachBudgetPage() {
         {/* Profil de conseil */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
-            icon={<span className="text-[#7F77DD]"><IconSparkles /></span>}
+            icon={<span className="text-[#7F77DD]"><IconSparkles className="w-4 h-4" /></span>}
             title="Profil de conseil"
           />
           <div className="flex flex-col gap-3">
@@ -601,7 +506,7 @@ export default function CoachBudgetPage() {
       {/* ── DÉTAIL DES RÈGLES ── */}
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
         <SectionHeader
-          icon={<span className="text-[#185FA5]"><IconTrendingDown /></span>}
+          icon={<span className="text-[#185FA5]"><IconTrendingDown className="w-4 h-4" /></span>}
           title="Détail du diagnostic"
           subtitle="Règles déclenchées par le moteur V1 et leur niveau de priorité."
         />
