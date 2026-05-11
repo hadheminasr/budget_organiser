@@ -1,7 +1,7 @@
 import { Account } from "../../models/Account.js";
 import { computeHealthScore } from "../../utils/buildHealthScore.js";
 import {
-  VAULT_STATES as DUCK_STATES,
+  DUCK_STATES,
   STREAK_MIN_SCORE,
   DUCK_MESSAGES,
 } from "./duckConstants.js";
@@ -42,7 +42,7 @@ function computeProgressToNext(healthScore, currentStateId) {
 // ── Évaluation mensuelle du duck ──────────────────────────────────────────────
 export async function evaluateDuck(accountId, reportData) {
   const { bi, currentSummary, reportMonth } = reportData ?? {};
-   const account = await Account.findById(accountId).select("Duck").lean();
+  const account = await Account.findById(accountId).select("Duck").lean();
   const current  = account?.Duck ?? {};  
 
   const isFirstEvaluation = !current.lastEvaluatedMonth;  // ← après current
@@ -56,10 +56,6 @@ export async function evaluateDuck(accountId, reportData) {
 
   const healthScore = scoreResult.healthScore;
   const state = scoreToState(healthScore);
-
- 
-
-  
 
   const prevHearts = current.hearts ?? 0;
   const prevTotalHearts = current.totalHearts ?? 0;
