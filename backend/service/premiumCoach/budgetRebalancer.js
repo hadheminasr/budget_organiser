@@ -55,6 +55,55 @@ function safeNum(v) {
 function normalizeGroup(group) {
   return String(group || "OTHER").toUpperCase();
 }
+function getPersonaModifiers(personaCluster, group) {
+  const G = normalizeGroup(group);
+
+  switch (personaCluster) {
+    case "IMPULSIVE_SPENDER":
+      return {
+        flexMultiplier:
+          ["EATING_OUT", "ENTERTAINMENT", "SHOPPING", "SMOKING_ALCOHOL_CAFE"].includes(G)
+            ? 0.75
+            : 1,
+        essentialMultiplier: 1,
+        savingsMultiplier: 1.05,
+      };
+
+    case "VISIBILITY_SEEKER":
+      return {
+        flexMultiplier: 0.95,
+        essentialMultiplier: 1,
+        savingsMultiplier: 1,
+      };
+
+    case "DISCIPLINED_PLANNER":
+      return {
+        flexMultiplier: 1.05,
+        essentialMultiplier: 1,
+        savingsMultiplier: 1.10,
+      };
+
+    case "BUDGET_STRESSED_PROFILE":
+      return {
+        flexMultiplier:
+          ["EATING_OUT", "ENTERTAINMENT", "SHOPPING", "SMOKING_ALCOHOL_CAFE", "OTHER"].includes(G)
+            ? 0.70
+            : 1,
+        essentialMultiplier:
+          ["FOOD_HOME", "TRANSPORT", "CHILDREN", "HEALTH_BEAUTY"].includes(G)
+            ? 1.05
+            : 1,
+        savingsMultiplier: 0.95,
+      };
+
+    default:
+      return {
+        flexMultiplier: 1,
+        essentialMultiplier: 1,
+        savingsMultiplier: 1,
+      };
+  }
+}
 
 // ─── Méta d'une catégorie ─────────────────────────────────────────────────────
 
@@ -155,10 +204,12 @@ function computeCategoryRecommendation({
   riskLevel,
   protectGoals,
   snapshot,
+  personaCluster,
 }) {
   const meta = buildCategoryMeta(category);
   const riskMultiplier = getRiskMultiplier(riskLevel);
   const adj = getModeAdjustments(mode);
+  const personaAdj = getPersonaModifiers(personaCluster, meta.group);
 
   const originalBudget = safeNum(category.budget);
   const spent = safeNum(category.spent);
@@ -207,15 +258,15 @@ function computeCategoryRecommendation({
   let recommended = remainingBudget;
 
   if (meta.isFlexible) {
-    recommended *= adj.flexCut * riskMultiplier;
+  recommended *= adj.flexCut * riskMultiplier * personaAdj.flexMultiplier;
   }
 
   if (meta.isEssential) {
-    recommended *= adj.essentialCut;
+    recommended *= adj.essentialCut * personaAdj.essentialMultiplier;
   }
 
   if (meta.isSavings && protectGoals) {
-    recommended *= adj.savingsBoost;
+    recommended *= adj.savingsBoost * personaAdj.savingsMultiplier;
   }
 
   // ── Plancher minimal pour certaines catégories essentielles ───────────
@@ -387,6 +438,7 @@ function buildSummary(recommendations = []) {
 export function budgetRebalancer(payload, coachingMode, goalProtection) {
   const snap = payload?.financialSnapshot ?? {};
   const categories = payload?.categories ?? [];
+  const personaCluster = payload?.mlSignals?.clusterLabel ?? null;
 
   const remainingAmount = snap.remainingAmount ?? 0;
   const riskLevel = snap.riskLevel ?? "medium";
@@ -407,6 +459,7 @@ export function budgetRebalancer(payload, coachingMode, goalProtection) {
       riskLevel,
       protectGoals,
       snapshot: snap,
+      personaCluster,
     })
   );
 

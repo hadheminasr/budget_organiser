@@ -1,22 +1,14 @@
-// service/vault/vaultConstants.js
-// ─────────────────────────────────────────────────────────────────────────────
-// Toutes les règles du système vault en un seul endroit.
-// Aucun autre fichier ne hardcode ces valeurs.
-// ─────────────────────────────────────────────────────────────────────────────
 
+// Toutes les règles du système Duck en un seul endroit.
+// Aucun autre fichier ne hardcode ces valeurs.
 // ── Conversion healthScore (0-100) → état duck (0-5) ─────────────────────────
 //
 // healthScore est calculé en interne — le user ne le voit jamais.
 // Il est converti en companionStateId qui détermine quelle image PNG afficher.
 //
-// state 0 → duck/state-0.png  (Dormant)
-// state 1 → duck/state-1.png  (Fragile)
-// state 2 → duck/state-2.png  (Stable)
-// state 3 → duck/state-3.png  (Équilibré)
-// state 4 → duck/state-4.png  (Épanoui)
-// state 5 → duck/state-5.png  (Légendaire)
 
-export const VAULT_STATES = [
+
+export const DUCK_STATES = [
   { id: 0, name: "Dormant",    minScore: 0,  maxScore: 19,  hearts: 0 },
   { id: 1, name: "Fragile",    minScore: 20, maxScore: 39,  hearts: 1 },
   { id: 2, name: "Stable",     minScore: 40, maxScore: 54,  hearts: 2 },
@@ -62,11 +54,6 @@ export const DUCK_MESSAGES = {
       "Oups ! Une catégorie a dépassé son budget. Garde un œil dessus.",
       "Un dépassement détecté. Essaie de compenser sur les dépenses flexibles.",
       "Attention, tu as dépassé le budget de cette catégorie ce mois-ci.",
-    ],
-    // Le reste du compte tombe à 0 ou négatif
-    broke: [
-      "Le budget disponible est épuisé. Mode essentiel uniquement jusqu'au reset.",
-      "Plus de marge ce mois-ci. Concentre-toi sur les dépenses indispensables.",
     ],
     // L'utilisateur alimente un objectif
     goal_contribution: [

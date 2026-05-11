@@ -51,8 +51,8 @@ export default function Report() {
         </p>
       </div>
 
-      {/* ── KPIs EXISTANTS ─────────────────────────────────────── */}
-      <ReportKpis data={data} locale={locale} />
+      {/* ── KPIs EXISTANTS ─────────────────────────────────────── 
+      <ReportKpis data={data} locale={locale} />*/}
 
       {/* ── PLUS GROSSE DÉPENSE ────────────────────────────────── */}
       {data.plusGrosseDepense && (

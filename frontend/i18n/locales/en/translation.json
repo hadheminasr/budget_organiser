@@ -302,5 +302,88 @@
     "share": "👥 Share",
     "report": "📊 Report"
   }
-}
+},
+
+"premium": {
+    "title": "Premium Budget Coach",
+    "subtitle": "Smart analysis and personalized recommendations to optimize your budget",
+    "loading": "Analyzing…",
+    "retry": "Retry",
+    "noData": "No premium data available.",
+    "errorTitle": "Unable to load Premium Coach",
+    "generatedAt": "Generated on {{date}}",
+    "source": "Source: {{source}}",
+    "template": "Template: {{template}}",
+    "tapToContinue": "Tap to continue",
+    "risk": {
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk"
+    },
+    "status": {
+      "good": "✅ Yes, looking good",
+      "warning": "⚠️ Attention needed",
+      "critical": "🔴 Situation is tight"
+    },
+    "questions": {
+      "amIOk": "Am I on track?",
+      "howMuchLeft": "I can still spend",
+      "protecting": "I'm protecting"
+    },
+    "kpi": {
+      "remaining": "Money left",
+      "spendable": "Spendable: {{amount}}",
+      "burnRate": "Daily burn rate",
+      "average": "Average",
+      "daysLeft": "Days remaining",
+      "daysElapsed": "{{count}}d elapsed",
+      "projection": "Month projection"
+    },
+    "criticalEndOfMonth": "⚠️ <strong>Critical end of month.</strong> Limited budget — prioritize essentials.",
+    "nonEssentialFreeze": "⚡ <strong>Active policy:</strong> Non-essential spending frozen. Focus on fixed and priority expenses.",
+    "sections": {
+      "weeklyPlan": "What to do this week?",
+      "goalProtection": "Goal protection",
+      "rebalance": "Budget rebalancing",
+      "alerts": "Alerts"
+    },
+    "weeklyPlan": {
+      "score": "Score",
+      "daysLeft": "Days remaining",
+      "weeklyBudget": "Weekly budget",
+      "priority": "Priority {{n}}"
+    },
+    "goalProtection": {
+      "discipline": "Discipline",
+      "protected": "Protected",
+      "capacity": "Capacity",
+      "noGoal": "No active goal",
+      "noGoalHint": "Create a savings goal to enable personalized recommendations",
+      "createGoal": "Create a goal"
+    },
+    "rebalance": {
+      "reduced": "{{count}} reductions",
+      "increased": "{{count}} increases",
+      "frozen": "{{count}} frozen",
+      "originalBudget": "Budget",
+      "spent": "Spent",
+      "recommended": "Recommended",
+      "adjustment": "Adjustment",
+      "actions": {
+        "reduce": "Reduce",
+        "maintain": "Maintain",
+        "freeze": "Freeze",
+        "increase": "Increase"
+      },
+      "priority": {
+        "high": "High priority",
+        "medium": "Medium priority",
+        "low": "Low priority"
+      }
+    },
+    "alerts": {
+      "critical": "Critical alert",
+      "warning": "Warning"
+    }
+  }
 }

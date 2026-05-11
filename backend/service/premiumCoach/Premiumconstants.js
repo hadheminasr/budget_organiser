@@ -75,11 +75,10 @@ export const PLAN_TEMPLATES = {
 
 // ── Clusters personas (ML) ─────────────────────────
 export const PERSONA_CLUSTERS = {
-  BALANCED_PLANNER:"balanced_planner",
-  GOAL_DRIVEN_UNSTABLE:"goal_driven_unstable",
-  IMPULSIVE_SHOPPER:"impulsive_shopper",
-  STRESSED_SURVIVOR:"stressed_survivor",
-  CONSERVATIVE_SAVER:"conservative_saver",
+  DISCIPLINED_PLANNER: "DISCIPLINED_PLANNER",
+  IMPULSIVE_SPENDER: "IMPULSIVE_SPENDER",
+  VISIBILITY_SEEKER: "VISIBILITY_SEEKER",
+  BUDGET_STRESSED_PROFILE: "BUDGET_STRESSED_PROFILE",
 };
 
 // ── Groupes de catégories ──────────────────────────

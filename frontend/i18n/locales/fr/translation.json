@@ -304,5 +304,87 @@
     "share": "👥 Partage",
     "report": "📊 Rapport"
   }
-}
+},
+"premium": {
+    "title": "Coach Budget Premium",
+    "subtitle": "Analyse intelligente et recommandations personnalisées pour optimiser votre budget",
+    "loading": "Analyse en cours…",
+    "retry": "Réessayer",
+    "noData": "Aucune donnée premium disponible.",
+    "errorTitle": "Impossible de charger le Coach Premium",
+    "generatedAt": "Généré le {{date}}",
+    "source": "Source : {{source}}",
+    "template": "Template : {{template}}",
+    "tapToContinue": "Appuie pour continuer",
+    "risk": {
+      "low": "Risque faible",
+      "medium": "Risque moyen",
+      "high": "Risque élevé"
+    },
+    "status": {
+      "good": "✅ Oui, bonne forme",
+      "warning": "⚠️ Attention requise",
+      "critical": "🔴 Situation tendue"
+    },
+    "questions": {
+      "amIOk": "Suis-je bien ?",
+      "howMuchLeft": "Je peux encore dépenser",
+      "protecting": "Je protège"
+    },
+    "kpi": {
+      "remaining": "Argent restant",
+      "spendable": "Dépensable : {{amount}}",
+      "burnRate": "Burn rate / jour",
+      "average": "Moyenne",
+      "daysLeft": "Jours restants",
+      "daysElapsed": "{{count}}j écoulés",
+      "projection": "Projection mois"
+    },
+    "criticalEndOfMonth": "⚠️ <strong>Fin de mois critique.</strong> Budget limité — priorisez les essentiels.",
+    "nonEssentialFreeze": "⚡ <strong>Politique active :</strong> Dépenses non-essentielles gelées. Concentrez-vous sur les charges fixes et prioritaires.",
+    "sections": {
+      "weeklyPlan": "Que faire cette semaine ?",
+      "goalProtection": "Protection des objectifs",
+      "rebalance": "Rééquilibrage des catégories",
+      "alerts": "Alertes"
+    },
+    "weeklyPlan": {
+      "score": "Score",
+      "daysLeft": "Jours restants",
+      "weeklyBudget": "Budget semaine",
+      "priority": "Priorité {{n}}"
+    },
+    "goalProtection": {
+      "discipline": "Discipline",
+      "protected": "Protégé",
+      "capacity": "Capacité",
+      "noGoal": "Aucun objectif actif",
+      "noGoalHint": "Créez un objectif d'épargne pour activer des recommandations personnalisées",
+      "createGoal": "Créer un objectif"
+    },
+    "rebalance": {
+      "reduced": "{{count}} réductions",
+      "increased": "{{count}} augmentations",
+      "frozen": "{{count}} gelées",
+      "originalBudget": "Budget",
+      "spent": "Dépensé",
+      "recommended": "Recommandé",
+      "adjustment": "Ajustement",
+      "actions": {
+        "reduce": "Réduire",
+        "maintain": "Maintenir",
+        "freeze": "Geler",
+        "increase": "Augmenter"
+      },
+      "priority": {
+        "high": "Priorité haute",
+        "medium": "Priorité moyenne",
+        "low": "Priorité basse"
+      }
+    },
+    "alerts": {
+      "critical": "Alerte critique",
+      "warning": "Attention"
+    }
+  }
 }
