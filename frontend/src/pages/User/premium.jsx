@@ -1,15 +1,15 @@
-// PremiumDashboardPage.jsx — i18n complet
+// PremiumDashboardPage.jsx — avec section profil ML
 import { usePremium }     from "../../hooks/userPremium";
 import { useAuth }        from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { motion }         from "framer-motion";
 import {
   TrendingUp, Wallet, Calendar, Target,
-  AlertTriangle, Shield, Clock, Flame, Star, Crown,
+  AlertTriangle, Shield, Clock, Flame, Star, Crown, Brain,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-// ── Utilities ────────────────────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────────────────────
 const getScoreColor = (score) => {
   if (score >= 80) return "#d4a5a5";
   if (score >= 60) return "#e0c9a6";
@@ -28,11 +28,11 @@ const getRiskColor = (riskLevel) => {
 
 const getActionStyle = (action) => {
   switch (action) {
-    case "reduce":   return { bg: "bg-[#fde8e8]", text: "text-[#c57676]", border: "border-[#f5d0d0]" };
-    case "maintain": return { bg: "bg-[#f5f0e8]", text: "text-[#b8a088]", border: "border-[#e8dcc8]" };
-    case "freeze":   return { bg: "bg-[#f0e6f0]", text: "text-[#9b7b9b]", border: "border-[#e0d0e0]" };
-    case "increase": return { bg: "bg-[#e8f0e8]", text: "text-[#7b9b7b]", border: "border-[#d0e0d0]" };
-    default:         return { bg: "bg-gray-50",   text: "text-gray-600",  border: "border-gray-200"  };
+    case "reduce":   return { bg:"bg-[#fde8e8]", text:"text-[#c57676]", border:"border-[#f5d0d0]" };
+    case "maintain": return { bg:"bg-[#f5f0e8]", text:"text-[#b8a088]", border:"border-[#e8dcc8]" };
+    case "freeze":   return { bg:"bg-[#f0e6f0]", text:"text-[#9b7b9b]", border:"border-[#e0d0e0]" };
+    case "increase": return { bg:"bg-[#e8f0e8]", text:"text-[#7b9b7b]", border:"border-[#d0e0d0]" };
+    default:         return { bg:"bg-gray-50",   text:"text-gray-600",  border:"border-gray-200"  };
   }
 };
 
@@ -44,7 +44,160 @@ const fadeInUp = {
   transition: { duration: 0.4 },
 };
 
-// ── SectionTitle ─────────────────────────────────────────────────────────────
+// ── Persona config — traduit le cluster ML en langage humain ──────────────────
+const PERSONA_CONFIG = {
+  balanced_saver: {
+    emoji: "⚖️",
+    label: "Épargnant équilibré",
+    desc:  "Vous maintenez un bon équilibre entre dépenses et épargne. Votre comportement est stable et prévisible.",
+    color: "from-emerald-50 to-teal-50",
+    border:"border-emerald-200",
+    accent:"text-emerald-700",
+  },
+  cautious_spender: {
+    emoji: "🛡️",
+    label: "Dépenseur prudent",
+    desc:  "Vous êtes très attentif à chaque dépense. Vous privilégiez la sécurité financière.",
+    color: "from-blue-50 to-sky-50",
+    border:"border-blue-200",
+    accent:"text-blue-700",
+  },
+  goal_driven: {
+    emoji: "🎯",
+    label: "Orienté objectifs",
+    desc:  "Vos décisions budgétaires sont guidées par vos objectifs d'épargne. Vous êtes focus et déterminé.",
+    color: "from-purple-50 to-violet-50",
+    border:"border-purple-200",
+    accent:"text-purple-700",
+  },
+  impulsive_spender: {
+    emoji: "⚡",
+    label: "Dépenseur impulsif",
+    desc:  "Vos dépenses varient beaucoup selon les mois. Le coach adapte ses recommandations à votre rythme.",
+    color: "from-orange-50 to-amber-50",
+    border:"border-orange-200",
+    accent:"text-orange-700",
+  },
+  stressed_budget: {
+    emoji: "😤",
+    label: "Budget sous tension",
+    desc:  "Votre budget est régulièrement sous pression. Le coach se concentre sur les essentiels.",
+    color: "from-rose-50 to-pink-50",
+    border:"border-rose-200",
+    accent:"text-rose-700",
+  },
+  high_earner_spender: {
+    emoji: "💎",
+    label: "Haut revenu, haut débit",
+    desc:  "Vos revenus sont élevés mais vos dépenses aussi. Optimiser l'épargne est votre levier principal.",
+    color: "from-indigo-50 to-blue-50",
+    border:"border-indigo-200",
+    accent:"text-indigo-700",
+  },
+  // fallback pour les clusters non mappés
+  default: {
+    emoji: "🧠",
+    label: "Profil personnalisé",
+    desc:  "Votre comportement est analysé pour des recommandations sur mesure.",
+    color: "from-gray-50 to-slate-50",
+    border:"border-gray-200",
+    accent:"text-gray-700",
+  },
+};
+
+const RISK_CONFIG = {
+  low:    { emoji:"🟢", label:"Faible",  desc:"Votre situation est stable. Vous maîtrisez bien vos dépenses.", bar:20,  barColor:"#1D9E75" },
+  medium: { emoji:"🟡", label:"Modéré",  desc:"Quelques points de vigilance. Le coach vous guide pour éviter les dépassements.", bar:55, barColor:"#EF9F27" },
+  high:   { emoji:"🔴", label:"Élevé",   desc:"Votre budget est sous pression. Des actions concrètes sont recommandées cette semaine.", bar:85, barColor:"#E24B4A" },
+};
+
+const STYLE_CONFIG = {
+  direct: { emoji:"⚡", label:"Direct & factuel", desc:"Le coach vous parle clairement, sans détours. Vous préférez les faits aux encouragements." },
+  gentle: { emoji:"🌸", label:"Doux & encourageant", desc:"Le coach adopte un ton bienveillant, avec des encouragements adaptés à votre progression." },
+};
+
+// ── ML Profile Card ───────────────────────────────────────────────────────────
+const MLProfileCard = ({ coachingMode, riskLevel }) => {
+  const rawCluster = coachingMode?.metadata?.personaCluster ?? "default";
+  const rawStyle   = coachingMode?.communicationStyle ?? "direct";
+
+  const persona  = PERSONA_CONFIG[rawCluster]  ?? PERSONA_CONFIG.default;
+  const risk     = RISK_CONFIG[riskLevel]       ?? RISK_CONFIG.medium;
+  const style    = STYLE_CONFIG[rawStyle]       ?? STYLE_CONFIG.direct;
+
+  return (
+    <motion.div {...fadeInUp}
+      className="bg-white/80 backdrop-blur-sm rounded-2xl border border-pink-100 shadow-sm overflow-hidden"
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 border-b border-pink-50">
+        <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
+          <Brain className="h-4 w-4 text-violet-600" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-gray-800 leading-tight">Votre profil budgétaire</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Analysé par intelligence artificielle · mis à jour chaque mois</p>
+        </div>
+      </div>
+
+      <div className="px-4 sm:px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+        {/* Persona */}
+        <div className={`bg-gradient-to-br ${persona.color} border ${persona.border} rounded-2xl p-4`}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{persona.emoji}</span>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Profil</p>
+              <p className={`text-sm font-bold ${persona.accent}`}>{persona.label}</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">{persona.desc}</p>
+        </div>
+
+        {/* Niveau de risque */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">{risk.emoji}</span>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Niveau de risque</p>
+              <p className="text-sm font-bold text-gray-800">{risk.label}</p>
+            </div>
+          </div>
+          {/* barre de risque */}
+          <div className="h-2 rounded-full bg-gray-100 overflow-hidden mb-2">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width:`${risk.bar}%`, background: risk.barColor }}
+            />
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">{risk.desc}</p>
+        </div>
+
+        {/* Ton du coach */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{style.emoji}</span>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Ton du coach</p>
+              <p className="text-sm font-bold text-gray-800">{style.label}</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">{style.desc}</p>
+          {/* badge mode coaching */}
+          {coachingMode?.label && (
+            <div className="mt-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-rose-50 border border-rose-200">
+              <span className="text-[10px] font-medium text-rose-600">Mode actif :</span>
+              <span className="text-[10px] font-bold text-rose-700">{coachingMode.label}</span>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </motion.div>
+  );
+};
+
+// ── SectionTitle ──────────────────────────────────────────────────────────────
 const SectionTitle = ({ icon: Icon, title, sub, iconBg = "bg-rose-100", iconColor = "text-rose-500" }) => (
   <div className="flex items-center gap-3 mb-4">
     <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
@@ -95,12 +248,12 @@ const StatPill = ({ icon: Icon, label, value, sub, accent = "text-gray-800" }) =
 const CategoryRebalanceItem = ({ rec }) => {
   const { t } = useTranslation();
   const a = getActionStyle(rec.action);
-  const priorityStyles = {
-    high:   { bg: "bg-rose-100", text: "text-rose-700"  },
-    medium: { bg: "bg-amber-50", text: "text-amber-700" },
-    low:    { bg: "bg-gray-100", text: "text-gray-600"  },
+  const pStyles = {
+    high:   { bg:"bg-rose-100", text:"text-rose-700"  },
+    medium: { bg:"bg-amber-50", text:"text-amber-700" },
+    low:    { bg:"bg-gray-100", text:"text-gray-600"  },
   };
-  const p = priorityStyles[rec.priority] ?? { bg: "bg-gray-50", text: "text-gray-500" };
+  const p = pStyles[rec.priority] ?? { bg:"bg-gray-50", text:"text-gray-500" };
 
   return (
     <div className={`${a.bg} border ${a.border} rounded-xl p-4 flex items-center gap-4`}>
@@ -116,21 +269,11 @@ const CategoryRebalanceItem = ({ rec }) => {
           </span>
         </div>
         <div className="grid grid-cols-3 gap-x-4 text-xs text-gray-500">
-          <span>
-            {t("premium.rebalance.originalBudget")}{" "}
-            <span className="font-medium text-gray-700">{fmt(rec.originalBudget)}</span>
-          </span>
-          <span>
-            {t("premium.rebalance.spent")}{" "}
-            <span className="font-medium text-gray-700">{fmt(rec.spent)}</span>
-          </span>
-          <span>
-            {t("premium.rebalance.recommended")}{" "}
-            <span className={`font-bold ${a.text}`}>{fmt(rec.recommendedRemaining)}</span>
-          </span>
+          <span>{t("premium.rebalance.originalBudget")} <span className="font-medium text-gray-700">{fmt(rec.originalBudget)}</span></span>
+          <span>{t("premium.rebalance.spent")} <span className="font-medium text-gray-700">{fmt(rec.spent)}</span></span>
+          <span>{t("premium.rebalance.recommended")} <span className={`font-bold ${a.text}`}>{fmt(rec.recommendedRemaining)}</span></span>
         </div>
       </div>
-      {/* usage ring */}
       <div className="w-12 h-12 flex-shrink-0 relative">
         <svg viewBox="0 0 36 36" className="w-full h-full">
           <path d="M18 2.0845 a15.9155 15.9155 0 0 1 0 31.831 a15.9155 15.9155 0 0 1 0-31.831"
@@ -150,7 +293,7 @@ const CategoryRebalanceItem = ({ rec }) => {
 // ── WeeklyActionCard ──────────────────────────────────────────────────────────
 const WeeklyActionCard = ({ action }) => {
   const { t } = useTranslation();
-  const borderColors = { 1: "border-l-rose-400", 2: "border-l-amber-400", 3: "border-l-gray-300" };
+  const borderColors = { 1:"border-l-rose-400", 2:"border-l-amber-400", 3:"border-l-gray-300" };
   return (
     <div className={`border-l-4 ${borderColors[action.priority] ?? borderColors[3]} bg-white rounded-r-xl p-4 shadow-sm`}>
       <div className="flex items-start gap-3">
@@ -164,9 +307,7 @@ const WeeklyActionCard = ({ action }) => {
           {action.amount != null && (
             <p className="text-xs font-semibold text-gray-700 mt-2">
               {fmt(action.amount)}
-              {action.dailyAmount > 0 && (
-                <span className="text-gray-400 font-normal"> · {fmt(action.dailyAmount)}/j</span>
-              )}
+              {action.dailyAmount > 0 && <span className="text-gray-400 font-normal"> · {fmt(action.dailyAmount)}/j</span>}
             </p>
           )}
         </div>
@@ -194,7 +335,7 @@ const AlertCard = ({ alert }) => {
   );
 };
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function PremiumDashboardPage() {
   const { user } = useAuth();
   const { t }    = useTranslation();
@@ -212,8 +353,7 @@ export default function PremiumDashboardPage() {
     <div className="flex flex-col items-center justify-center h-40 gap-3">
       <AlertTriangle className="h-6 w-6 text-rose-400" />
       <p className="text-sm text-gray-500">{error}</p>
-      <button onClick={refetch}
-        className="text-xs px-4 py-1.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
+      <button onClick={refetch} className="text-xs px-4 py-1.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
         {t("premium.retry")}
       </button>
     </div>
@@ -240,7 +380,7 @@ export default function PremiumDashboardPage() {
   return (
     <div className="w-full max-w-none px-3 py-4 sm:px-4 sm:py-6 lg:px-6 flex flex-col gap-5">
 
-      {/* ── NIVEAU 1 — Lecture rapide ──────────────────────────────────────── */}
+      {/* ── NIVEAU 1 — Hero + 3 questions ──────────────────────────────────── */}
       <motion.div {...fadeInUp}
         className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm"
       >
@@ -259,7 +399,6 @@ export default function PremiumDashboardPage() {
                 </span>
               )}
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
               <div className="bg-pink-50 rounded-xl px-3 py-2.5">
                 <p className="text-[11px] text-gray-400 mb-0.5">{t("premium.questions.amIOk")}</p>
@@ -276,7 +415,6 @@ export default function PremiumDashboardPage() {
             </div>
           </div>
         </div>
-
         {cm.metadata?.isCriticalEndOfMonth && (
           <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800"
             dangerouslySetInnerHTML={{ __html: t("premium.criticalEndOfMonth") }} />
@@ -287,51 +425,28 @@ export default function PremiumDashboardPage() {
         )}
       </motion.div>
 
-      {/* 4 stat pills */}
+      {/* ── PROFIL ML ── nouvelle section ──────────────────────────────────── */}
+      <MLProfileCard coachingMode={cm} riskLevel={es.riskLevel} />
+
+      {/* ── 4 stat pills ───────────────────────────────────────────────────── */}
       <motion.div {...fadeInUp} className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <StatPill
-          icon={Wallet}
-          label={t("premium.kpi.remaining")}
-          value={fmt(es.remainingAmount)}
-          sub={t("premium.kpi.spendable", { amount: fmt(es.spendableAmount) })}
-        />
-        <StatPill
-          icon={Flame}
-          label={t("premium.kpi.burnRate")}
-          value={fmt(es.dailyBurnRate)}
-          sub={t("premium.kpi.average")}
-        />
-        <StatPill
-          icon={Calendar}
-          label={t("premium.kpi.daysLeft")}
-          value={`${es.daysLeftInMonth}j`}
-          sub={t("premium.kpi.daysElapsed", { count: es.daysElapsed })}
-        />
-        <StatPill
-          icon={TrendingUp}
-          label={t("premium.kpi.projection")}
-          value={fmt(es.projectedMonthlySpend)}
-          accent={es.projectedOverspend > 0 ? "text-rose-600" : "text-emerald-600"}
-        />
+        <StatPill icon={Wallet}     label={t("premium.kpi.remaining")}  value={fmt(es.remainingAmount)}       sub={t("premium.kpi.spendable", { amount: fmt(es.spendableAmount) })} />
+        <StatPill icon={Flame}      label={t("premium.kpi.burnRate")}   value={fmt(es.dailyBurnRate)}          sub={t("premium.kpi.average")} />
+        <StatPill icon={Calendar}   label={t("premium.kpi.daysLeft")}   value={`${es.daysLeftInMonth}j`}       sub={t("premium.kpi.daysElapsed", { count: es.daysElapsed })} />
+        <StatPill icon={TrendingUp} label={t("premium.kpi.projection")} value={fmt(es.projectedMonthlySpend)} accent={es.projectedOverspend > 0 ? "text-rose-600" : "text-emerald-600"} />
       </motion.div>
 
-      {/* Alertes niveau 1 */}
+      {/* Alertes */}
       {alerts.length > 0 && (
         <motion.div {...fadeInUp} className="flex flex-col gap-2">
           {alerts.map((alert, i) => <AlertCard key={i} alert={alert} />)}
         </motion.div>
       )}
 
-      {/* ── NIVEAU 2 — Plan semaine ────────────────────────────────────────── */}
-      <motion.div {...fadeInUp}
-        className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm"
-      >
-        <SectionTitle
-          icon={Star}
-          title={t("premium.sections.weeklyPlan")}
-          sub={wp.header?.coachingModeLabel}
-          iconBg="bg-purple-100" iconColor="text-purple-600"
-        />
+      {/* ── NIVEAU 2 — Plan semaine ─────────────────────────────────────────── */}
+      <motion.div {...fadeInUp} className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm">
+        <SectionTitle icon={Star} title={t("premium.sections.weeklyPlan")} sub={wp.header?.coachingModeLabel}
+          iconBg="bg-purple-100" iconColor="text-purple-600" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <div className="bg-purple-50 rounded-xl px-3 py-2.5 text-center">
             <p className="text-[11px] text-gray-400">{t("premium.weeklyPlan.score")}</p>
@@ -346,26 +461,18 @@ export default function PremiumDashboardPage() {
             <p className="text-lg font-bold text-purple-700">{fmt(wp.context?.weeklyBudget)}</p>
           </div>
         </div>
-        {wp.summary && (
-          <p className="text-xs text-gray-600 bg-purple-50 rounded-xl p-3 mb-4">{wp.summary}</p>
-        )}
+        {wp.summary && <p className="text-xs text-gray-600 bg-purple-50 rounded-xl p-3 mb-4">{wp.summary}</p>}
         <div className="flex flex-col gap-2">
           {wp.actions?.map((action, i) => <WeeklyActionCard key={i} action={action} />)}
         </div>
       </motion.div>
 
-      {/* ── NIVEAU 3 — Détail ─────────────────────────────────────────────── */}
+      {/* ── NIVEAU 3 — Détail ───────────────────────────────────────────────── */}
 
-      {/* Protection objectifs */}
       {gp.hasActiveGoal && (
-        <motion.div {...fadeInUp}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm"
-        >
-          <SectionTitle
-            icon={Shield}
-            title={t("premium.sections.goalProtection")}
-            iconBg="bg-emerald-100" iconColor="text-emerald-600"
-          />
+        <motion.div {...fadeInUp} className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm">
+          <SectionTitle icon={Shield} title={t("premium.sections.goalProtection")}
+            iconBg="bg-emerald-100" iconColor="text-emerald-600" />
           <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="bg-emerald-50 rounded-xl px-3 py-2.5 text-center">
               <p className="text-[11px] text-gray-400">{t("premium.goalProtection.discipline")}</p>
@@ -380,26 +487,18 @@ export default function PremiumDashboardPage() {
               <p className="text-lg font-bold text-emerald-700">{gp.capacityRatio ?? "N/A"}%</p>
             </div>
           </div>
-          {gp.message && (
-            <p className="text-xs text-emerald-700 bg-emerald-50 rounded-xl p-3">{gp.message}</p>
-          )}
+          {gp.message && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-xl p-3">{gp.message}</p>}
         </motion.div>
       )}
 
-      {/* Rééquilibrage */}
-      <motion.div {...fadeInUp}
-        className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm"
-      >
-        <SectionTitle
-          icon={Target}
-          title={t("premium.sections.rebalance")}
+      <motion.div {...fadeInUp} className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm">
+        <SectionTitle icon={Target} title={t("premium.sections.rebalance")}
           sub={[
-            t("premium.rebalance.reduced",   { count: rb.summary?.reducedCount   ?? 0 }),
-            t("premium.rebalance.increased",  { count: rb.summary?.increasedCount ?? 0 }),
-            t("premium.rebalance.frozen",     { count: rb.summary?.frozenCount    ?? 0 }),
+            t("premium.rebalance.reduced",  { count: rb.summary?.reducedCount   ?? 0 }),
+            t("premium.rebalance.increased", { count: rb.summary?.increasedCount ?? 0 }),
+            t("premium.rebalance.frozen",    { count: rb.summary?.frozenCount    ?? 0 }),
           ].join(" · ")}
-          iconBg="bg-amber-100" iconColor="text-amber-600"
-        />
+          iconBg="bg-amber-100" iconColor="text-amber-600" />
         <div className="flex flex-col gap-2">
           {rb.recommendations?.map((rec, i) => <CategoryRebalanceItem key={i} rec={rec} />)}
         </div>
@@ -417,7 +516,7 @@ export default function PremiumDashboardPage() {
           <span>
             {t("premium.generatedAt", {
               date: new Date(md.generatedAt).toLocaleDateString(t("common.locale"), {
-                day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                day:"numeric", month:"short", hour:"2-digit", minute:"2-digit",
               }),
             })}
           </span>

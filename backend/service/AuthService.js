@@ -15,7 +15,7 @@ import {
 } from "../mailtrap/emails.js";
 
 export const AuthService = {
-  async signup({ email, password, name, familyName, role, sharedCode }, res) {
+  async signup({ email, password, name, familyName, role}, res) {
     if (!email || !password || !name || !familyName) {
       const err = new Error("all fields are required");
       err.status = 400;
