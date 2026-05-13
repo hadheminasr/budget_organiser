@@ -1,304 +1,284 @@
-// src/components/duck/DuckCompanion.jsx
-// ─────────────────────────────────────────────────────────────────────────────
-// Compagnon persistant — vit dans App.jsx, au-dessus de toutes les pages.
-// Reste visible en bas à droite pendant toute la navigation.
-//
-// 3 états visuels :
-//   Normal   → petit duck fixe bas-droite, animation float en boucle
-//   Bulle    → message réactif apparaît avec animation bubble-in
-//   Modal    → duck s'agrandit au centre, dit son message, revient au coin
-//   Overlay  → plein écran pour événements importants (broke, levelup)
-// ─────────────────────────────────────────────────────────────────────────────
+import { useEffect, useState } from "react";
 
-import { useEffect } from "react";
+//Vidéos
+const REACTION_VIDEOS = {
+  overspend:         "/assets/duck/reactions/overspend.mp4",
+  welcome:           "/assets/duck/reactions/welcome.mp4",
+  goal_contribution: "/assets/duck/reactions/goal_contribution.mp4",
+  goal_achieved:     "/assets/duck/reactions/goal_achieved.mp4",
+  levelup:           "/assets/duck/reactions/levelup.mp4",
+  leveldown:         "/assets/duck/reactions/leveldown.mp4",
+};
 
+const STATE_VIDEOS = {
+  0: "/assets/duck/states/state-0.mp4",
+  1: "/assets/duck/states/state-1.mp4",
+  2: "/assets/duck/states/state-2.mp4",
+  3: "/assets/duck/states/state-3.mp4",
+  4: "/assets/duck/states/state-4.mp4",
+  5: "/assets/duck/states/state-5.mp4",
+};
+
+//Couleurs par état
 const STATE_COLORS = {
-  0: "#888780", 1: "#D85A30", 2: "#EF9F27",
-  3: "#1D9E75", 4: "#534AB7", 5: "#D4537E",
+  0: "#888780",
+  1: "#D85A30",
+  2: "#EF9F27",
+  3: "#1D9E75",
+  4: "#534AB7",
+  5: "#D4537E",
 };
 
-const STATE_BG_CLASSES = {
-  0: "bg-[#888780]",
-  1: "bg-[#D85A30]",
-  2: "bg-[#EF9F27]",
-  3: "bg-[#1D9E75]",
-  4: "bg-[#534AB7]",
-  5: "bg-[#D4537E]",
+const NEXT_STATE_NAMES = {
+  0: "Fragile",
+  1: "Stable",
+  2: "Équilibré",
+  3: "Épanoui",
+  4: "Légendaire",
+  5: "—",
 };
 
-const NEXT_STATE = {
-  0: "Fragile", 1: "Stable", 2: "Équilibré",
-  3: "Épanoui", 4: "Légendaire", 5: null,
-};
+const OVERLAY_REACTIONS = new Set([
+  "levelup", "leveldown", "welcome", "overspend", "goal_achieved",
+]);
 
-// ── Image de réaction selon l'événement ──────────────────────────────────────
-// Quand le designer livre les GIFs → changer .png → .gif ici uniquement
-const REACTION_IMAGES = {
-  overspend:        "/assets/duck/duck-shake.png",//tester et aaprover
-  goal_contribution:"/assets/duck/duck-celebrate.png",//pas encore tester
-  levelup:          "/assets/duck/duck-levelup.png",//tester
-  leveldown:        "/assets/duck/duck-cry.png",//tester
-  welcome:           "/assets/duck/duck-born.png",//tester et approver
-  goal_achieved:     "/assets/duck/duck-celebrate.png",//tester et approver
-};
-
-// Événements qui déclenchent l'overlay plein écran (pas juste la bulle)
-const OVERLAY_EVENTS = new Set(["broke", "levelup", "leveldown"]);
-
-// ── Animations CSS injectées une seule fois ───────────────────────────────────
-const CSS = `
-  @keyframes duck-float {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-7px); }
-  }
-  @keyframes duck-wobble {
-    0%   { transform: rotate(0deg); }
-    20%  { transform: rotate(-8deg); }
-    40%  { transform: rotate(8deg); }
-    60%  { transform: rotate(-5deg); }
-    80%  { transform: rotate(5deg); }
-    100% { transform: rotate(0deg); }
-  }
-  @keyframes duck-pop {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.18); }
-    100% { transform: scale(1); }
-  }
-  @keyframes duck-breathe {
-    0%, 100% { transform: scale(1); }
-    50%       { transform: scale(1.04); }
-  }
-  @keyframes bubble-in {
-    0%   { opacity: 0; transform: scale(0.7) translateY(8px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  @keyframes modal-in {
-    0%   { opacity: 0; transform: scale(0.85); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  @keyframes overlay-in {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-  }
-
-  /* ── Réactions ── */
-  @keyframes duck-shake {
-    0%, 100% { transform: translateX(0); }
-    20%       { transform: translateX(-6px) rotate(-3deg); }
-    40%       { transform: translateX(6px)  rotate(3deg); }
-    60%       { transform: translateX(-4px) rotate(-2deg); }
-    80%       { transform: translateX(4px)  rotate(2deg); }
-  }
-  @keyframes duck-cry-anim {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50%       { transform: translateY(4px) scale(0.95); }
-  }
-  @keyframes duck-celebrate-anim {
-    0%   { transform: scale(1) rotate(0deg); }
-    25%  { transform: scale(1.2) rotate(-10deg); }
-    50%  { transform: scale(1.3) rotate(10deg); }
-    75%  { transform: scale(1.2) rotate(-5deg); }
-    100% { transform: scale(1) rotate(0deg); }
-  }
-  @keyframes duck-levelup-anim {
-    0%   { transform: scale(1);    filter: brightness(1); }
-    40%  { transform: scale(1.35); filter: brightness(1.8) drop-shadow(0 0 16px gold); }
-    100% { transform: scale(1);    filter: brightness(1); }
-  }
-  @keyframes duck-overlay-bounce {
-    0%   { transform: scale(0.7) translateY(30px); opacity: 0; }
-    60%  { transform: scale(1.08) translateY(-6px); opacity: 1; }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
-  }
-
-  .duck-float     { animation: duck-float     3s ease-in-out infinite; }
-  .duck-wobble    { animation: duck-wobble    0.6s ease; }
-  .duck-pop       { animation: duck-pop       0.4s ease; }
-  .duck-breathe   { animation: duck-breathe   2.5s ease-in-out infinite; }
-
-  .duck-rx-overspend  { animation: duck-shake          0.6s ease;
-                        filter: drop-shadow(0 0 8px #E24B4A); }
-  .duck-rx-broke      { animation: duck-cry-anim        1.5s ease-in-out infinite;
-                        filter: drop-shadow(0 0 8px #E24B4A); }
-  .duck-rx-goal       { animation: duck-celebrate-anim  0.8s ease; }
-  .duck-rx-levelup    { animation: duck-levelup-anim    1s ease forwards;  }
-  .duck-rx-leveldown  { animation: duck-cry-anim        1.5s ease-in-out infinite;
-                        filter: drop-shadow(0 0 6px #888); }
-
-  .duck-overlay-img   { animation: duck-overlay-bounce  0.5s cubic-bezier(.34,1.56,.64,1) forwards; }
-`;
-
+//Composant principal
 export default function DuckCompanion({ duck }) {
-  const {
-    data, loading, isModal, isWobbling, isNewState,
-    activeMsg, activeReaction, openModal, closeModal,
-  } = duck;
+  const { data, activeReaction, activeMsg, closeModal, openModal } = duck;
+  // "idle" | "bubble" | "overlay" | "stats"
+  const [mode, setMode] = useState("idle");
 
-  // Injecter les keyframes CSS une seule fois
+  const stateId   = data?.companionStateId ?? 0;
+  const color     = STATE_COLORS[stateId] ?? "#888780";
+  const idleVideo = STATE_VIDEOS[stateId] ?? STATE_VIDEOS[0];
+
+  //Réagir aux changements de réaction
   useEffect(() => {
-    if (document.getElementById("duck-styles")) return;
-    const style = document.createElement("style");
-    style.id = "duck-styles";
-    style.textContent = CSS;
-    document.head.appendChild(style);
-  }, []);
+    if (!activeReaction) {
+      // ne pas écraser "stats" si l'utilisateur a ouvert le popup manuellement
+      setMode((prev) => prev === "stats" ? "stats" : "idle");
+      return;
+    }
+    setMode(OVERLAY_REACTIONS.has(activeReaction) ? "overlay" : "bubble");
+  }, [activeReaction]);
 
-  if (loading || !data) return null;
+  const handleBubbleEnd  = () => setMode("idle");
+  const handleOverlayEnd = () => { setMode("idle"); closeModal(); };
 
-  const stateId      = data.companionStateId ?? 0;
-  const color        = STATE_COLORS[stateId]    ?? "#888780";
-  const stateBgClass = STATE_BG_CLASSES[stateId] ?? "bg-[#888780]";
-  const next         = NEXT_STATE[stateId];
+  // Clic sur le duck idle = ouvre les stats
+  const handleIdleClick = () => {
+    openModal(); //signale à useDuck que le modal est ouvert
+    setMode("stats");
+  };
 
-  // ── Image à afficher ───────────────────────────────────────────────────────
-  // Si réaction active → image de réaction, sinon image d'état normal
-  const reactionImg = activeReaction ? REACTION_IMAGES[activeReaction] : null;
-  const idleImg     = `/assets/duck/state-${stateId}.jpeg`;
-  // Quand GIFs livrés → changer en state-${stateId}-idle.gif
+  const handleStatsClose = () => {
+    closeModal();
+    setMode("idle");
+  };
 
-  // ── Classe CSS selon priorité : réaction > wobble > modal > idle ───────────
-  const reactionClass = activeReaction ? `duck-rx-${activeReaction}` : null;
-  const imgClass = reactionClass
-    ? reactionClass
-    : isWobbling
-    ? "duck-wobble"
-    : isModal
-    ? "duck-breathe"
-    : "duck-float";
-
-  // ── Overlay plein écran (broke / levelup / leveldown) ─────────────────────
-  const isOverlay = isModal && activeReaction && OVERLAY_EVENTS.has(activeReaction);
-
-  return (
-    <>
-      {/* ── Bulle de message réactif (événements discrets) ───────────────── */}
-      {activeMsg && !isModal && (
-        <div className="fixed bottom-[115px] right-6 z-[998] max-w-[240px] rounded-[12px_12px_2px_12px] border-[1.5px] border-[var(--color-border-secondary,rgba(0,0,0,.15))] bg-[var(--color-background-primary,#fff)] px-[14px] py-[10px] text-[13px] leading-[1.5] text-[var(--color-text-secondary,#444)] shadow-[0_4px_16px_rgba(0,0,0,.12)] [animation:bubble-in_.25s_ease-out]">
-          {activeMsg}
-          <div className="absolute bottom-[-8px] right-6 h-0 w-0 border-x-[7px] border-t-[8px] border-x-transparent border-t-[var(--color-border-secondary,rgba(0,0,0,.15))]" />
-        </div>
-      )}
-
-      {/* ── Duck fixe bas-droite ──────────────────────────────────────────── */}
-      <button
-        className="fixed bottom-6 right-6 z-[999] flex cursor-pointer flex-col items-center gap-1 border-none bg-transparent p-0 [filter:drop-shadow(0_4px_12px_rgba(0,0,0,.18))]"
-        onClick={openModal}
-        aria-label="Ouvrir le compagnon budgétaire"
-        title={data.stateName}
+  // MODE IDLE
+  if (mode === "idle") {
+    return (
+      <div
+        onClick={handleIdleClick}
+        style={{
+          position:"fixed",
+          bottom:"20px",
+          right:"20px",
+          width:        "100px",
+          height:       "100px",
+          zIndex:       50,
+          cursor:       "pointer",
+          borderRadius: "50%",
+          overflow:     "hidden",
+          background:   "#ffffff",
+          boxShadow:    "0 2px 12px rgba(0,0,0,0.10)",
+        }}
       >
-        <img
-          src={reactionImg ?? idleImg}
-          alt={data.stateName}
-          className={`${imgClass} h-[96px] w-[96px] object-contain`}
-        />
-        <div className={`${stateBgClass} rounded-[20px] px-2 py-[2px] text-[11px] font-semibold tracking-[.5px] text-white`}>
-          {"🩷".repeat(data.hearts ?? 0) || "🤍"}
+        <video key={idleVideo} src={idleVideo} autoPlay loop muted playsInline
+          style={{ width:"100%", height:"100%", objectFit:"cover", mixBlendMode:"multiply", display:"block" }} />
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // MODE BUBBLE — bulle discrète, coin bas-droite (goal_contribution)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (mode === "bubble") {
+    return (
+      <div style={{
+        position:"fixed", bottom:"20px", right:"20px", zIndex:100,
+        display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"8px",
+        pointerEvents:"none",
+      }}>
+        {activeMsg && (
+          <div style={{
+            background:"#ffffff", border:"0.5px solid #fce7f3", borderRadius:"14px",
+            padding:"8px 14px", fontSize:"13px", maxWidth:"210px",
+            color:"#374151", boxShadow:"0 2px 10px rgba(0,0,0,0.08)", lineHeight:1.5,
+          }}>
+            {activeMsg}
+          </div>
+        )}
+        <div style={{
+          width:"100px", height:"100px", borderRadius:"50%",
+          overflow:"hidden", background:"#ffffff", boxShadow:"0 2px 12px rgba(0,0,0,0.10)",
+        }}>
+          <video key={activeReaction} src={REACTION_VIDEOS[activeReaction]}
+            autoPlay playsInline
+            style={{ width:"100%", height:"100%", objectFit:"cover", mixBlendMode:"multiply", display:"block" }}
+            onEnded={handleBubbleEnd} />
         </div>
-      </button>
+      </div>
+    );
+  }
 
-      {/* ── OVERLAY PLEIN ÉCRAN — broke / levelup / leveldown ────────────── */}
-      {isOverlay && (
-        <div
-          className="fixed inset-0 z-[1001] flex flex-col items-center justify-center cursor-pointer [animation:overlay-in_.25s_ease]"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
-          onClick={closeModal}
-        >
-          {/* Badge levelup */}
-          {activeReaction === "levelup" && (
-            <div className={`${stateBgClass} mb-4 rounded-full px-5 py-1.5 text-sm font-bold text-white shadow-lg`}>
-              ✨ Nouvel état débloqué — {data.stateName}
+  // ─────────────────────────────────────────────────────────────────────────
+  // MODE OVERLAY — plein écran, réaction importante
+  // ─────────────────────────────────────────────────────────────────────────
+  if (mode === "overlay") {
+    return (
+      <div onClick={handleOverlayEnd} style={{
+        position:"fixed", inset:0, zIndex:200,
+        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+        gap:"20px", background:"rgba(0,0,0,0.45)", cursor:"pointer", overflow:"hidden",
+      }}>
+        <div style={{
+          width:"260px", height:"260px", borderRadius:"50%",
+          overflow:"hidden", background:"#ffffff",
+          boxShadow:"0 8px 40px rgba(0,0,0,0.18)", flexShrink:0,
+        }}>
+          <video key={activeReaction} src={REACTION_VIDEOS[activeReaction]}
+            autoPlay playsInline
+            style={{ width:"100%", height:"100%", objectFit:"cover", mixBlendMode:"multiply", display:"block" }}
+            onEnded={handleOverlayEnd} />
+        </div>
+
+        {activeMsg && (
+          <div style={{
+            background:"#ffffff", borderRadius:"18px", padding:"14px 22px",
+            fontSize:"15px", fontWeight:600, color:"#111827",
+            maxWidth:"300px", textAlign:"center",
+            boxShadow:"0 4px 24px rgba(0,0,0,0.12)", lineHeight:1.5,
+          }}>
+            {activeMsg}
+          </div>
+        )}
+
+        <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.55)", marginTop:"4px" }}>
+          Appuie pour continuer
+        </p>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // MODE STATS — popup clic manuel (remplace DuckPopup + DuckWidget)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (mode === "stats" && data) {
+    return (
+      <div
+        onClick={(e) => { if (e.target === e.currentTarget) handleStatsClose(); }}
+        style={{
+          position:"fixed", inset:0, zIndex:200,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          background:"rgba(0,0,0,0.45)",
+        }}
+      >
+        <div style={{
+          position:"relative", width:"300px", borderRadius:"20px",
+          background:"var(--color-background-primary,#fff)",
+          padding:"28px 24px 20px",
+          boxShadow:"0 8px 40px rgba(0,0,0,0.18)",
+        }}>
+          {/* Fermer */}
+          <button onClick={handleStatsClose} style={{
+            position:"absolute", top:"12px", right:"12px",
+            width:"28px", height:"28px", borderRadius:"50%", border:"none",
+            background:"var(--color-background-secondary,#f5f4ef)",
+            color:"var(--color-text-secondary,#666)",
+            fontSize:"13px", cursor:"pointer",
+            display:"flex", alignItems:"center", justifyContent:"center",
+          }}>✕</button>
+
+          {/* Duck vidéo — idle en loop dans le popup */}
+          <div style={{
+            display:"flex", justifyContent:"center", marginBottom:"10px",
+          }}>
+            <div style={{
+              width:"110px", height:"110px", borderRadius:"50%",
+              overflow:"hidden", background:"#ffffff",
+              boxShadow:"0 2px 12px rgba(0,0,0,0.08)",
+            }}>
+              <video key={`stats-${stateId}`} src={idleVideo}
+                autoPlay loop muted playsInline
+                style={{ width:"100%", height:"100%", objectFit:"cover", mixBlendMode:"multiply", display:"block" }} />
             </div>
-          )}
-
-          {/* Duck image grande avec animation */}
-          <img
-            src={reactionImg ?? idleImg}
-            alt={data.stateName}
-            className="duck-overlay-img h-[220px] w-[220px] object-contain mb-6"
-          />
-
-          {/* Bulle de message */}
-          <div className="max-w-[300px] rounded-2xl bg-white/95 px-6 py-4 text-center text-[15px] leading-[1.6] text-gray-700 shadow-2xl [animation:modal-in_.3s_ease]">
-            {activeMsg ?? data.message}
           </div>
 
-          <p className="mt-5 text-xs text-white/50">
-            Appuie n'importe où pour continuer
-          </p>
-        </div>
-      )}
+          {/* Bulle message */}
+          <div style={{
+            marginBottom:"16px",
+            background:"var(--color-background-secondary,#f5f4ef)",
+            borderRadius:"4px 12px 12px 12px",
+            padding:"11px 14px",
+            fontSize:"13px", lineHeight:1.6,
+            color:"var(--color-text-secondary,#555)",
+          }}>
+            {data.message}
+          </div>
 
-      {/* ── MODAL NORMAL — clic sur duck / changement d'état ─────────────── */}
-      {isModal && !isOverlay && (
-        <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-[rgba(0,0,0,.45)] [animation:overlay-in_.2s_ease]"
-          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
-        >
-          <div className="relative max-h-[90vh] w-[320px] max-w-[90vw] overflow-y-auto rounded-3xl bg-[var(--color-background-primary,#fff)] px-6 pb-5 pt-7 [animation:modal-in_.25s_ease]">
+          {/* Hearts */}
+          <div style={{ display:"flex", justifyContent:"center", gap:"8px", marginBottom:"14px" }}>
+            {[0,1,2,3,4].map((i) => (
+              <span key={i} style={{ fontSize:"22px" }}>
+                {i < data.hearts ? "🩷" : "🤍"}
+              </span>
+            ))}
+          </div>
 
-            <button
-              className="absolute right-[14px] top-[14px] flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-none bg-[var(--color-background-secondary,#f5f4ef)] text-[13px] text-[var(--color-text-secondary,#666)]"
-              onClick={closeModal}
-            >
-              ✕
-            </button>
+          {/* Barre progression */}
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }}>
+            <span style={{ fontSize:"11px", color:"var(--color-text-tertiary,#999)" }}>
+              Progression vers {NEXT_STATE_NAMES[stateId]}
+            </span>
+            <span style={{ fontSize:"11px", fontWeight:500 }}>{data.progressToNext}%</span>
+          </div>
+          <div style={{
+            height:"4px", borderRadius:"2px", overflow:"hidden",
+            background:"var(--color-border-tertiary,rgba(0,0,0,.08))",
+            marginBottom:"16px",
+          }}>
+            <div style={{
+              height:"100%", borderRadius:"2px",
+              width:`${data.progressToNext}%`,
+              background: color,
+              transition:"width 600ms ease-in-out",
+            }} />
+          </div>
 
-            {isNewState && (
-              <div className={`${stateBgClass} mb-3 rounded-[20px] px-3 py-1 text-center text-xs font-semibold text-white`}>
-                ✨ Nouvel état débloqué
-              </div>
-            )}
-
-            <div className="mb-2 flex justify-center">
-              <img
-                src={reactionImg ?? idleImg}
-                alt={data.stateName}
-                className={`${imgClass} h-[160px] w-[160px] object-contain`}
-              />
-            </div>
-
-            <div className="mb-4 rounded-[4px_12px_12px_12px] bg-[var(--color-background-secondary,#f5f4ef)] px-4 py-3 text-[13px] leading-[1.6] text-[var(--color-text-secondary,#555)]">
-              {activeMsg ?? data.message}
-            </div>
-
-            <div className="mb-[14px] flex justify-center gap-2">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <span key={i} className="text-[22px]">
-                  {i < (data.hearts ?? 0) ? "🩷" : "🤍"}
-                </span>
-              ))}
-            </div>
-
-            {next && (
-              <>
-                <div className="mb-[5px] flex justify-between">
-                  <span className="text-[11px] text-[var(--color-text-tertiary,#999)]">Vers {next}</span>
-                  <span className="text-[11px] font-medium">{data.progressToNext ?? 0}%</span>
-                </div>
-                <div className="mb-4 h-1 overflow-hidden rounded-sm bg-[var(--color-border-tertiary,rgba(0,0,0,.08))]">
-                  <div
-                    className="h-full rounded-sm transition-[width] duration-[600ms] ease-[ease]"
-                    style={{ width: `${data.progressToNext ?? 0}%`, backgroundColor: color }}
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="mb-1 h-[0.5px] bg-[var(--color-border-tertiary,rgba(0,0,0,.08))]" />
+          {/* Stats */}
+          <div style={{ borderTop:"0.5px solid var(--color-border-tertiary,rgba(0,0,0,.08))" }}>
             {[
-              ["Streak",             `🔥 ${data.streak ?? 0} mois consécutifs`],
-              ["Total cœurs gagnés", `${data.totalHearts ?? 0} 🩷`],
+              ["État",                data.stateName],
+              ["Streak",             `${data.streak} mois consécutifs`],
+              ["Total cœurs gagnés", `${data.totalHearts}`],
               ["Mois évalué",        data.evaluatedMonth ?? "—"],
             ].map(([label, value]) => (
-              <div key={label} className="flex justify-between border-t border-[var(--color-border-tertiary,rgba(0,0,0,.07))] py-2">
-                <span className="text-xs text-[var(--color-text-secondary,#888)]">{label}</span>
-                <span className="text-xs font-medium">{value}</span>
+              <div key={label} style={{
+                display:"flex", justifyContent:"space-between",
+                padding:"9px 0",
+                borderTop:"0.5px solid var(--color-border-tertiary,rgba(0,0,0,.07))",
+              }}>
+                <span style={{ fontSize:"12px", color:"var(--color-text-secondary,#888)" }}>{label}</span>
+                <span style={{ fontSize:"12px", fontWeight:500 }}>{value}</span>
               </div>
             ))}
-
           </div>
         </div>
-      )}
-    </>
-  );
+      </div>
+    );
+  }
+
+  return null;
 }

@@ -1,5 +1,6 @@
 import { useAuth } from "../../context/AuthContext";
 import { useCoachBudget } from "../../hooks/useCoachBudget";
+import { useTranslation } from "react-i18next";
 import {
   CheckCircle as IconCheck,
   AlertTriangle as IconAlert,

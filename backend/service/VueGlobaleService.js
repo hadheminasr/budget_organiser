@@ -4,10 +4,7 @@ import { Goal } from "../models/Goal.js";
 import { Operation } from "../models/Operation.js";
 import { Category } from "../models/Category.js";
 import { pct, denominateurSafe, daysAgo } from "../utils/seviceUtils.js";
-
-
-/* Helpers                            */
-
+/* Helpers*/
 function startOfMonth(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
 }
@@ -48,14 +45,10 @@ function safePercent(value, max) {
 }
 
 /* Main Service                       */
-/* ---------------------------------- */
 export const VueGlobale = {
-  /* =========================================================
-     1) KPI EXECUTIFS (6 KPI)
-     ========================================================= */
+  /*KPI EXECUTIFS (6 KPI)*/
   async KPI() {
   const since7 = daysAgo(7);
-
   const [
     nbComptes,
     comptesActifsIds,
@@ -158,84 +151,80 @@ export const VueGlobale = {
   };
 },
 
-  /* =========================================================
-     2) HEATMAP ACTIVITÉ 7J
-     ========================================================= */
- async heatmapJourHeure7j() {
-  const now = new Date();
-  const start = new Date();
-  start.setDate(now.getDate() - 6);
-  start.setHours(0, 0, 0, 0);
+  /*HEATMAP ACTIVITÉ 7J*/
+  async heatmapJourHeure7j() {
+    const now = new Date();
+    const start = new Date();
+    start.setDate(now.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
 
-  const operations = await Operation.find({
-    createdAt: { $gte: start, $lte: now },
-  }).lean();
+    const operations = await Operation.find({
+      createdAt: { $gte: start, $lte: now },
+    }).lean();
 
-  const dayLabels = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+    const dayLabels = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
-  // matrice vide 7 jours × 24 heures
-  const matrix = [];
-  for (let day = 0; day < 7; day++) {
-    for (let hour = 0; hour < 24; hour++) {
-      matrix.push({
-        day,
-        dayLabel: dayLabels[day],
-        hour,
-        value: 0,
-      });
+    // matrice vide 7 jours × 24 heures
+    const matrix = [];
+    for (let day = 0; day < 7; day++) {
+      for (let hour = 0; hour < 24; hour++) {
+        matrix.push({
+          day,
+          dayLabel: dayLabels[day],
+          hour,
+          value: 0,
+        });
+      }
     }
-  }
 
-  // index rapide pour éviter matrix.find() à chaque boucle
-  const matrixMap = new Map();
-  for (const cell of matrix) {
-    matrixMap.set(`${cell.day}-${cell.hour}`, cell);
-  }
-
-  for (const op of operations) {
-    const sourceDate = op.createdAt || op.date;
-    if (!sourceDate) continue;
-
-    const d = new Date(sourceDate);
-    if (Number.isNaN(d.getTime())) continue;
-
-    const day = d.getDay();
-    const hour = d.getHours();
-
-    const key = `${day}-${hour}`;
-    const cell = matrixMap.get(key);
-
-    if (cell) {
-      cell.value += 1;
+    // index rapide pour éviter matrix.find() à chaque boucle
+    const matrixMap = new Map();
+    for (const cell of matrix) {
+      matrixMap.set(`${cell.day}-${cell.hour}`, cell);
     }
-  }
 
-  console.log("HEATMAP operations count =", operations.length);
+    for (const op of operations) {
+      const sourceDate = op.createdAt || op.date;
+      if (!sourceDate) continue;
+
+      const d = new Date(sourceDate);
+      if (Number.isNaN(d.getTime())) continue;
+
+      const day = d.getDay();
+      const hour = d.getHours();
+
+      const key = `${day}-${hour}`;
+      const cell = matrixMap.get(key);
+
+      if (cell) {
+        cell.value += 1;
+      }
+    }
+
+    console.log("HEATMAP operations count =", operations.length);
+    console.log(
+      "HEATMAP non zero cells =",
+      matrix.filter((x) => x.value > 0)
+    );
+    console.log("HEATMAP operations count =", operations.length);
+
+  console.log(
+    "HEATMAP operation samples =",
+    operations.slice(0, 5).map(op => ({
+      createdAt: op.createdAt,
+      date: op.date,
+    }))
+  );
+
   console.log(
     "HEATMAP non zero cells =",
-    matrix.filter((x) => x.value > 0)
+    matrix.filter(cell => cell.value > 0)
   );
-  console.log("HEATMAP operations count =", operations.length);
 
-console.log(
-  "HEATMAP operation samples =",
-  operations.slice(0, 5).map(op => ({
-    createdAt: op.createdAt,
-    date: op.date,
-  }))
-);
+    return matrix;
+  },
 
-console.log(
-  "HEATMAP non zero cells =",
-  matrix.filter(cell => cell.value > 0)
-);
-
-  return matrix;
-},
-
-  /* =========================================================
-     3) RADAR SANTÉ GLOBALE PLATEFORME
-     ========================================================= */
+  /*RADAR SANTÉ GLOBALE PLATEFORME*/
   async healthRadar() {
     const now = new Date();
     const since30 = daysAgo(30);
@@ -314,9 +303,7 @@ console.log(
     ];
   },
 
-  /* =========================================================
-     4) TREEMAP CATÉGORIES (mois courant)
-     ========================================================= */
+  /*TREEMAP CATÉGORIES (mois courant)*/
   async categoryTreemapCurrentMonth() {
     const now = new Date();
     const monthStart = startOfMonth(now);
@@ -357,9 +344,7 @@ console.log(
     return rows;
   },
 
-  /* =========================================================
-     5) WATERFALL / BUDGET FLOW PLATEFORME (mois courant)
-     ========================================================= */
+  /*WATERFALL / BUDGET FLOW PLATEFORME (mois courant)*/
   async budgetFlowCurrentMonth() {
     const now = new Date();
     const monthStart = startOfMonth(now);
