@@ -3,6 +3,7 @@ import { Category } from "../models/Category.js";
 import { Operation } from "../models/Operation.js";
 import { Goal } from "../models/Goal.js";
 import { AccountProfile } from "../models/AccountProfile.js";
+import { computeBudgetCompliance, computeHealthScore } from "../utils/buildHealthScore.js";
 
 const RULE_PRIORITY = {
   budget_global_depasse: 100,
@@ -47,6 +48,32 @@ export const coachBudgetV1Service = {
       accountProfile,
     });
 
+    const { complianceRate } = computeBudgetCompliance({
+      categories,
+      operations: currentOperations,
+    });
+
+    const savRate = indicators.totalBudgets > 0
+      ? Math.max(0, (indicators.remainingBudget / indicators.totalBudgets) * 100)
+      : 0;
+
+    const avgGoalPct = indicators.goalInsights.length > 0
+      ? (indicators.goalInsights.reduce((sum, g) => sum + g.progressRate, 0) /
+        indicators.goalInsights.length) * 100
+      : 0;
+
+    const execRate = indicators.totalBudgets > 0
+      ? (indicators.totalDepense / indicators.totalBudgets) * 100
+      : 0;
+
+    const { healthScore, breakdown } = computeHealthScore({
+      complianceRate,
+      execRate,
+      savRate,
+      avgGoalPct,
+      isFirstEvaluation: false,
+    });
+
     const triggeredRules = this.detectRules(indicators);
     const mainRule = this.chooseMainRule(triggeredRules);
     const projection = this.buildProjection(indicators);
@@ -59,7 +86,7 @@ export const coachBudgetV1Service = {
     const alerts = this.buildAlerts(triggeredRules, indicators);
 
     const riskLevel = this.getRiskLevel(indicators, triggeredRules, projection);
-    const healthScore = this.calculateHealthScore(triggeredRules);
+    //const healthScore = this.calculateHealthScore(triggeredRules);
 
     const recommendationBlocks = this.buildRecommendationBlocks(
       triggeredRules,
@@ -89,8 +116,8 @@ export const coachBudgetV1Service = {
         ),
         budgetGap: Number(indicators.budgetGap.toFixed(2)),
         remainingBudget: Number(indicators.remainingBudget.toFixed(2)),
-        riskLevel,
-        healthScore,
+        healthScore,           // ← maintenant identique au duck et au rapport
+        healthScoreBreakdown: breakdown, // ← bonus : les 4 axes exposés
       },
 
       projection,
@@ -129,7 +156,6 @@ export const coachBudgetV1Service = {
   }) {
     const solde = Number(account.solde ?? 0);
     const reste = Number(account.reste ?? 0);
-
     const totalBudgets = categories.reduce(
       (sum, cat) => sum + Number(cat.budget || 0),
       0
@@ -145,22 +171,20 @@ export const coachBudgetV1Service = {
       0
     );
 
-    const depenseEvolutionRate =
-      totalDepenseMoisPrecedent > 0
+    const depenseEvolutionRate =totalDepenseMoisPrecedent > 0
         ? (totalDepense - totalDepenseMoisPrecedent) /
           totalDepenseMoisPrecedent
         : 0;
 
-    const isDepenseEnHausse =
-      totalDepenseMoisPrecedent > 0 &&
-      totalDepense > totalDepenseMoisPrecedent * 1.15; //il y a hausse notable si la dépense dépasse de 15%
+    const isDepenseEnHausse =totalDepenseMoisPrecedent > 0 &&
+      totalDepense > totalDepenseMoisPrecedent * 1.15; //il y a hausse notable si la dépense dépasse de 15% (En dessous, c'est du bruit normal )
 
     const budgetConsumptionRate =
       totalBudgets > 0 ? (totalDepense / totalBudgets) * 100 : 0;
 
     const budgetGap = totalDepense - totalBudgets;
     const remainingBudget = Math.max(0, totalBudgets - totalDepense);
-
+    //analyse par catégorie
     const categoryInsights = categories.map((cat) => {
       const depenseCategorie = currentOperations
         .filter(
@@ -172,7 +196,7 @@ export const coachBudgetV1Service = {
       const budgetCategorie = Number(cat.budget || 0);
       const depassement = Math.max(0, depenseCategorie - budgetCategorie);
       const consumptionRate = budgetCategorie > 0 ? (depenseCategorie / budgetCategorie) * 100 : 0;
-
+      //calcul de sévérité
       let severity = "none";
       if (depassement > 0) {
         const overRatio = depassement / Math.max(budgetCategorie, 1);
@@ -234,7 +258,7 @@ export const coachBudgetV1Service = {
     const hasActiveGoals = activeGoals.length > 0;
 
     // V1 simple : pas encore de vraie trace mensuelle des contributions
-    const totalGoalContributionThisMonth = 0;
+    const totalGoalContributionThisMonth = 0;//toujours true
     const hasNoRecentGoalContribution = totalGoalContributionThisMonth === 0;
 
     const isObjectifEnRetard =
@@ -252,7 +276,8 @@ export const coachBudgetV1Service = {
       totalDepense <= totalBudgets &&
       !hasAnyCategoryExceeded &&
       (solde > 0 ? reste > solde * 0.1 : reste > 0);
-
+    
+    
     return {
       solde,
       reste,
@@ -283,6 +308,8 @@ export const coachBudgetV1Service = {
 
       isBudgetSousControle,
 
+
+
       accountProfile: {
         adviceStyle: accountProfile?.adviceStyle ?? "direct",
         mainDifficulty: accountProfile?.mainDifficulty ?? null,
@@ -295,73 +322,60 @@ export const coachBudgetV1Service = {
     };
   },
 
+
   buildPersonalizedContext(indicators) {
-  const profile = indicators.accountProfile || {};
-  const topCategoryName = indicators.topCategorieProbleme?.name?.toLowerCase?.() || "";
+    const profile= indicators.accountProfile || {};
+    const topCat= indicators.topCategorieProbleme;
+    const topGroup = topCat?.normalizedGroup ?? "OTHER";
+    return {
+      
+      prefersMotivatingTone: profile.adviceStyle === "motivating",
+      prefersDirectTone: profile.adviceStyle === "direct",
+      hasCar:profile.hasCar=== true,
+      hasChildren:profile.hasChildren === true,
+      goalDriven:profile.mainGoal=== "reach_goal",
 
-  const categoryHints = {
-    isShoppingCategory:
-      topCategoryName.includes("skin") ||
-      topCategoryName.includes("care") ||
-      topCategoryName.includes("beauty") ||
-      topCategoryName.includes("cosmetic") ||
-      topCategoryName.includes("shopping") ||
-      topCategoryName.includes("achat"),
-    isFoodCategory:
-      topCategoryName.includes("food") ||
-      topCategoryName.includes("restaurant") ||
-      topCategoryName.includes("resto") ||
-      topCategoryName.includes("alimentation") ||
-      topCategoryName.includes("nourriture"),
-    isTransportCategory:
-      topCategoryName.includes("transport") ||
-      topCategoryName.includes("fuel") ||
-      topCategoryName.includes("carburant") ||
-      topCategoryName.includes("essence") ||
-      topCategoryName.includes("voiture"),
-    isLeisureCategory:
-      topCategoryName.includes("leisure") ||
-      topCategoryName.includes("loisir") ||
-      topCategoryName.includes("sortie") ||
-      topCategoryName.includes("fun"),
-  };
+      weakSavingHabit: ["never", "rarely"].includes(profile.savingHabit),
+      mediumSavingHabit: profile.savingHabit === "sometimes",
+      strongSavingHabit: profile.savingHabit === "often",
 
-  return {
-    prefersMotivatingTone: profile.adviceStyle === "motivating",
-    prefersDirectTone: profile.adviceStyle === "direct",
+      oftenEatsOut:profile.eatingOutFrequency === "often",
+      sometimesEatsOut: profile.eatingOutFrequency === "sometimes",
 
-    mainDifficulty: profile.mainDifficulty,
-    eatingOutFrequency: profile.eatingOutFrequency,
-    savingHabit: profile.savingHabit,
-    mainGoal: profile.mainGoal,
+      mainDifficulty:       profile.mainDifficulty,
+      eatingOutFrequency:   profile.eatingOutFrequency,
+      savingHabit:          profile.savingHabit,
+      mainGoal:             profile.mainGoal,
 
-    hasCar: profile.hasCar === true,
-    hasChildren: profile.hasChildren === true,
+      strugglesWithShopping:
+        profile.mainDifficulty === "shopping" &&
+        ["SHOPPING", "HEALTH_BEAUTY"].includes(topGroup),
 
-    weakSavingHabit: ["never", "rarely"].includes(profile.savingHabit),
-    mediumSavingHabit: profile.savingHabit === "sometimes",
-    strongSavingHabit: profile.savingHabit === "often",
+      strugglesWithFood:
+        profile.mainDifficulty === "food" &&
+        ["FOOD_HOME", "EATING_OUT"].includes(topGroup),
 
-    oftenEatsOut: profile.eatingOutFrequency === "often",
-    sometimesEatsOut: profile.eatingOutFrequency === "sometimes",
+      strugglesWithEatingOut:
+        profile.mainDifficulty === "food" &&
+        topGroup === "EATING_OUT",
 
-    goalDriven: profile.mainGoal === "reach_goal",
+      strugglesWithTransport:
+        profile.mainDifficulty === "transport" &&
+        topGroup === "TRANSPORT",
 
-    strugglesWithShopping:
-      profile.mainDifficulty === "shopping" && categoryHints.isShoppingCategory,
+      strugglesWithLeisure:
+        profile.mainDifficulty === "leisure" &&
+        ["ENTERTAINMENT", "SMOKING_ALCOHOL_CAFE"].includes(topGroup),
 
-    strugglesWithFood:
-      profile.mainDifficulty === "food" && categoryHints.isFoodCategory,
+      strugglesWithBills:
+        topGroup === "BILLS",
 
-    strugglesWithTransport:
-      profile.mainDifficulty === "transport" && categoryHints.isTransportCategory,
+      strugglesWithChildren:
+        topGroup === "CHILDREN",
 
-    strugglesWithLeisure:
-      profile.mainDifficulty === "leisure" && categoryHints.isLeisureCategory,
-
-    categoryHints,
-  };
-},
+      topGroup,
+    };
+  },
 
   detectRules(indicators) {
     const rules = [];
@@ -436,7 +450,7 @@ export const coachBudgetV1Service = {
 
   const ctx = this.buildPersonalizedContext(indicators);
   const topCat = indicators.topCategorieProbleme?.name ?? "une catégorie";
-
+  //garantit que le message le plus spécifique possible est toujours retourné
   switch (mainRule.label) {
     case "budget_global_depasse":
       if (ctx.prefersMotivatingTone) {
@@ -819,7 +833,7 @@ export const coachBudgetV1Service = {
 
     return "low";
   },
-
+/*
   calculateHealthScore(triggeredRules) {
     let score = 100;
 
@@ -853,6 +867,7 @@ export const coachBudgetV1Service = {
 
     return Math.max(0, Math.min(100, score));
   },
+*/
 
   getStatus(triggeredRules, indicators, projection) {
     const labels = triggeredRules.map((r) => r.label);

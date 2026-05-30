@@ -1,16 +1,11 @@
-// Report.jsx — version mise à jour avec section BI analytique
 import { useTranslation } from "react-i18next";
 import { useReport } from "../../hooks/UseReport";
 import { useState } from "react";
 
-import ReportKpis         from "../../components/UserComponents/Report/Report/ReportKpis";
-//import ReportComparison   from "../../components/UserComponents/Report/Report/ReportComparison";
+
 import ReportLineChart    from "../../components/UserComponents/Report/Report/ReportLineChart";
-import ReportHistoryTable from "../../components/UserComponents/Report/Report/ReportHistoryTable";
 import CategoryAnalysis   from "../../components/UserComponents/Report/Report/CategoryAnalysis";
 import GoalsProgress      from "../../components/UserComponents/Report/Report/GoalsProgress";
-
-// ── Nouveau bloc BI analytique ────────────────────────────────────────────────
 import BISynthese from "../../components/UserComponents/Report/BI/BISynthese";
 
 export default function Report() {
@@ -83,7 +78,7 @@ export default function Report() {
       <ReportLineChart data={data.lineChart} locale={locale} />
 
       {/* ── TABLEAU HISTORIQUE (existant) ───────────────────────── */}
-      <ReportHistoryTable data={data.historiqueTable} locale={locale} />
+      {/* <ReportHistoryTable data={data.historiqueTable} locale={locale} /> */}
 
       {/* ── ANALYSE PAR CATÉGORIE (existant) ────────────────────── */}
       <CategoryAnalysis

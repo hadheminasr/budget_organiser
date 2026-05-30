@@ -11,11 +11,13 @@ import {
 
 export default function WaterfallChart({ items = [], locale = "fr-TN" }) {
   const chartData = [];
+  const totalItem = items.find(item => item.isTotal);
+  const isDeficit = (totalItem?.value ?? 0) < 0;
   let running = 0;
 
   items.forEach((item, index) => {
     const isFirst = index === 0;
-    const isLast = index === items.length - 1;
+    const isTotal = item.isTotal;
 
     let start;
     let end;
@@ -26,15 +28,18 @@ export default function WaterfallChart({ items = [], locale = "fr-TN" }) {
       end = item.value;
       running = item.value;
       color = "#378ADD";
-    } else if (isLast) {
+    } else if (isTotal) {
+      //le reste finale doit reprtir du bas
       start = 0;
       end = item.value;
-      color = item.value >= 0 ? "#1D9E75" : "#E24B4A";
+      color = item.value >= 0
+        ? "#1D9E75"
+        : "#7F1D1D";
     } else {
       start = running;
       end = running + item.value;
       running = end;
-      color = item.value < 0 ? "#E24B4A" : "#1D9E75";
+      color =  "#FFB6C1" ;
     }
 
     chartData.push({
@@ -42,8 +47,8 @@ export default function WaterfallChart({ items = [], locale = "fr-TN" }) {
       value: item.value,
       start,
       end,
-      base: Math.min(start, end),
-      amount: Math.abs(end - start),
+      base: Math.min(start, end),//la barre unvisible qui porte la barre visible
+      amount: Math.abs(end - start),//la baree visible : hauteur rélle de barre
       color,
     });
   });
@@ -51,13 +56,22 @@ export default function WaterfallChart({ items = [], locale = "fr-TN" }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5">
       <div className="mb-4">
+
         <h3 className="text-[14px] font-medium text-gray-900">
           Waterfall — flux du mois
         </h3>
         <p className="text-[11px] text-gray-400 mt-0.5">
-          Comment le solde s'est transformé
+          {isDeficit
+            ? "Flux budgétaire → déficit final"
+            : "Flux budgétaire → épargne restante"}
         </p>
       </div>
+      {isDeficit && (
+        <div className="inline-flex items-center text-[10px] text-red-700 bg-red-50 px-2 py-1 rounded-full mb-4">
+          ⚠️ Déficit global détecté
+        </div>
+      )}
+
 
       <div className="flex gap-4 mb-3 text-[11px] text-gray-500 flex-wrap">
         <span className="flex items-center gap-1.5">
@@ -79,7 +93,7 @@ export default function WaterfallChart({ items = [], locale = "fr-TN" }) {
             className="w-2.5 h-2.5 rounded-sm inline-block"
             style={{ background: "#1D9E75" }}
           />
-          Reste / épargne
+          {isDeficit ? "Déficit final" : "Reste / épargne"}
         </span>
       </div>
 

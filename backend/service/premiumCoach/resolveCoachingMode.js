@@ -6,16 +6,6 @@ import {
   THRESHOLDS,
 } from "./Premiumconstants.js";
 
-function normalizeAdviceStyle(value) {
-  const style = String(value || "").trim().toLowerCase();
-  if (["motivating", "motivant"].includes(style)) return "motivating";
-  if (["direct", "directe"].includes(style)) return "direct";
-  if (["gentle", "soft", "doux"].includes(style)) return "gentle";
-  if (["detailed", "detaille", "détaillé"].includes(style)) return "detailed";
-  if (["concise", "court", "concis"].includes(style)) return "concise";
-  return "balanced";
-}
-
 function getModeAdjustments(mode) {
   switch (mode) {
     case COACHING_MODES.RECOVERY_STRICT:
@@ -133,8 +123,7 @@ export function resolveCoachingMode(payload) {
 
   const hasActiveGoal = meta.hasActiveGoal ?? false;
   const isSharedAccount = meta.isSharedAccount ?? false;
-  const preferredAdviceStyle = userProfile.preferredAdviceStyle ?? "balanced";
-
+  const preferredAdviceStyle = userProfile.preferredAdviceStyle ?? "direct";
   const totalBudget = snap.totalBudget ?? 0;
   const projectedMonthlySpend = snap.projectedMonthlySpend ?? 0;
   const urgentGoalsCount = meta.urgentGoalsCount ?? 0;
@@ -293,8 +282,10 @@ export function resolveCoachingMode(payload) {
         ? "medium"
         : adjustments.goalProtectionPriority)
     : "low";
+  
+  //let communicationStyle = normalizeAdviceStyle(preferredAdviceStyle);
+  let communicationStyle = preferredAdviceStyle;
 
-  let communicationStyle = normalizeAdviceStyle(preferredAdviceStyle);
 
   if (personaCluster === PERSONA_CLUSTERS.VISIBILITY_SEEKER) {
     communicationStyle = "detailed";

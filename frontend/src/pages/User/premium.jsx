@@ -473,7 +473,7 @@ export default function PremiumDashboardPage() {
         <motion.div {...fadeInUp} className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-pink-100 shadow-sm">
           <SectionTitle icon={Shield} title={t("premium.sections.goalProtection")}
             iconBg="bg-emerald-100" iconColor="text-emerald-600" />
-          <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="bg-emerald-50 rounded-xl px-3 py-2.5 text-center">
               <p className="text-[11px] text-gray-400">{t("premium.goalProtection.discipline")}</p>
               <p className="text-lg font-bold text-emerald-700">{gp.disciplineScore}%</p>
@@ -482,10 +482,12 @@ export default function PremiumDashboardPage() {
               <p className="text-[11px] text-gray-400">{t("premium.goalProtection.protected")}</p>
               <p className="text-lg font-bold text-emerald-700">{fmt(gp.protectedAmount)}</p>
             </div>
+            {/** 
             <div className="bg-emerald-50 rounded-xl px-3 py-2.5 text-center">
               <p className="text-[11px] text-gray-400">{t("premium.goalProtection.capacity")}</p>
               <p className="text-lg font-bold text-emerald-700">{gp.capacityRatio ?? "N/A"}%</p>
             </div>
+            */}
           </div>
           {gp.message && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-xl p-3">{gp.message}</p>}
         </motion.div>

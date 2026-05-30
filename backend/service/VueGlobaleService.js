@@ -43,10 +43,8 @@ function safePercent(value, max) {
   if (!max || max <= 0) return 0;
   return Math.min(100, round2((value / max) * 100));
 }
-
-/* Main Service                       */
+/*Main Service*/
 export const VueGlobale = {
-  /*KPI EXECUTIFS (6 KPI)*/
   async KPI() {
   const since7 = daysAgo(7);
   const [
@@ -62,7 +60,7 @@ export const VueGlobale = {
     allCategories,
   ] = await Promise.all([
     Account.countDocuments(),
-    Operation.distinct("IdAccount", { date: { $gte: since7 } }),
+    Operation.distinct("IdAccount", { date: { $gte: since7 } }),//Comptes actifs sur 7 jours
     Account.countDocuments({
       $expr: { $gt: [{ $size: "$Users" }, 1] },
     }),
@@ -88,19 +86,18 @@ export const VueGlobale = {
   );
 
   const categoriesByAccount = allCategories.reduce((acc, cat) => {
-    const accountId = String(cat.AccountId);
-    if (!acc[accountId]) acc[accountId] = [];
+    const accountId = String(cat.AccountId);//dans MongoDB un id est ObjectId
+    if (!acc[accountId]) acc[accountId] = [];//si c'est la 1er fois qu'on a vue cette cat on cree un tab vid pour lui
     acc[accountId].push(cat);
     return acc;
   }, {});
 
-  const spentByAccountCategory = allOperationsThisMonth.reduce((acc, op) => {
+  const spentByAccountCategory = allOperationsThisMonth.reduce((acc, op) => {//combien le compte A1 a dépensé dans la catégorie C1
     const accountId = String(op.IdAccount);
     const categoryId = op.IdCategory ? String(op.IdCategory) : null;
-
     if (!categoryId) return acc;
 
-    if (!acc[accountId]) acc[accountId] = {};
+    if (!acc[accountId]) acc[accountId] = {};//si ce compte n’existe pas encore dans l’objet on crée un objet vide pour lui
     acc[accountId][categoryId] =
       (acc[accountId][categoryId] ?? 0) + Number(op.amount ?? 0);
 
@@ -163,7 +160,6 @@ export const VueGlobale = {
     }).lean();
 
     const dayLabels = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-
     // matrice vide 7 jours × 24 heures
     const matrix = [];
     for (let day = 0; day < 7; day++) {
@@ -176,9 +172,8 @@ export const VueGlobale = {
         });
       }
     }
-
     // index rapide pour éviter matrix.find() à chaque boucle
-    const matrixMap = new Map();
+    const matrixMap = new Map();//prepare map = dict vide sous forme de clé valeaur
     for (const cell of matrix) {
       matrixMap.set(`${cell.day}-${cell.hour}`, cell);
     }
@@ -187,8 +182,8 @@ export const VueGlobale = {
       const sourceDate = op.createdAt || op.date;
       if (!sourceDate) continue;
 
-      const d = new Date(sourceDate);
-      if (Number.isNaN(d.getTime())) continue;
+      const d = new Date(sourceDate);//transforme la date en objet date que js lire
+      if (Number.isNaN(d.getTime())) continue;//on verifie que la date est valide 
 
       const day = d.getDay();
       const hour = d.getHours();
@@ -200,27 +195,6 @@ export const VueGlobale = {
         cell.value += 1;
       }
     }
-
-    console.log("HEATMAP operations count =", operations.length);
-    console.log(
-      "HEATMAP non zero cells =",
-      matrix.filter((x) => x.value > 0)
-    );
-    console.log("HEATMAP operations count =", operations.length);
-
-  console.log(
-    "HEATMAP operation samples =",
-    operations.slice(0, 5).map(op => ({
-      createdAt: op.createdAt,
-      date: op.date,
-    }))
-  );
-
-  console.log(
-    "HEATMAP non zero cells =",
-    matrix.filter(cell => cell.value > 0)
-  );
-
     return matrix;
   },
 
@@ -233,7 +207,6 @@ export const VueGlobale = {
     const [
       nbComptes,
       comptesPartages,
-      comptesBloques,
       activeAccountsRows,
       nbObjectifs,
       objectifsActifs,
@@ -244,20 +217,16 @@ export const VueGlobale = {
     ] = await Promise.all([
       Account.countDocuments(),
       Account.countDocuments({ nbUsers: { $gt: 1 } }),
-      Account.countDocuments({ isBlocked: true }),
-
       Operation.aggregate([
         { $match: { date: { $gte: since30, $lte: now } } },
-        { $group: { _id: "$IdAccount" } },
+        { $group: { _id: "$IdAccount" } },//par compte
       ]),
-
       Goal.countDocuments(),
       Goal.countDocuments({ isActive: true }),
       Goal.countDocuments({ isAchieved: true }),
+      Category.find({ budget: { $gt: 0 } }, { _id: 1, budget: 1 }).lean(),//comptes avec budget > 0
 
-      Category.find({}, { _id: 1, budget: 1 }).lean(),
-
-      this._accountsOverBudgetThisMonth(),
+      this._accountsOverBudgetThisMonth(),//=vueGlobaleService._accountsOverBudgetThisMonth() au lieu d’écrire directement le nom du service on utilise this parce qu’on est déjà à l’intérieur du même obje
 
       Operation.countDocuments({ date: { $gte: since30, $lte: now } }),
     ]);
@@ -274,32 +243,30 @@ export const VueGlobale = {
       { $match: { date: { $gte: monthStart, $lte: now } } },
       {
         $group: {
-          _id: null,
+          _id: null,//ne groupe pas par compte ou catégorie, on veut un total global
           totalSpent: { $sum: "$amount" },
         },
       },
-    ]);
+    ]);//.agregate retouren tableau de res par exemple [{_id: null,val: 1200}]
 
-    const totalSpent = Number(depensesRows[0]?.totalSpent || 0);
-
+    const totalSpent = Number(depensesRows[0]?.totalSpent || 0);//donne 1200
+    //transforme led données brute en score sur 100
     const activationScore = safePercent(comptesActifs, nbComptes);
     const collaborationScore = safePercent(comptesPartages, nbComptes);
     const goalUsageScore = safePercent(objectifsActifs, nbObjectifs || 1);
     const goalAchievementScore = safePercent(objectifsAtteints, nbObjectifs || 1);
     const budgetControlScore = 100 - safePercent(nbComptesEnDepassement, nbComptes);
-    const budgetConsumptionScore =
-      totalBudget > 0 ? Math.max(0, 100 - safePercent(totalSpent, totalBudget)) : 0;
-
+    const budgetConsumptionScore = totalBudget > 0 ? Math.max(0, 100 - safePercent(totalSpent, totalBudget)) : 0;
     const usageDepthScore = Math.min(100, round2((opsCount30j / denominateurSafe(comptesActifs)) * 10));
 
     return [
-      { metric: "Activation", value: round2(activationScore) },
-      { metric: "Collaboration", value: round2(collaborationScore) },
-      { metric: "Usage objectifs", value: round2(goalUsageScore) },
-      { metric: "Objectifs atteints", value: round2(goalAchievementScore) },
-      { metric: "Maîtrise budget", value: round2(budgetControlScore) },
-      { metric: "Reste capacité", value: round2(budgetConsumptionScore) },
-      { metric: "Intensité usage", value: round2(usageDepthScore) },
+      { metric:"Activation", value: round2(activationScore) },
+      { metric:"Collaboration", value: round2(collaborationScore) },
+      { metric:"Usage objectifs", value: round2(goalUsageScore) },
+      { metric:"Objectifs atteints", value: round2(goalAchievementScore) },
+      { metric:"Maîtrise budget", value: round2(budgetControlScore) },
+      { metric:"Reste capacité", value: round2(budgetConsumptionScore) },
+      { metric:"Intensité usage", value: round2(usageDepthScore) },
     ];
   },
 
@@ -319,16 +286,16 @@ export const VueGlobale = {
       },
       { $sort: { total: -1 } },
       {
-        $lookup: {
+        $lookup: {//jointure(pour afficher treemap on a besoin nom couleur..)
           from: "categories",
-          localField: "_id",
-          foreignField: "_id",
-          as: "cat",
+          localField: "_id",//catégorie id dans la collection opération
+          foreignField: "_id",//catégorie id dans la collection catégorie
+          as: "cat",//le résultat de la jointure sera dans un champ cat sous forme de tableau (même si c’est 1 seul résultat)
         },
       },
-      { $unwind: { path: "$cat", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$cat", preserveNullAndEmptyArrays: true } },//transforme le tableau cat en objet cat simple, preserveNullAndEmptyArrays: true permet de garder les opérations sans catégorie (cat sera null dans ce cas)
       {
-        $project: {
+        $project: {//choisir forme finale de données
           _id: 0,
           categoryId: "$_id",
           name: { $ifNull: ["$cat.name", "Non classée"] },
@@ -349,19 +316,20 @@ export const VueGlobale = {
     const now = new Date();
     const monthStart = startOfMonth(now);
 
-    const [accounts, categories, spentRows] = await Promise.all([
-      Account.find({}, { _id: 1, solde: 1, reste: 1 }).lean(),
+    const [accounts, categories, spentRows] = 
+    await Promise.all([
+      Account.find({}, { _id: 1, solde: 1, reste: 1 }).lean(),//je veux seulement ces cahmps sans filtrage
       Category.find({}, { _id: 1, budget: 1 }).lean(),
       Operation.aggregate([
         { $match: { date: { $gte: monthStart, $lte: now } } },
         {
           $group: {
-            _id: null,
+            _id: null,//pas de groupement, on veut un total global
             totalSpent: { $sum: "$amount" },
           },
         },
-      ]),
-    ]);
+      ]),//res possible : [{ _id: null, totalSpent: 1200 }] ou [] si pas d’opération ce mois ci
+    ]); //resultat d'agregate est tjrs un tab
 
     const totalSolde = accounts.reduce(
       (sum, a) => sum + Number(a.solde || 0),
@@ -375,8 +343,9 @@ export const VueGlobale = {
       (sum, c) => sum + Number(c.budget || 0),
       0
     );
+    
     const totalSpent = Number(spentRows[0]?.totalSpent || 0);
-
+    //math.max pour éviter les valeurs négatives si il y a on ne voit pas -500 on voit 0 
     const budgetNonConsomme = Math.max(totalBudget - totalSpent, 0);
     const depassement = Math.max(totalSpent - totalBudget, 0);
 
@@ -390,9 +359,7 @@ export const VueGlobale = {
     ];
   },
 
-    /* =========================================================
-     7) INSIGHTS AUTOMATIQUES
-     ========================================================= */
+  /*INSIGHTS AUTOMATIQUES*/
   async insights() {
   const [kpis, radar] = await Promise.all([
     this.KPI(),
@@ -401,14 +368,13 @@ export const VueGlobale = {
 
   const insights = [];
 
-  // 1) Activation plateforme
+  // activation plateforme
   if ((kpis.tauxActivationComptes ?? 0) >= 70) {
     insights.push("La plateforme présente un bon niveau d’activation des comptes.");
   } else {
     insights.push("Le taux d’activation des comptes reste moyen et peut être amélioré.");
   }
-
-  // 2) Dépassement budgétaire
+  // dépassement budgétaire
   if ((kpis.pctComptesEnDepassement ?? 0) >= 40) {
     insights.push("Une part importante des comptes dépasse ses budgets ce mois-ci.");
   } else if ((kpis.pctComptesEnDepassement ?? 0) > 0) {
@@ -417,37 +383,29 @@ export const VueGlobale = {
     insights.push("La majorité des comptes reste globalement sous contrôle budgétaire.");
   }
 
-  // 3) Collaboration / usage partagé
+  // collaboration / usage partagé
   if ((kpis.pctComptesPartages ?? 0) >= 40) {
     insights.push("L’usage collaboratif est bien installé, avec une part importante de comptes partagés.");
   } else {
     insights.push("Les comptes personnels restent dominants, ce qui laisse une marge de progression pour l’usage collaboratif.");
   }
 
-  // 4) Lecture radar — maîtrise budgétaire
-  const budgetControl =
-    radar.find((x) => x.metric === "Maîtrise budget")?.value ?? 0;
-
+  // lecture radar — maîtrise budgétaire
+  const budgetControl =radar.find((x) => x.metric === "Maîtrise budget")?.value ?? 0;
   if (budgetControl < 60) {
     insights.push("Le niveau global de maîtrise budgétaire mérite une surveillance renforcée.");
   } else if (budgetControl >= 80) {
     insights.push("La maîtrise budgétaire globale de la plateforme est solide.");
   }
-
-  // 5) Lecture radar — discipline / régularité
-  const regularity =
-    radar.find((x) => x.metric === "Régularité")?.value ?? 0;
-
+  // lecture radar — discipline / régularité
+  const regularity =radar.find((x) => x.metric === "Régularité")?.value ?? 0;
   if (regularity < 50) {
     insights.push("Le comportement de dépense apparaît encore irrégulier sur une partie de la plateforme.");
   }
-
   return insights.slice(0, 4);
 },
 
-  /* =========================================================
-     8) ENDPOINT GLOBAL
-     ========================================================= */
+  /*ENDPOINT GLOBAL*/
   async getAll() {
     const [
       kpis,
@@ -478,9 +436,8 @@ export const VueGlobale = {
     };
   },
 
-  /* =========================================================
-     PRIVATE HELPERS
-     ========================================================= */
+  /*PRIVATE HELPERS*/
+  //helper interne, elle n’est pas destinée à être appelée directement par le controller ou par le front elle sert seulement à aider les autres fonctions du service
   async _accountsOverBudgetThisMonth() {
     const now = new Date();
     const monthStart = startOfMonth(now);

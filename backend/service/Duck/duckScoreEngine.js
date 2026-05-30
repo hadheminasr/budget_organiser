@@ -1,3 +1,4 @@
+//Calcul du score + lecture/écriture en base 
 import { Account } from "../../models/Account.js";
 import { computeHealthScore } from "../../utils/buildHealthScore.js";
 import {
@@ -6,10 +7,11 @@ import {
   DUCK_MESSAGES,
 } from "./duckConstants.js";
 
-// ── Utilitaires ───────────────────────────────────────────────────────────────
+// Utilitaires 
+//?????
 const clamp = (v, min, max) => Math.min(Math.max(Number(v) || 0, min), max);
 
-// ── healthScore → état du duck ────────────────────────────────────────────────
+// healthScore = état du duck 
 function scoreToState(healthScore) {
   for (let i = DUCK_STATES.length - 1; i >= 0; i--) {
     if (healthScore >= DUCK_STATES[i].minScore) {
@@ -19,13 +21,13 @@ function scoreToState(healthScore) {
   return DUCK_STATES[0];
 }
 
-// ── Calcul du streak ──────────────────────────────────────────────────────────
+// Calcul du streak 
 function computeStreak({ currentStreak, healthScore, monthKey, lastEvaluatedMonth }) {
   if (monthKey === lastEvaluatedMonth) return currentStreak;
-  return healthScore >= STREAK_MIN_SCORE ? currentStreak + 1 : 0;
+  return healthScore >= STREAK_MIN_SCORE ? currentStreak + 1 : 0;//si le score est bon → streak + 1. Si le score est insuffisant → streak remis à 0
 }
 
-// ── Progression vers le prochain état ────────────────────────────────────────
+// Progression vers le prochain état 
 function computeProgressToNext(healthScore, currentStateId) {
   if (currentStateId >= DUCK_STATES.length - 1) return 100;
 
@@ -36,16 +38,15 @@ function computeProgressToNext(healthScore, currentStateId) {
   if (range <= 0) return 100;
 
   const progress = healthScore - current.minScore;
-  return clamp(Math.round((progress / range) * 100), 0, 100);
+  return clamp(Math.round((progress / range) * 100), 0, 100);//force entre 0 et 100
 }
 
-// ── Évaluation mensuelle du duck ──────────────────────────────────────────────
+// Évaluation mensuelle du duck 
 export async function evaluateDuck(accountId, reportData) {
   const { bi, currentSummary, reportMonth } = reportData ?? {};
   const account = await Account.findById(accountId).select("Duck").lean();
   const current  = account?.Duck ?? {};  
-
-  const isFirstEvaluation = !current.lastEvaluatedMonth;  // ← après current
+  const isFirstEvaluation = !current.lastEvaluatedMonth;  
   const scoreResult = computeHealthScore({
     complianceRate: bi?.biScore?.discipline ?? currentSummary?.score ?? 0,
     execRate: bi?.execRate ?? 0,
@@ -102,7 +103,7 @@ export async function evaluateDuck(accountId, reportData) {
   };
 }
 
-// ── Lecture simple du duck stocké ─────────────────────────────────────────────
+// Lecture simple du duck stocké 
 export async function getDuckState(accountId) {
   const account = await Account.findById(accountId).select("Duck").lean();
   const duck = account?.Duck ?? {};

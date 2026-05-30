@@ -16,7 +16,6 @@ import {
 
 function getReportPeriods() {
   const now = new Date();
-
   const reportMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
 
@@ -31,7 +30,7 @@ function getReportPeriods() {
   };
 }
 
-function computeMonthSummary({ operations, categories, nbNotes = 0, goals = [] }) {
+function computeMonthSummary({ operations, categories, nbNotes = 0 }) {
   const nbOperations = operations.length;
   const totalDepense = operations.reduce((sum, op) => sum + Number(op.amount || 0), 0);
 
@@ -68,13 +67,14 @@ function computeMonthSummary({ operations, categories, nbNotes = 0, goals = [] }
     nbNotes,
   };
 }
+
 function buildGoalsWidget(goalsActifs) {
+  //tres frontend oriented : transfprmer données goal en structure directement exploitable UI
   return goalsActifs.map((goal) => {
     const percent = Math.min(
       100,
       Math.round(((goal.currentAmount ?? 0) / goal.targetAmount) * 100)
     );
-
     const joursRestants = goal.TargetDate
       ? Math.max(
           0,
@@ -98,7 +98,7 @@ function buildGoalsWidget(goalsActifs) {
 async function buildCategoriesHistorique(accountId, categories, periods) {
   const allowedMonths = [periods.previousMonth, periods.reportMonth];
 
-  return Promise.all(
+  return Promise.all(//Les requêtes MongoDB catégories sont parallélisées
     categories.map(async (cat) => {
       const opsOfCat = await Operation.find({
         IdAccount: accountId,
@@ -107,18 +107,18 @@ async function buildCategoriesHistorique(accountId, categories, periods) {
         month: { $in: allowedMonths },
       });
 
-      const historyByMonth = opsOfCat.reduce((acc, op) => {
+      const historyByMonth = opsOfCat.reduce((acc, op) => {//regrouper les dépenses par mois
         const m = op.month ?? "inconnu";
         acc[m] = (acc[m] ?? 0) + Number(op.amount || 0);
         return acc;
       }, {});
-
+      //construction de tableau frontend freindly
       const history = allowedMonths.map((m) => {
         const depense = historyByMonth[m] ?? 0;
 
         return {
           month: m,
-          label: new Date(`${m}-01`).toLocaleDateString("fr-FR", {
+          label: new Date(`${m}-01`).toLocaleDateString("fr-FR", {//2026-05 devient mai 26
             month: "short",
             year: "2-digit",
           }),
@@ -168,8 +168,6 @@ async function buildReportBase(accountId, periods) {
     month: periods.previousMonth,
   });
 
-  
-
   const currentMonthFirstDay = new Date(
     periods.reportMonthDate.getFullYear(),
     periods.reportMonthDate.getMonth(),
@@ -179,22 +177,22 @@ async function buildReportBase(accountId, periods) {
   const currentMonthLastDay = new Date(
   periods.reportMonthDate.getFullYear(),
   periods.reportMonthDate.getMonth() + 1,
-  0,
-  23, 59, 59, 999
-);
-
+  0,//en js jour 0 d'un moi = dernier jour du mois précédent
+  23, 59, 59, 999//pour inclure toute la journée :derniere h / min / sec / ms du mois
+  );
 
   const previousMonthFirstDay = new Date(
     periods.previousMonthDate.getFullYear(),
     periods.previousMonthDate.getMonth(),
     1
   );
+
   const previousMonthLastDay = new Date(
   periods.previousMonthDate.getFullYear(),
   periods.previousMonthDate.getMonth() + 1,
   0,
   23, 59, 59, 999
-);
+  );
 
   const currentNbNotes = await Note.countDocuments({
     IdAccount: accountId,
@@ -230,6 +228,7 @@ async function buildReportBase(accountId, periods) {
     categories,
     nbNotes: previousNbNotes,
   });
+
   const currentHealth = computeHealthScore({
   complianceRate: currentSummary.complianceRate,
   execRate:
@@ -251,32 +250,30 @@ async function buildReportBase(accountId, periods) {
           }, 0) / goalsActifs.length
         )
       : 0,
-});
+  });
 
-const previousHealth = computeHealthScore({
-  complianceRate: previousSummary.complianceRate,
-  execRate:
-    totalBudget > 0
-      ? Math.round((previousSummary.totalDepense / totalBudget) * 100)
-      : 0,
-  savRate:
-    totalBudget > 0
-      ? Math.round((previousSummary.montantNonDepense / totalBudget) * 100)
-      : 0,
-  avgGoalPct:
-    goalsActifs.length > 0
-      ? Math.round(
-          goalsActifs.reduce((sum, g) => {
-            const current = Number(g.currentAmount ?? 0);
-            const target = Number(g.targetAmount ?? 0);
-            const pct = target > 0 ? (current / target) * 100 : 0;
-            return sum + Math.min(100, pct);
-          }, 0) / goalsActifs.length
-        )
-      : 0,
-});
-
- 
+  const previousHealth = computeHealthScore({
+    complianceRate: previousSummary.complianceRate,
+    execRate:
+      totalBudget > 0
+        ? Math.round((previousSummary.totalDepense / totalBudget) * 100)
+        : 0,
+    savRate:
+      totalBudget > 0
+        ? Math.round((previousSummary.montantNonDepense / totalBudget) * 100)
+        : 0,
+    avgGoalPct:
+      goalsActifs.length > 0
+        ? Math.round(
+            goalsActifs.reduce((sum, g) => {
+              const current = Number(g.currentAmount ?? 0);
+              const target = Number(g.targetAmount ?? 0);
+              const pct = target > 0 ? (current / target) * 100 : 0;
+              return sum + Math.min(100, pct);
+            }, 0) / goalsActifs.length
+          )
+        : 0,
+  });
 
   const plusGrosseDepense =
     operations.length > 0
@@ -297,43 +294,6 @@ const previousHealth = computeHealthScore({
       totalDepense: currentSummary.totalDepense,
       montantNonDepense: currentSummary.montantNonDepense,
       score: currentHealth.healthScore
-    },
-  ];
-
-  const historiqueTable = [
-    {
-      month: periods.previousMonth,
-      label: periods.previousMonthDate.toLocaleDateString("fr-FR", {
-        month: "long",
-        year: "numeric",
-      }),
-      totalDepense: previousSummary.totalDepense,
-      totalBudget,
-      montantNonDepense: previousSummary.montantNonDepense,
-      score: previousSummary.score,
-      statut:
-        previousSummary.score >= 80
-          ? "excellent"
-          : previousSummary.score >= 50
-          ? "moyen"
-          : "faible",
-    },
-    {
-      month: periods.reportMonth,
-      label: periods.reportMonthDate.toLocaleDateString("fr-FR", {
-        month: "long",
-        year: "numeric",
-      }),
-      totalDepense: currentSummary.totalDepense,
-      totalBudget,
-      montantNonDepense: currentSummary.montantNonDepense,
-      score: currentSummary.score,
-      statut:
-        currentSummary.score >= 80
-          ? "excellent"
-          : currentSummary.score >= 50
-          ? "moyen"
-          : "faible",
     },
   ];
 
@@ -362,11 +322,11 @@ const previousHealth = computeHealthScore({
       }
     : null,
   lineChart,
-  historiqueTable,
   categoriesHistorique,
   goalsWidget,
 };
 };
+
 function buildBIBlock(base, periods) {
   const {
     categories,
@@ -393,15 +353,16 @@ function buildBIBlock(base, periods) {
   const previousLabel = periods.previousMonthDate.toLocaleDateString("fr-FR", {
     month: "long",
   });
-
+  // Calcul des KPIs
+  //1  Taux d'exécution budgétaire
   const execRate = pct(currentSummary.totalDepense, totalBudget);
   const prevExecRate = pct(previousSummary.totalDepense, totalBudget);
   const execDelta = execRate - prevExecRate;
-
+  //2 Taux d'épargne
   const savRate = pct(currentSummary.montantNonDepense, totalBudget);
   const prevSavRate = pct(previousSummary.montantNonDepense, totalBudget);
   const savDelta = savRate - prevSavRate;
-
+  //3 Dépense moyenne par jour
   const daysInMonth = new Date(
     periods.reportMonthDate.getFullYear(),
     periods.reportMonthDate.getMonth() + 1,
@@ -416,18 +377,18 @@ function buildBIBlock(base, periods) {
 
   const avgPerDay = fmt(currentSummary.totalDepense / daysInMonth);
   const prevAvgPerDay = fmt(previousSummary.totalDepense / daysInPrevMonth);
-
+  //4 Catégories sous contrôle
   const catsDepassees = totalCats - currentSummary.catsNonDepassees;
   const prevCatsDepassees = totalCats - previousSummary.catsNonDepassees;
-
+  //5 Solde libéré fin de mois
   const soldeFinal = currentSummary.montantNonDepense;
   const prevSoldeFinal = previousSummary.montantNonDepense;
-
+  //6 Objectifs actifs + progression moyenne
   const avgGoalPct =
     goalsWidget.length > 0
       ? fmt(goalsWidget.reduce((sum, g) => sum + g.percent, 0) / goalsWidget.length)
       : 0;
-
+  //7 Score BI global
   const currentHealth = computeHealthScore({
   complianceRate: currentSummary.complianceRate,
   execRate,
@@ -449,7 +410,7 @@ const biScore = {
   objectifs: currentHealth.breakdown.objectifs,
   regularite: currentHealth.breakdown.regularite,
 };
-
+// Construction du bloc BIKpis
   const biKpis = [
     {
       label: "Taux d'exécution budgétaire",
@@ -509,26 +470,37 @@ const biScore = {
       deltaType: "neutral",
       note: `progression moy. ${avgGoalPct}%`,
     },
-  {
-  label: "Score BI global",
-  value: `${currentHealth.healthScore} / 100`,
-  delta: `${sign(currentHealth.healthScore - previousHealth.healthScore)}${Math.abs(
-    currentHealth.healthScore - previousHealth.healthScore
-  )} pts`,
-  deltaType: deltaType(currentHealth.healthScore, previousHealth.healthScore),
-  note: `vs ${previousHealth.healthScore} en ${previousLabel}`,
-},
+    {
+    label: "Score BI global",
+    value: `${currentHealth.healthScore} / 100`,
+    delta: `${sign(currentHealth.healthScore - previousHealth.healthScore)}${Math.abs(
+      currentHealth.healthScore - previousHealth.healthScore
+    )} pts`,
+    deltaType: deltaType(currentHealth.healthScore, previousHealth.healthScore),
+    note: `vs ${previousHealth.healthScore} en ${previousLabel}`,
+    },
   ];
+  const resteReel =totalBudget - currentSummary.totalDepense;
 
   const waterfallItems = [
-    { label: "Budget alloué", value: totalBudget },
-    ...categories
-      .map((cat) => ({
-        label: cat.name,
-        value: -(currentSummary.depenseParCat[cat._id.toString()] ?? 0),
-      }))
-      .filter((item) => item.value !== 0),
-    { label: "Reste", value: currentSummary.montantNonDepense },
+  {
+    label: "Budget alloué",
+    value: totalBudget,
+    isTotal: true,
+  },
+
+  ...categories
+    .map((cat) => ({
+      label: cat.name,
+      value: -(currentSummary.depenseParCat[cat._id.toString()] ?? 0),
+    }))
+    .filter((item) => item.value !== 0),
+
+  {
+  label: resteReel >= 0 ? "Épargne" : "Déficit",
+  amount: resteReel,
+  type: "reste",
+}
   ];
 
   const varianceItems = categories
@@ -555,7 +527,7 @@ const biScore = {
   };
 
   const insights = [];
-
+  //1 insight : taux d'epargne
   if (savRate >= prevSavRate) {
     insights.push({
       type: "positive",
@@ -575,7 +547,7 @@ const biScore = {
       )} DT**.`,
     });
   }
-
+  //2eme insight : 1 ou 2 catégories en dépassement
   const catsEnDepassement = varianceItems.filter((v) => v.reel > v.budget);
   if (catsEnDepassement.length > 0) {
     catsEnDepassement.slice(0, 2).forEach((v) => {
@@ -589,10 +561,10 @@ const biScore = {
       });
     });
   }
-
+  //3eme insight : meilleur catégorie maîtrisée
   const bestCat = varianceItems
     .filter((v) => v.reel < v.budget)
-    .sort((a, b) => a.reel / a.budget - b.reel / b.budget)[0];
+    .sort((a, b) => a.reel / a.budget - b.reel / b.budget)[0];//re trie asc par taux de consommation
 
   if (bestCat) {
     const libere = bestCat.budget - bestCat.reel;
@@ -604,7 +576,7 @@ const biScore = {
       )}%**, soit **${libere.toLocaleString("fr-TN")} DT libérés** sur ce poste.`,
     });
   }
-
+  //4eme insight
   if (execRate > 100) {
     const depassement = currentSummary.totalDepense - totalBudget;
     insights.push({
@@ -623,7 +595,7 @@ const biScore = {
       }% de marge** préservée ce mois.`,
     });
   }
-
+  //5eme insight
   if (goalsWidget.length > 0) {
     const slowest = goalsWidget.reduce((a, b) => (a.percent < b.percent ? a : b));
     if (slowest.percent < 50) {
@@ -643,13 +615,13 @@ const biScore = {
     budget: totalBudget,
   };
 
-  const opsWithDate = operations.filter((op) => op.createdAt);
+  const opsWithDate = operations.filter((op) => op.date ?? op.createdAt);
 
   if (opsWithDate.length > 0) {
     const dailyMap = {};
 
     opsWithDate.forEach((op) => {
-      const day = new Date(op.createdAt).getDate();
+      const day = new Date(op.date || op.createdAt).getDate();//extraire num du jour du moi
       dailyMap[day] = (dailyMap[day] ?? 0) + Number(op.amount || 0);
     });
 
@@ -906,12 +878,9 @@ async getDashboardData(accountId) {
         },
     total: entry.total,
   }));
- 
-  // ── Budget total (somme des budgets de toutes les catégories) ─────────────
   const categories  = await Category.find({ AccountId: accountId });
   const totalBudgets = categories.reduce((sum, cat) => sum + (cat.budget ?? 0), 0);
  
-  // ── Objectifs actifs — mappés avec les champs attendus par le frontend ────
   const goalsRaw = await Goal.find({
     IdAccount:  accountId,
     isAchieved: false,
@@ -924,39 +893,37 @@ async getDashboardData(accountId) {
     const percent       = targetAmount > 0
       ? Math.min(100, Math.round((currentAmount / targetAmount) * 100))
       : 0;
- 
-    // joursRestants : nb de jours entre aujourd'hui et la TargetDate
+
     const joursRestants = goal.TargetDate
       ? Math.max(0, Math.ceil((new Date(goal.TargetDate) - now) / (1000 * 60 * 60 * 24)))
       : null;
  
     return {
-      _id:            goal._id,
-      name:           goal.name,
-      icon:           goal.icon          ?? "🎯",
+      _id: goal._id,
+      name:  goal.name,
+      icon: goal.icon  ?? "🎯",
       currentAmount,
       targetAmount,
       percent,
       joursRestants,
-      TargetDate:     goal.TargetDate    ?? null,
-      isUrgent:       joursRestants !== null && joursRestants <= 30,
+      TargetDate: goal.TargetDate    ?? null,
+      isUrgent:  joursRestants !== null && joursRestants <= 30,
     };
   });
  
-  // ── Notes en attente ─────────────────────────────────────────────────────
+  
   const pendingNotes = await Note.countDocuments({
     IdAccount: accountId,
     isDone:    false,
   });
  
-  // ── Réponse finale ───────────────────────────────────────────────────────
   return {
     solde:          account.solde,
     reste:          account.reste,
     totalDepense,
     totalBudgets:   totalBudgets ?? 0,
-    byCategory,     // ← sécurisé + info normalisé
-    goals,          // ← mappé avec joursRestants, icon, percent, isUrgent
+    byCategory,   
+    goals,         
     pendingNotes,
     lastResetMonth: account.lastResetMonth,
   };
@@ -1092,7 +1059,6 @@ async resetMensuel(accountId, userId, data) {
 
 async getReport(accountId) {
   const periods = getReportPeriods();
-
   const base = await buildReportBase(accountId, periods);
   const bi = buildBIBlock(base, periods);
 
@@ -1108,7 +1074,7 @@ async getReport(accountId) {
     objectifsActifs: base.objectifsActifs,
     plusGrosseDepense: base.plusGrosseDepense,
     lineChart: base.lineChart,
-    historiqueTable: base.historiqueTable,
+    // historiqueTable: base.historiqueTable,
     categoriesHistorique: base.categoriesHistorique,
     goalsWidget: base.goalsWidget,
     bi,

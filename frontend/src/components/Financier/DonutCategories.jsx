@@ -1,4 +1,8 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { PieChart, 
+         Pie, 
+         Cell, 
+         Tooltip, 
+         ResponsiveContainer } from "recharts";
  
 const locale = "fr-TN";
  
@@ -12,8 +16,14 @@ export  default function DonutCategories({ data = [], total = 1 }) {
         <div style={{ width: 140, height: 140, flexShrink: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={data} dataKey="total" cx="50%" cy="50%"
-                innerRadius={42} outerRadius={62} paddingAngle={2} strokeWidth={0}>
+              <Pie data={data} 
+                   dataKey="total" //val utiliser pour taille les parts : 
+                   cx="50%" 
+                   cy="50%"
+                   innerRadius={42} 
+                   outerRadius={62} 
+                   paddingAngle={2} 
+                   strokeWidth={0}>
                 {data.map((entry, i) => (
                   <Cell key={i} fill={entry.color ?? "#B4B2A9"} />
                 ))}

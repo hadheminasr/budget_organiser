@@ -1,11 +1,11 @@
 import {
-  ResponsiveContainer,
+  ResponsiveContainer,//permet au graphe de prendre automatiquement la largeur et la hauteur disponibles dans son parent
   RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Tooltip,
+  PolarGrid,//aide a lire les valeurs sur le radar
+  PolarAngleAxis,//affiche les nom des métriques autour du radar
+  PolarRadiusAxis,//rep l'echelle de valeurs du radar
+  Radar,//dessine la surface du radar
+  Tooltip,//info bulle
 } from "recharts";
 
 export default function HealthRadarChart({ data = [] }) {
@@ -25,10 +25,10 @@ export default function HealthRadarChart({ data = [] }) {
       {!safeData.length ? (
         <div className="text-sm text-slate-400">Aucune donnée disponible.</div>
       ) : (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="300">
           <RadarChart data={safeData}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />
+            <PolarGrid />{/* affiche la grille du radar */}
+            <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />{/*affiche les noms autor de radar */}
             <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
             <Radar
               name="Score"

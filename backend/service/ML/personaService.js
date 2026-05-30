@@ -5,19 +5,12 @@ import { AccountProfile } from "../../models/AccountProfile.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// adapte ce chemin selon ton vrai emplacement
 const PYTHON_SCRIPT_PATH = path.resolve(
   __dirname,
   "C:\\Users\\DELL I5\\Desktop\\ML_Budget_organiser\\persona\\predict_persona.py"
 );
-
-// selon ton PC: "python" ou "py"
 const PYTHON_COMMAND = "C:/Users/DELL I5/Downloads/thonny-4.1.7-windows-portable/python.exe";
 
-/**
- * Récupère le vrai AccountProfile d'un compte.
- */
 export async function getAccountProfileForPersona(accountId) {
   const profile = await AccountProfile.findOne({ accountId }).lean();
 

@@ -1,12 +1,12 @@
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Cell,
+  BarChart,//compsant principale il recoit les donnée et organise l'espace
+  Bar,//série de barres, indiqeu quelle données numerque doit etre dessinerr <Bar dataKey="value"> = hauter de chaque bar depend du value 
+  XAxis,//axe horizonale :labels solde , reste....
+  YAxis,//axe vertical : echelle numérique des montants
+  CartesianGrid,//grille du font du graphe pour aider à lire les valeurs
+  Tooltip,//info bulle
+  Cell,//donner une couleur spécifique à chaque barre en fonction de son type
 } from "recharts";
 
 function colorByType(type) {

@@ -385,5 +385,130 @@
       "critical": "Critical alert",
       "warning": "Warning"
     }
-  }
+  },
+  "coach": {
+  "title": "Budget Coach",
+  "subtitle": "Personalized diagnosis, recommendations and end-of-month projection.",
+  "loading": "Loading Budget Coach…",
+  "retry": "Retry",
+  "noData": "No Budget Coach data available at the moment.",
+  "errorTitle": "Loading error",
+
+  "status": {
+    "alert":   { "title": "Critical situation",       "subtitle": "The coach detected signals requiring immediate action." },
+    "warning": { "title": "Situation to monitor",     "subtitle": "Your budget is generally manageable, but some points need attention." },
+    "good":    { "title": "Overall healthy situation", "subtitle": "Your budget is under control according to the current coach rules." }
+  },
+
+  "mainLabel": "Main rule",
+  "messageMain": "Main message",
+  "messageGlobal": "Global reading",
+  "noSecondaryMessage": "No additional detail available for this diagnosis.",
+
+  "kpi": {
+    "consumed":       "Budget consumed",
+    "consumedSub":    "Share of the total budget already used this month.",
+    "remaining":      "Remaining margin",
+    "remainingSub":   "Budget still available before the total limit.",
+    "risk":           "Budget risk",
+    "riskSub":        "Vigilance level estimated by the coach.",
+    "healthScore":    "Budget health score",
+    "healthScoreSub": "Synthetic score calculated from detected rules."
+  },
+
+  "risk": {
+    "high":   "High",
+    "medium": "Moderate",
+    "low":    "Low"
+  },
+
+  "projection": {
+    "title":        "End-of-month projection",
+    "subtitle":     "Based on current pace — Day {{current}}/{{total}}",
+    "projected":    "Projected spending",
+    "projectedSub": "Estimate if the current trend continues.",
+    "margin":       "Estimated end-of-month margin",
+    "marginSub":    "Projected residual budget at end of month.",
+    "coachRead":    "Coach reading",
+    "safe":         "The current trajectory remains under control for the end of the month.",
+    "closeToLimit": "The current trajectory remains close to the budget limit.",
+    "overBudget":   "A budget overrun at end of month is likely if the current pace continues."
+  },
+
+  "alerts": {
+    "title": "Detected alerts",
+    "none":  "No critical alert detected at the moment."
+  },
+
+  "recommendations": {
+    "title":        "Coach recommendations",
+    "immediate":    "Immediate actions",
+    "immediateNone":"No urgent action needed.",
+    "targeted":     "Targeted actions",
+    "targetedNone": "No specific targeted action.",
+    "strategic":    "Strategic actions",
+    "strategicNone":"No specific strategic action."
+  },
+
+  "focus": {
+    "categoryTitle":    "Sensitive category",
+    "categoryNone":     "No critical category detected.",
+    "categoryCaption":  "This category is currently the one most disrupting your budget.",
+    "overrun":          "Overrun",
+    "consumption":      "Consumption",
+    "goalTitle":        "Goal to restart",
+    "goalNone":         "No active goal to analyze.",
+    "goalCaption":      "Regular contributions can improve the progress of this goal.",
+    "progress":         "Progress",
+    "currentAmount":    "Current amount",
+    "profileTitle":     "Advice profile",
+    "adviceStyle":      "Advice style",
+    "mainDifficulty":   "Main difficulty",
+    "savingHabit":      "Saving habit",
+    "mainGoal":         "Main goal",
+    "notDefined":       "Not defined",
+    "notFilled":        "Not filled in"
+  },
+
+  "severity": {
+    "low":    "Minor",
+    "medium": "Moderate",
+    "high":   "High",
+    "none":   "None"
+  },
+
+  "rules": {
+    "title":    "Diagnosis detail",
+    "subtitle": "Rules triggered by the V1 engine and their priority level.",
+    "none":     "No rules triggered.",
+    "colRule":  "Detected rule",
+    "colType":  "Type",
+    "colPrio":  "Priority",
+    "labels": {
+      "budget_global_depasse":      "Global budget exceeded",
+      "categorie_depassee":         "Category exceeded",
+      "reste_critique":             "Critical remaining balance",
+      "objectif_en_retard":         "Goal behind schedule",
+      "tendance_hausse":            "Upward spending trend",
+      "budget_sous_controle":       "Budget under control",
+      "objectif_bonne_progression": "Good goal progression"
+    }
+  },
+
+  "profile": {
+    "direct":     "Direct",
+    "motivating": "Motivating",
+    "leisure":    "Leisure / outings",
+    "food":       "Food",
+    "transport":  "Transport",
+    "shopping":   "Shopping",
+    "often":      "Often",
+    "sometimes":  "Sometimes",
+    "rarely":     "Rarely",
+    "never":      "Never",
+    "reach_goal": "Reach a goal"
+  },
+
+  "narrativeNote": "Analysis messages are generated in French by the rules engine."
+}
 }

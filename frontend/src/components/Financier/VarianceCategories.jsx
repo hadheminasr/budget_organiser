@@ -14,7 +14,6 @@ export  default function VarianceCategories({ data = [] }) {
       <p className="text-[11px] text-gray-400 mb-4">
         Coefficient de variation — forte variance = comportements très disparates
       </p>
- 
       <div className="flex flex-col">
         {sorted.map((cat, i) => {
           const s = VARIANCE_STYLES[cat.stabilite] ?? VARIANCE_STYLES.stable;

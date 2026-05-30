@@ -1,12 +1,8 @@
-
 // Toutes les règles du système Duck en un seul endroit.
 // Aucun autre fichier ne hardcode ces valeurs.
-// ── Conversion healthScore (0-100) → état duck (0-5) ─────────────────────────
-//
-// healthScore est calculé en interne — le user ne le voit jamais.
-// Il est converti en companionStateId qui détermine quelle image PNG afficher.
-//
-
+// Conversion healthScore (0-100) → état duck (0-5) 
+// healthScore est calculé en interne — le user ne le voit jamais
+// Il est converti en companionStateId qui détermine quelle state afficher.
 
 export const DUCK_STATES = [
   { id: 0, name: "Dormant",    minScore: 0,  maxScore: 19,  hearts: 0 },
@@ -17,9 +13,9 @@ export const DUCK_STATES = [
   { id: 5, name: "Légendaire", minScore: 85, maxScore: 100, hearts: 5 },
 ];
 
-// ── Poids du healthScore ──────────────────────────────────────────────────────
+// Poids du healthScore 
 // On réutilise les 4 axes déjà présents dans buildBIBlock (AccountService).
-// La somme = 1.0 obligatoire.
+
 export const HEALTH_WEIGHTS = {
   discipline:  0.35,   // taux d'exécution budgétaire (dépenses vs budget)
   epargne:     0.25,   // montant non dépensé / budget total
@@ -30,13 +26,12 @@ export const HEALTH_WEIGHTS = {
 // Un mois est "bon" pour le streak si healthScore >= ce seuil
 export const STREAK_MIN_SCORE = 55;
 
-// ── Messages du duck ──────────────────────────────────────────────────────────
+// Messages du duck 
 // Deux types :
 //   monthly  → affiché au reset mensuel (bilan du mois)
 //   reactive → affiché en temps réel quand un événement se produit
 
 export const DUCK_MESSAGES = {
-
   // Messages au reset mensuel — un par état
   monthly: {
     0: "Je me réveille à peine... Le budget était difficile ce mois-ci. On repart ensemble ?",

@@ -1,7 +1,3 @@
-// VarianceTable.jsx
-// Tableau de variance — budget alloué vs dépenses réelles par catégorie
-// Props: items = [{ name, budget, reel }]
-
 const pctColor = (pct) => {
   if (pct > 100) return "#E24B4A";
   if (pct > 85)  return "#EF9F27";

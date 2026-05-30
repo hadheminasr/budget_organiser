@@ -2,9 +2,9 @@ export default function WaterfallBudget({ items = [] }) {
   const total = items.find(i => i.type === "total")?.amount ?? 1;
  
   let running = total;
-  const rows  = items.map(item => {
-    const abs   = Math.abs(item.amount);
-    const pct   = Math.round((abs / total) * 100);
+  const rows= items.map(item => {
+    const abs= Math.abs(item.amount);//largeur basre positif
+    const pct= Math.round((abs / total) * 100);//monatnt = pourcentage largeur barre
     const offset= item.type === "cat" ? Math.round(((total - running) / total) * 100) : 0;
     if (item.type === "cat") running -= abs;
  
@@ -26,14 +26,14 @@ export default function WaterfallBudget({ items = [] }) {
             <span className="text-[11px] text-gray-500 w-[120px] flex-shrink-0 truncate">
               {row.label}
             </span>
-            <div className="flex-1 h-4 relative">
+            <div className="flex-1 h-4 relative">{/*barre*/}
               <div
                 className="absolute h-full rounded-sm"
                 style={{
-                  left:       `${row.offset}%`,
-                  width:      `${Math.max(row.pct, 1)}%`,
+                  left:`${row.offset}%`, //POSITION HORIZONTAL
+                  width:`${Math.max(row.pct, 1)}%`, //evite idth 0%
                   background: row.color,
-                  opacity:    row.type === "cat" ? 0.82 : 1,
+                  opacity:row.type === "cat" ? 0.82 : 1,
                 }}
               />
             </div>

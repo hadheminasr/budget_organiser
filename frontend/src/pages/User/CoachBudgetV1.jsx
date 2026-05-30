@@ -1,106 +1,32 @@
-import { useAuth } from "../../context/AuthContext";
+// CoachBudgetPage.jsx — i18n complet
+import { useAuth }        from "../../context/AuthContext";
 import { useCoachBudget } from "../../hooks/useCoachBudget";
 import { useTranslation } from "react-i18next";
 import {
-  CheckCircle as IconCheck,
+  CheckCircle   as IconCheck,
   AlertTriangle as IconAlert,
-  ShieldAlert as IconWarning,
-  Gauge as IconGauge,
-  Wallet as IconWallet,
-  Zap as IconZap,
-  Star as IconStar,
-  TrendingUp as IconTrendingUp,
-  Shield as IconShield,
-  Lightbulb as IconLightbulb,
-  FolderPlus as IconFolder,
-  Target as IconTarget,
-  Sparkles as IconSparkles,
-  TrendingDown as IconTrendingDown,
+  ShieldAlert   as IconWarning,
+  Gauge         as IconGauge,
+  Wallet        as IconWallet,
+  Zap           as IconZap,
+  Star          as IconStar,
+  TrendingUp    as IconTrendingUp,
+  Shield        as IconShield,
+  Lightbulb     as IconLightbulb,
+  FolderPlus    as IconFolder,
+  Target        as IconTarget,
+  Sparkles      as IconSparkles,
+  TrendingDown  as IconTrendingDown,
 } from "lucide-react";
-// ── Config maps ──────────────────────────────────────────────────────────────
-const statusConfig = {
-  alert: {
-    card: "border-[#F7C1C1] bg-[#fdf2f2]",
-    badge: "bg-[#FCEBEB] text-[#501313] border-[#F7C1C1]",
-    icon: <IconAlert className="w-5 h-5" />,
-    iconColor: "text-[#A32D2D]",
-    title: "Situation critique",
-    subtitle: "Le coach a détecté des signaux nécessitant une correction rapide.",
-  },
-  warning: {
-    card: "border-[#FAC775] bg-[#fdf8ee]",
-    badge: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
-    icon: <IconWarning className="w-5 h-5" />,
-    iconColor: "text-[#854F0B]",
-    title: "Situation à surveiller",
-    subtitle: "Votre budget reste globalement gérable, mais certains points demandent de l'attention.",
-  },
-  good: {
-    card: "border-[#9FE1CB] bg-[#f0faf6]",
-    badge: "bg-[#E1F5EE] text-[#085041] border-[#9FE1CB]",
-    icon: <IconCheck className="w-5 h-5" />,
-    iconColor: "text-[#0F6E56]",
-    title: "Situation globalement saine",
-    subtitle: "Votre budget est sous contrôle selon les règles actuelles du coach.",
-  },
-};
 
-const riskLabels = { high: "Élevé", medium: "Modéré", low: "Faible" };
-const riskStyles = {
-  high:   "bg-[#FCEBEB] text-[#791F1F] border-[#F7C1C1]",
-  medium: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
-  low:    "bg-[#E1F5EE] text-[#085041] border-[#9FE1CB]",
-};
-
-const ruleLabels = {
-  budget_global_depasse:      "Budget global dépassé",
-  categorie_depassee:         "Catégorie dépassée",
-  reste_critique:             "Reste critique",
-  objectif_en_retard:         "Objectif en retard",
-  tendance_hausse:            "Tendance à la hausse",
-  budget_sous_controle:       "Budget sous contrôle",
-  objectif_bonne_progression: "Bonne progression de l'objectif",
-};
-
-const ruleTypeStyles = {
-  alert:   "bg-[#FCEBEB] text-[#791F1F] border-[#F7C1C1]",
-  warning: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
-  good:    "bg-[#EAF3DE] text-[#3B6D11] border-[#C0DD97]",
-};
-
-const severityLabels = { low: "Léger", medium: "Modéré", high: "Élevé", none: "Aucun" };
-const severityStyles = {
-  low:    "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
-  medium: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
-  high:   "bg-[#FCEBEB] text-[#791F1F] border-[#F7C1C1]",
-  none:   "bg-gray-50 text-gray-600 border-gray-200",
-};
-
-const profileLabels = {
-  direct:     "Direct",
-  motivating: "Motivant",
-  leisure:    "Loisirs / sorties",
-  food:       "Alimentation",
-  transport:  "Transport",
-  shopping:   "Shopping / achats",
-  often:      "Souvent",
-  sometimes:  "Parfois",
-  rarely:     "Rarement",
-  never:      "Jamais",
-  reach_goal: "Atteindre un objectif",
-};
-
-// ── Sub-components ───────────────────────────────────────────────────────────
-
+// ── Sub-components ────────────────────────────────────────────────────────────
 function SectionHeader({ icon, title, subtitle }) {
   return (
     <div className="flex items-start gap-2 mb-4">
       <span className="mt-0.5 shrink-0">{icon}</span>
       <div className="min-w-0">
         <h3 className="text-[15px] font-medium text-gray-900 truncate">{title}</h3>
-        {subtitle && (
-          <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
       </div>
     </div>
   );
@@ -128,55 +54,85 @@ function RecGroup({ label, dot, items, emptyText, itemClass }) {
   );
 }
 
-// ── Main component ───────────────────────────────────────────────────────────
+// ── Styles (indépendants de la langue) ───────────────────────────────────────
+const statusCardStyle = {
+  alert:   "border-[#F7C1C1] bg-[#fdf2f2]",
+  warning: "border-[#FAC775] bg-[#fdf8ee]",
+  good:    "border-[#9FE1CB] bg-[#f0faf6]",
+};
+const statusBadgeStyle = {
+  alert:   "bg-[#FCEBEB] text-[#501313] border-[#F7C1C1]",
+  warning: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
+  good:    "bg-[#E1F5EE] text-[#085041] border-[#9FE1CB]",
+};
+const statusIconColor = {
+  alert:   "text-[#A32D2D]",
+  warning: "text-[#854F0B]",
+  good:    "text-[#0F6E56]",
+};
+const statusIcon = {
+  alert:   <IconAlert   className="w-5 h-5" />,
+  warning: <IconWarning className="w-5 h-5" />,
+  good:    <IconCheck   className="w-5 h-5" />,
+};
+const riskStyle = {
+  high:   "bg-[#FCEBEB] text-[#791F1F] border-[#F7C1C1]",
+  medium: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
+  low:    "bg-[#E1F5EE] text-[#085041] border-[#9FE1CB]",
+};
+const ruleTypeStyle = {
+  alert:   "bg-[#FCEBEB] text-[#791F1F] border-[#F7C1C1]",
+  warning: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
+  good:    "bg-[#EAF3DE] text-[#3B6D11] border-[#C0DD97]",
+};
+const severityStyle = {
+  low:    "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
+  medium: "bg-[#FAEEDA] text-[#633806] border-[#FAC775]",
+  high:   "bg-[#FCEBEB] text-[#791F1F] border-[#F7C1C1]",
+  none:   "bg-gray-50 text-gray-600 border-gray-200",
+};
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function CoachBudgetPage() {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "fr" ? "fr-FR" : "en-US";
+
   const { coachData, loadingCoach, errorCoach, fetchCoachBudget } =
     useCoachBudget(user?.accountId);
 
-  const locale = "fr-TN";
+  // ── Loading ────────────────────────────────────────────────────────────────
+  if (loadingCoach) return (
+    <div className="w-full min-h-[40vh] flex items-center justify-center">
+      <p className="text-sm text-gray-400">{t("coach.loading")}</p>
+    </div>
+  );
 
-  // ── Loading state ──────────────────────────────────────────────────────────
-  if (loadingCoach) {
-    return (
-      <div className="w-full min-h-[40vh] flex items-center justify-center">
-        <p className="text-sm text-gray-400">Chargement du Coach Budget…</p>
+  // ── Error ──────────────────────────────────────────────────────────────────
+  if (errorCoach) return (
+    <div className="w-full">
+      <div className="rounded-2xl border border-[#F7C1C1] bg-[#fdf2f2] p-5">
+        <p className="text-sm font-medium text-[#791F1F] mb-1">{t("coach.errorTitle")}</p>
+        <p className="text-sm text-[#A32D2D]">{errorCoach}</p>
+        <button onClick={fetchCoachBudget}
+          className="mt-4 px-4 py-2 rounded-xl bg-[#E24B4A] text-white text-sm font-medium hover:bg-[#A32D2D] transition-colors">
+          {t("coach.retry")}
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ── Error state ────────────────────────────────────────────────────────────
-  if (errorCoach) {
-    return (
-      <div className="w-full">
-        <div className="rounded-2xl border border-[#F7C1C1] bg-[#fdf2f2] p-5">
-          <p className="text-sm font-medium text-[#791F1F] mb-1">Erreur de chargement</p>
-          <p className="text-sm text-[#A32D2D]">{errorCoach}</p>
-          <button
-            onClick={fetchCoachBudget}
-            className="mt-4 px-4 py-2 rounded-xl bg-[#E24B4A] text-white text-sm font-medium hover:bg-[#A32D2D] transition-colors"
-          >
-            Réessayer
-          </button>
-        </div>
+  // ── Empty ──────────────────────────────────────────────────────────────────
+  if (!coachData) return (
+    <div className="w-full">
+      <div className="rounded-2xl border border-gray-100 bg-white p-6">
+        <p className="text-sm text-gray-400">{t("coach.noData")}</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ── Empty state ────────────────────────────────────────────────────────────
-  if (!coachData) {
-    return (
-      <div className="w-full">
-        <div className="rounded-2xl border border-gray-100 bg-white p-6">
-          <p className="text-sm text-gray-400">
-            Aucune donnée Coach Budget disponible pour le moment.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Derived values ─────────────────────────────────────────────────────────
+  // ── Derived ────────────────────────────────────────────────────────────────
+  const status          = coachData.status ?? "warning";
   const budgetConsumption  = coachData.smartKpis?.budgetConsumptionRate ?? 0;
   const healthScore        = coachData.smartKpis?.healthScore ?? 0;
   const riskLevel          = coachData.smartKpis?.riskLevel ?? "low";
@@ -184,68 +140,66 @@ export default function CoachBudgetPage() {
   const projectedSpending  = coachData.projection?.projectedEndMonthSpending ?? 0;
   const projectedRemaining = coachData.projection?.projectedRemainingBudget ?? 0;
   const projectedStatus    = coachData.projection?.projectedStatus ?? "safe";
+  const currentDay         = coachData.projection?.currentDay ?? "—";
+  const daysInMonth        = coachData.projection?.daysInMonth ?? "—";
 
-  const projectionText =
-    projectedStatus === "over_budget"
-      ? "Un dépassement de fin de mois est probable si le rythme actuel continue."
-      : projectedStatus === "close_to_limit"
-      ? "La trajectoire actuelle reste proche de la limite budgétaire."
-      : "La trajectoire actuelle reste sous contrôle pour la fin du mois.";
+  // projectionText traduit depuis le status retourné par le back
+  const projectionText = t(`coach.projection.${
+    projectedStatus === "over_budget"   ? "overBudget"   :
+    projectedStatus === "close_to_limit"? "closeToLimit" : "safe"
+  }`);
 
-  const ui = statusConfig[coachData.status] || statusConfig.warning;
-
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="w-full flex flex-col gap-4 sm:gap-5">
 
       {/* ── HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-medium text-gray-900">Coach Budget</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Diagnostic personnalisé, recommandations et projection de fin de mois.
-          </p>
+          <h1 className="text-xl sm:text-2xl font-medium text-gray-900">{t("coach.title")}</h1>
+          <p className="text-sm text-gray-400 mt-1">{t("coach.subtitle")}</p>
         </div>
       </div>
 
       {/* ── SYNTHÈSE PRINCIPALE ── */}
-      <section className={`rounded-2xl border p-5 ${ui.card}`}>
-        {/* Top row */}
+      <section className={`rounded-2xl border p-5 ${statusCardStyle[status] ?? statusCardStyle.warning}`}>
         <div className="flex items-start gap-3.5">
-          <div className={`p-2.5 rounded-xl bg-white/70 shrink-0 ${ui.iconColor}`}>
-            {ui.icon}
+          <div className={`p-2.5 rounded-xl bg-white/70 shrink-0 ${statusIconColor[status]}`}>
+            {statusIcon[status]}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base font-medium text-gray-900">{ui.title}</h2>
-              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${ui.badge}`}>
-                {coachData.status}
+              <h2 className="text-base font-medium text-gray-900">
+                {t(`coach.status.${status}.title`)}
+              </h2>
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusBadgeStyle[status]}`}>
+                {status}
               </span>
             </div>
-            <p className="text-sm text-gray-500 mt-1 leading-relaxed">{ui.subtitle}</p>
+            <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+              {t(`coach.status.${status}.subtitle`)}
+            </p>
             {coachData.mainLabel && (
               <span className="mt-2.5 inline-flex px-3 py-1 rounded-full bg-white/70 border border-white/80 text-xs text-gray-600">
-                {ruleLabels[coachData.mainLabel] || coachData.mainLabel}
+                {t(`coach.rules.labels.${coachData.mainLabel}`, coachData.mainLabel)}
               </span>
             )}
           </div>
         </div>
 
-        {/* Messages */}
+        {/* Messages narratifs — générés en FR côté back, affichés tels quels */}
         <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="rounded-xl bg-white/60 border border-white/80 p-4">
             <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-2">
-              Message principal
+              {t("coach.messageMain")}
             </p>
             <p className="text-sm leading-relaxed text-gray-700">{coachData.mainMessage}</p>
           </div>
           <div className="rounded-xl bg-white/60 border border-white/80 p-4">
             <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-2">
-              Lecture globale
+              {t("coach.messageGlobal")}
             </p>
             <p className="text-sm leading-relaxed text-gray-700">
-              {coachData.secondaryMessage ||
-                "Aucune précision complémentaire n'est disponible pour ce diagnostic."}
+              {coachData.secondaryMessage || t("coach.noSecondaryMessage")}
             </p>
           </div>
         </div>
@@ -253,60 +207,48 @@ export default function CoachBudgetPage() {
 
       {/* ── KPI CARDS ── */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        {/* Budget consommé */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#E24B4A]">
             <IconGauge className="w-4 h-4" />
-            <p className="text-xs text-gray-500">Budget consommé</p>
+            <p className="text-xs text-gray-500">{t("coach.kpi.consumed")}</p>
           </div>
           <p className="text-2xl font-medium text-gray-900">{budgetConsumption.toFixed(1)}%</p>
-          <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">
-            Part du budget total déjà utilisée ce mois-ci.
-          </p>
+          <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">{t("coach.kpi.consumedSub")}</p>
         </div>
 
-        {/* Marge restante */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#639922]">
             <IconWallet className="w-4 h-4" />
-            <p className="text-xs text-gray-500">Marge restante</p>
+            <p className="text-xs text-gray-500">{t("coach.kpi.remaining")}</p>
           </div>
           <p className="text-2xl font-medium text-gray-900">
             {remainingBudget.toLocaleString(locale)}{" "}
             <span className="text-sm font-normal text-gray-400">DT</span>
           </p>
-          <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">
-            Budget encore disponible avant la limite totale.
-          </p>
+          <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">{t("coach.kpi.remainingSub")}</p>
         </div>
 
-        {/* Risque budgétaire */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#BA7517]">
             <IconZap className="w-4 h-4" />
-            <p className="text-xs text-gray-500">Risque budgétaire</p>
+            <p className="text-xs text-gray-500">{t("coach.kpi.risk")}</p>
           </div>
-          <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium border ${riskStyles[riskLevel] || riskStyles.low}`}>
-            {riskLabels[riskLevel] || riskLevel}
+          <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium border ${riskStyle[riskLevel] ?? riskStyle.low}`}>
+            {t(`coach.risk.${riskLevel}`)}
           </span>
-          <p className="text-[11px] text-gray-400 mt-2 leading-snug">
-            Niveau de vigilance estimé par le coach.
-          </p>
+          <p className="text-[11px] text-gray-400 mt-2 leading-snug">{t("coach.kpi.riskSub")}</p>
         </div>
 
-        {/* Score santé */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 overflow-hidden">
           <div className="flex items-center gap-2 mb-3 text-[#7F77DD]">
             <IconStar className="w-4 h-4" />
-            <p className="text-xs text-gray-500">Score santé budget</p>
+            <p className="text-xs text-gray-500">{t("coach.kpi.healthScore")}</p>
           </div>
           <p className="text-2xl font-medium text-gray-900">
             {healthScore}
             <span className="text-sm font-normal text-gray-400">/100</span>
           </p>
-          <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">
-            Score synthétique calculé à partir des règles détectées.
-          </p>
+          <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">{t("coach.kpi.healthScoreSub")}</p>
         </div>
       </section>
 
@@ -314,32 +256,28 @@ export default function CoachBudgetPage() {
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
         <SectionHeader
           icon={<span className="text-[#185FA5]"><IconTrendingUp className="w-4 h-4" /></span>}
-          title="Projection de fin de mois"
-          subtitle={`Basée sur le rythme actuel — Jour ${coachData.projection?.currentDay ?? "—"}/${coachData.projection?.daysInMonth ?? "—"}`}
+          title={t("coach.projection.title")}
+          subtitle={t("coach.projection.subtitle", { current: currentDay, total: daysInMonth })}
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="rounded-xl bg-[#E6F1FB] border border-[#B5D4F4] p-4">
-            <p className="text-[11px] text-gray-500 mb-1.5">Dépense projetée</p>
+            <p className="text-[11px] text-gray-500 mb-1.5">{t("coach.projection.projected")}</p>
             <p className="text-lg font-medium text-gray-900">
               {projectedSpending.toLocaleString(locale)}{" "}
               <span className="text-sm font-normal text-gray-400">DT</span>
             </p>
-            <p className="text-[11px] text-gray-400 mt-2 leading-snug">
-              Estimation si la tendance actuelle se maintient.
-            </p>
+            <p className="text-[11px] text-gray-400 mt-2 leading-snug">{t("coach.projection.projectedSub")}</p>
           </div>
           <div className="rounded-xl bg-[#EAF3DE] border border-[#C0DD97] p-4">
-            <p className="text-[11px] text-gray-500 mb-1.5">Marge estimée fin de mois</p>
+            <p className="text-[11px] text-gray-500 mb-1.5">{t("coach.projection.margin")}</p>
             <p className="text-lg font-medium text-gray-900">
               {projectedRemaining.toLocaleString(locale)}{" "}
               <span className="text-sm font-normal text-gray-400">DT</span>
             </p>
-            <p className="text-[11px] text-gray-400 mt-2 leading-snug">
-              Budget résiduel projeté à fin de mois.
-            </p>
+            <p className="text-[11px] text-gray-400 mt-2 leading-snug">{t("coach.projection.marginSub")}</p>
           </div>
           <div className="rounded-xl bg-[#FAEEDA] border border-[#FAC775] p-4">
-            <p className="text-[11px] text-gray-500 mb-1.5">Lecture du coach</p>
+            <p className="text-[11px] text-gray-500 mb-1.5">{t("coach.projection.coachRead")}</p>
             <p className="text-sm font-medium text-gray-800 leading-relaxed">{projectionText}</p>
           </div>
         </div>
@@ -351,19 +289,20 @@ export default function CoachBudgetPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#E24B4A]"><IconShield className="w-4 h-4" /></span>}
-            title="Alertes détectées"
+            title={t("coach.alerts.title")}
           />
           {coachData.alerts?.length > 0 ? (
             <div className="flex flex-col gap-2">
               {coachData.alerts.map((alert, i) => (
                 <div key={i} className="rounded-lg border border-[#F7C1C1] bg-[#FCEBEB] px-3.5 py-2.5 text-sm text-[#791F1F] leading-relaxed">
                   {alert}
+                  {/* ↑ texte généré FR côté backend — affiché tel quel */}
                 </div>
               ))}
             </div>
           ) : (
             <div className="rounded-lg border border-[#C0DD97] bg-[#EAF3DE] px-3.5 py-2.5 text-sm text-[#3B6D11]">
-              Aucune alerte critique détectée pour le moment.
+              {t("coach.alerts.none")}
             </div>
           )}
         </div>
@@ -372,27 +311,27 @@ export default function CoachBudgetPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <SectionHeader
             icon={<span className="text-[#BA7517]"><IconLightbulb className="w-4 h-4" /></span>}
-            title="Recommandations du coach"
+            title={t("coach.recommendations.title")}
           />
           <RecGroup
-            label="Actions immédiates"
+            label={t("coach.recommendations.immediate")}
             dot="bg-[#E24B4A]"
             items={coachData.recommendationBlocks?.immediate}
-            emptyText="Aucune action urgente."
+            emptyText={t("coach.recommendations.immediateNone")}
             itemClass="border-[#F7C1C1] bg-[#FCEBEB]"
           />
           <RecGroup
-            label="Actions ciblées"
+            label={t("coach.recommendations.targeted")}
             dot="bg-[#EF9F27]"
             items={coachData.recommendationBlocks?.targeted}
-            emptyText="Aucune action ciblée spécifique."
+            emptyText={t("coach.recommendations.targetedNone")}
             itemClass="border-[#FAC775] bg-[#FAEEDA]"
           />
           <RecGroup
-            label="Actions stratégiques"
+            label={t("coach.recommendations.strategic")}
             dot="bg-[#639922]"
             items={coachData.recommendationBlocks?.strategic}
-            emptyText="Aucune action stratégique spécifique."
+            emptyText={t("coach.recommendations.strategicNone")}
             itemClass="border-[#C0DD97] bg-[#EAF3DE]"
           />
         </div>
@@ -404,43 +343,40 @@ export default function CoachBudgetPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#E24B4A]"><IconFolder className="w-4 h-4" /></span>}
-            title="Catégorie sensible"
+            title={t("coach.focus.categoryTitle")}
           />
           {coachData.insights?.topCategorieProbleme ? (
             <>
               <p className="text-sm font-medium text-gray-900 mb-2">
                 {coachData.insights.topCategorieProbleme.name}
               </p>
-              <span
-                className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${
-                  severityStyles[coachData.insights.topCategorieProbleme.severity] ||
-                  severityStyles.none
-                }`}
-              >
-                Sévérité :{" "}
-                {severityLabels[coachData.insights.topCategorieProbleme.severity] ||
-                  coachData.insights.topCategorieProbleme.severity}
+              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${
+                severityStyle[coachData.insights.topCategorieProbleme.severity] ?? severityStyle.none
+              }`}>
+                {t("coach.focus.consumption")} :{" "}
+                {t(`coach.severity.${coachData.insights.topCategorieProbleme.severity}`,
+                   coachData.insights.topCategorieProbleme.severity)}
               </span>
               <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-xs text-gray-400">Dépassement</span>
+                  <span className="text-xs text-gray-400">{t("coach.focus.overrun")}</span>
                   <span className="text-sm font-medium text-[#E24B4A] whitespace-nowrap">
                     +{(coachData.insights.topCategorieProbleme.depassement ?? 0).toLocaleString(locale)} DT
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline whitespace-nowrap">
-                  <span className="text-xs text-gray-400">Consommation</span>
+                  <span className="text-xs text-gray-400">{t("coach.focus.consumption")}</span>
                   <span className="text-sm font-medium text-[#993556]">
                     {(coachData.insights.topCategorieProbleme.consumptionRate ?? 0).toFixed(0)}%
                   </span>
                 </div>
               </div>
               <p className="text-[11px] text-gray-400 mt-3 leading-relaxed">
-                Cette catégorie est actuellement celle qui déséquilibre le plus votre budget.
+                {t("coach.focus.categoryCaption")}
               </p>
             </>
           ) : (
-            <p className="text-sm text-gray-400">Aucune catégorie critique détectée.</p>
+            <p className="text-sm text-gray-400">{t("coach.focus.categoryNone")}</p>
           )}
         </div>
 
@@ -448,7 +384,7 @@ export default function CoachBudgetPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#639922]"><IconTarget className="w-4 h-4" /></span>}
-            title="Objectif à relancer"
+            title={t("coach.focus.goalTitle")}
           />
           {coachData.insights?.objectifLeMoinsAvance ? (
             <>
@@ -457,26 +393,24 @@ export default function CoachBudgetPage() {
               </p>
               <div className="space-y-1.5 border-t border-gray-100 pt-3">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
-                    Progression</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">{t("coach.focus.progress")}</span>
                   <span className="text-sm font-medium text-[#BA7517]">
                     {((coachData.insights.objectifLeMoinsAvance.progressRate ?? 0) * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
-                    Montant actuel</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">{t("coach.focus.currentAmount")}</span>
                   <span className="text-sm font-medium text-[#993556]">
                     {(coachData.insights.objectifLeMoinsAvance.currentAmount ?? 0).toLocaleString(locale)} DT
                   </span>
                 </div>
               </div>
               <p className="text-[11px] text-gray-400 mt-3 leading-relaxed">
-                Une contribution régulière peut améliorer l'avancement de cet objectif.
+                {t("coach.focus.goalCaption")}
               </p>
             </>
           ) : (
-            <p className="text-sm text-gray-400">Aucun objectif actif à analyser.</p>
+            <p className="text-sm text-gray-400">{t("coach.focus.goalNone")}</p>
           )}
         </div>
 
@@ -484,19 +418,19 @@ export default function CoachBudgetPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
           <SectionHeader
             icon={<span className="text-[#7F77DD]"><IconSparkles className="w-4 h-4" /></span>}
-            title="Profil de conseil"
+            title={t("coach.focus.profileTitle")}
           />
           <div className="flex flex-col gap-3">
             {[
-              { label: "Style de conseil",    value: coachData.accountProfile?.adviceStyle,    fallback: "Non défini" },
-              { label: "Difficulté principale",value: coachData.accountProfile?.mainDifficulty, fallback: "Non renseignée" },
-              { label: "Habitude d'épargne",  value: coachData.accountProfile?.savingHabit,    fallback: "Non renseignée" },
-              { label: "Objectif principal",  value: coachData.accountProfile?.mainGoal,       fallback: "Non renseigné" },
+              { label: t("coach.focus.adviceStyle"),    value: coachData.accountProfile?.adviceStyle,    fallback: t("coach.focus.notDefined") },
+              { label: t("coach.focus.mainDifficulty"), value: coachData.accountProfile?.mainDifficulty, fallback: t("coach.focus.notFilled") },
+              { label: t("coach.focus.savingHabit"),    value: coachData.accountProfile?.savingHabit,    fallback: t("coach.focus.notFilled") },
+              { label: t("coach.focus.mainGoal"),       value: coachData.accountProfile?.mainGoal,       fallback: t("coach.focus.notDefined") },
             ].map(({ label, value, fallback }) => (
               <div key={label} className="min-w-0">
                 <p className="text-[11px] text-gray-400 mb-0.5">{label}</p>
                 <p className="text-sm font-medium text-gray-800 break-words">
-                  {profileLabels[value] || value || fallback}
+                  {t(`coach.profile.${value}`, value) || fallback}
                 </p>
               </div>
             ))}
@@ -508,8 +442,8 @@ export default function CoachBudgetPage() {
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 overflow-hidden">
         <SectionHeader
           icon={<span className="text-[#185FA5]"><IconTrendingDown className="w-4 h-4" /></span>}
-          title="Détail du diagnostic"
-          subtitle="Règles déclenchées par le moteur V1 et leur niveau de priorité."
+          title={t("coach.rules.title")}
+          subtitle={t("coach.rules.subtitle")}
         />
         {coachData.triggeredRules?.length > 0 ? (
           <div className="overflow-x-auto">
@@ -517,13 +451,13 @@ export default function CoachBudgetPage() {
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="py-2.5 pr-4 text-left text-[10px] font-medium uppercase tracking-widest text-gray-400">
-                    Règle détectée
+                    {t("coach.rules.colRule")}
                   </th>
                   <th className="py-2.5 pr-4 text-left text-[10px] font-medium uppercase tracking-widest text-gray-400">
-                    Type
+                    {t("coach.rules.colType")}
                   </th>
                   <th className="py-2.5 pr-4 text-left text-[10px] font-medium uppercase tracking-widest text-gray-400">
-                    Priorité
+                    {t("coach.rules.colPrio")}
                   </th>
                 </tr>
               </thead>
@@ -531,15 +465,12 @@ export default function CoachBudgetPage() {
                 {coachData.triggeredRules.map((rule, index) => (
                   <tr key={index} className="border-b border-gray-50 last:border-0">
                     <td className="py-3 pr-4 font-medium text-gray-800">
-                      {ruleLabels[rule.label] || rule.label}
+                      {t(`coach.rules.labels.${rule.label}`, rule.label)}
                     </td>
                     <td className="py-3 pr-4">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${
-                          ruleTypeStyles[rule.type] ||
-                          "bg-gray-50 text-gray-600 border-gray-200"
-                        }`}
-                      >
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${
+                        ruleTypeStyle[rule.type] ?? "bg-gray-50 text-gray-600 border-gray-200"
+                      }`}>
                         {rule.type}
                       </span>
                     </td>
@@ -550,9 +481,10 @@ export default function CoachBudgetPage() {
             </table>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">Aucune règle déclenchée.</p>
+          <p className="text-sm text-gray-400">{t("coach.rules.none")}</p>
         )}
       </section>
+
     </div>
   );
 }

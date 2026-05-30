@@ -8,11 +8,7 @@
 //   Ce moteur raisonne en PROTECTION / DISCIPLINE / MARGE, pas en "virement hebdo".
 //   → Il répond à : "combien faut-il mettre de côté ce mois pour ne pas
 //     sacrifier l'objectif au prochain reset ?"
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { COACHING_MODES, THRESHOLDS } from "./Premiumconstants.js";
-
-// ─── Utilitaires ─────────────────────────────────────────────────────────────
 
 function roundMoney(v = 0) {
   return Math.max(0, Math.round(Number(v) || 0));
@@ -22,13 +18,13 @@ function clamp(v, min, max) {
   return Math.min(Math.max(v, min), max);
 }
 
-// ─── Taux de protection selon mode et urgence ─────────────────────────────────
+// Taux de protection selon mode et urgence 
 // Ce taux détermine la part du "reste disponible" à réserver mentalement
-// pour l'objectif ce mois-ci.
+
 
 function getProtectionRate({ coachingMode = "BALANCED", riskLevel = "medium", urgency = "medium" }) {
   let rate = 0.20; // base : 20 % du reste disponible
-
+ 
   // Ajustement par mode
   if (
     coachingMode === COACHING_MODES.RECOVERY_STRICT ||
@@ -49,7 +45,7 @@ function getProtectionRate({ coachingMode = "BALANCED", riskLevel = "medium", ur
 
   // Ajustement par risque
   if      (riskLevel === "high"   || riskLevel === "critical") rate += 0.08;
-  else if (riskLevel === "low")                                 rate -= 0.03;
+  else if (riskLevel === "low") rate -= 0.03;
 
   // Ajustement par urgence de l'objectif
   if      (urgency === "critical") rate += 0.15;
@@ -76,16 +72,15 @@ function computeProtectedAmountThisMonth({
   const monthlyNeed = Number(primaryGoal.requiredMonthlyContribution || 0);
   if (monthlyNeed <= 0) return 0;
 
-  const urgency        = primaryGoal.urgency || "medium";
+  const urgency= primaryGoal.urgency || "medium";
   const protectionRate = getProtectionRate({ coachingMode, riskLevel, urgency });
-
   // Part du besoin mensuel encore pertinente selon les jours restants
   // (si on est à J20/30, on a encore 2/3 du mois → on protège 2/3 du besoin)
   const monthFraction  = daysLeftInMonth > 0
     ? clamp(daysLeftInMonth / 30, 0, 1)
     : 0;
 
-  const proratedNeed   = monthlyNeed * monthFraction;
+  const proratedNeed = monthlyNeed * monthFraction;
 
   // Montant protégé = min(besoin proratisé, part raisonnable du reste)
   const protectedAmount = Math.min(
@@ -128,16 +123,16 @@ function computeDisciplineScore({ primaryGoal, remainingAmount }) {
   return 10;
 }
 
-// ─── Capacité de contribution ce mois ────────────────────────────────────────
+// Capacité de contribution ce mois 
 // "Le user a-t-il assez de marge pour contribuer à son objectif ce mois ?"
 
-function computeCapacityRatio({ primaryGoal, remainingAmount }) {
+/*function computeCapacityRatio({ primaryGoal, remainingAmount }) {
   if (!primaryGoal) return null;
   const need = Number(primaryGoal.requiredMonthlyContribution || 0);
   if (need <= 0)     return null;
   if (remainingAmount <= 0) return 0;
   return clamp(Math.round((remainingAmount / need) * 100) / 100, 0, 10);
-}
+}*/
 
 // ─── Message coaching ─────────────────────────────────────────────────────────
 
@@ -174,10 +169,9 @@ function buildGoalMessage({ primaryGoal, protectedAmount, status, coachingMode }
   return `Réserver ${protectedAmount} DT ce mois-ci vous permettra d'alimenter "${primaryGoal.name}" lors du prochain reset mensuel.`;
 }
 
-// ─── Export principal ─────────────────────────────────────────────────────────
-
+// Export principal 
 export function generateGoalProtectionPlan(payload, coachingMode) {
-  // ── Lecture du payload ────────────────────────────────────────────────────
+  // Lecture du payload — source de vérité unique, pas de recalcul
   const snap        = payload?.financialSnapshot ?? {};
   const goals       = payload?.goals             ?? [];
   const primaryGoal = payload?.primaryGoal       ?? null;
@@ -202,7 +196,7 @@ export function generateGoalProtectionPlan(payload, coachingMode) {
     };
   }
 
-  // ── Calculs ───────────────────────────────────────────────────────────────
+  // Calculs
   const protectedAmount = computeProtectedAmountThisMonth({
     primaryGoal,
     remainingAmount,
@@ -211,17 +205,18 @@ export function generateGoalProtectionPlan(payload, coachingMode) {
     riskLevel,
   });
 
-  const status         = buildProtectionStatus({ primaryGoal, protectedAmount, remainingAmount });
+  const status = buildProtectionStatus({ primaryGoal, protectedAmount, remainingAmount });
   const disciplineScore= computeDisciplineScore({ primaryGoal, remainingAmount });
-  const capacityRatio  = computeCapacityRatio({ primaryGoal, remainingAmount });
-  const message        = buildGoalMessage({ primaryGoal, protectedAmount, status, coachingMode: mode });
+  //const capacityRatio= computeCapacityRatio({ primaryGoal, remainingAmount });
+  //capacityRatio,
+  const message = buildGoalMessage({ primaryGoal, protectedAmount, status, coachingMode: mode });
 
   return {
     hasActiveGoal:   true,
     status,
     protectedAmount, // montant à "mettre de côté" mentalement ce mois (non transféré automatiquement)
     disciplineScore,
-    capacityRatio,
+    
     message,
 
     primaryGoal: {

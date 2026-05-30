@@ -1,6 +1,7 @@
 // SOURCE DE VÉRITÉ pour tous les enums et seuils du coaching premium.
 // Aucun module ne doit écrire une string de mode ou de risque en dur.
-
+//"Premiumconstants centralise tous les seuils métier. Si un jour on veut 
+// changer la définition de 'urgence critique' de 30 à 45 jours, on modifie un seul fichier."
 
 // ── Modes de coaching ─────────────────────────────
 export const COACHING_MODES = {
@@ -46,11 +47,11 @@ export const RISK_LEVELS = {
   CRITICAL: "critical",
 };
 
-// Seuils de score → riskLevel (calculés UNE SEULE FOIS dans buildPremiumPayload)
+// Seuils de score = riskLevel (calculés UNE SEULE FOIS dans buildPremiumPayload)
 export const RISK_SCORE_THRESHOLDS = {
-  LOW:70,   // score >= 70 → low
-  MEDIUM: 40,   // score >= 40 → medium
-  // sinon → high
+  LOW:70,   
+  MEDIUM: 40,   
+  // sinon = high
 };
 
 // ── Styles de conseil ──────────────────────────────
@@ -64,7 +65,7 @@ export const ADVICE_STYLES = {
   CONCISE:"concise",
 };
 
-// ── Plan templates (venant du ML ou fallback) ──────
+//Plan templates (venant du ML ou fallback)
 export const PLAN_TEMPLATES = {
   BALANCED_PLAN:"BALANCED_PLAN",
   FREEZE_CAP_PLAN:"FREEZE_CAP_PLAN",
@@ -73,7 +74,7 @@ export const PLAN_TEMPLATES = {
   RECOVERY_PLAN:"RECOVERY_PLAN",
 };
 
-// ── Clusters personas (ML) ─────────────────────────
+//Clusters personas (ML)
 export const PERSONA_CLUSTERS = {
   DISCIPLINED_PLANNER: "DISCIPLINED_PLANNER",
   IMPULSIVE_SPENDER: "IMPULSIVE_SPENDER",
@@ -81,7 +82,7 @@ export const PERSONA_CLUSTERS = {
   BUDGET_STRESSED_PROFILE: "BUDGET_STRESSED_PROFILE",
 };
 
-// ── Groupes de catégories ──────────────────────────
+//Groupes de catégories
 export const ESSENTIAL_GROUPS = [
   "HOUSING", "FOOD_HOME", "TRANSPORT",
   "HEALTH_BEAUTY", "CHILDREN", "BILLS",
@@ -94,14 +95,14 @@ export const FLEX_GROUPS = [
 
 export const SAVINGS_GROUPS = ["SAVINGS"];
 
-// ── Seuils métier ──────────────────────────────────
+//Seuils métier
 export const THRESHOLDS = {
-  CRITICAL_END_OF_MONTH_DAYS:    7,    // jours restants → mode critique
-  CRITICAL_END_OF_MONTH_AMOUNT:  150,  // montant restant → mode critique
+  CRITICAL_END_OF_MONTH_DAYS:    7,  
+  CRITICAL_END_OF_MONTH_AMOUNT:  150,
   GOAL_URGENCY_CRITICAL_DAYS:    30,
   GOAL_URGENCY_HIGH_DAYS:        90,
   GOAL_URGENCY_MEDIUM_DAYS:      180,
-  GOAL_URGENT_DAYS:              60,   // isUrgent dans payload
+  GOAL_URGENT_DAYS:              60,
   PROTECTION_RATE_MIN:           0.10,
   PROTECTION_RATE_MAX:           0.45,
 };

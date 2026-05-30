@@ -16,13 +16,13 @@ import {
  
 
 export async function FinancierService() {
-
   const now       = new Date();
   const debutMois = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const operations = await Operation.find({
     archived: false, date: { $gte: debutMois },
-  }).populate("IdCategory", "name color icon budget normalizedGroup").lean();
+  }).populate("IdCategory", "name color icon budget normalizedGroup")
+    .lean();//retourne des objets JS purs (plus rapide que des documents Mongoose)
 
    const buildAccountHealth = async (compteId) => {
     const catsCompte = await Category.find({
@@ -118,7 +118,7 @@ export async function FinancierService() {
   const nbComptesActifs  = comptesActifsIds.length || 1;
   const moyenneDepensesParCompte = Math.round(totalDepensePlateforme / nbComptesActifs);
 
-  // ── Groupement par catégorie ────────────────────────────────
+  //Groupement par catégorie (pie chart)
   const depenseParCat = {};
   for (const op of operations) {
     const catId = String(op.IdCategory?._id ?? "none");
@@ -135,9 +135,9 @@ export async function FinancierService() {
     depenseParCat[catId].nbOps += 1;
   }
 
-  const categoriesTriees = Object.values(depenseParCat).sort((a, b) => b.total - a.total);
-  const top5Categories   = categoriesTriees.slice(0, 5);
-  const topCategorie     = categoriesTriees[0] ?? null;
+  const categoriesTriees = Object.values(depenseParCat).sort((a, b) => b.total - a.total);//object.values pour obtenir un tableau des valeurs seulemet les values sans le kies
+  const top5Categories= categoriesTriees.slice(0, 5);
+  const topCategorie= categoriesTriees[0] ?? null;
 
   // Concentration top 2
   const top2Total = (categoriesTriees[0]?.total ?? 0) + (categoriesTriees[1]?.total ?? 0);
@@ -147,7 +147,7 @@ export async function FinancierService() {
   // ── Budgets ─────────────────────────────────────────────────
   const categoriesAvecBudget = await Category.find({ budget: { $gt: 0 } }).lean();
   const totalBudgets = categoriesAvecBudget.reduce((s, c) => s + (c.budget ?? 0), 0);
-  const montantNonDepense = Math.max(0, totalBudgets - totalDepensePlateforme);
+  const montantNonDepense = Math.max(0, totalBudgets - totalDepensePlateforme);//si ja mais on depasse budeget affiche 0 pas négatif
   const tauxExecution = totalBudgets > 0
     ? Math.round((totalDepensePlateforme / totalBudgets) * 100) : 0;
   const tauxEpargne   = totalBudgets > 0
@@ -163,16 +163,21 @@ export async function FinancierService() {
                    : tauxExec >= 85        ? "proche"
                    :                        "respecte";
     return {
-      name: cat.name, color: cat.color ?? "#D7A4A6",
-      budget: cat.budget ?? 0, depense, tauxExec, statut,
+      name: cat.name, 
+      color: cat.color ?? "#D7A4A6",
+      budget: cat.budget ?? 0,
+      depense, 
+      tauxExec, 
+      statut,
       depassement: Math.max(0, depense - (cat.budget ?? 0)),
     };
-  }).sort((a, b) => b.tauxExec - a.tauxExec);
+  }).sort((a, b) => b.tauxExec - a.tauxExec);//cat la plus critique dab
+  //a-b = psitif donc a avant b 
 
   // ── Waterfall ───────────────────────────────────────────────
   const waterfallItems = [
     { label: "Budget total", amount: totalBudgets, type: "total" },
-    ...top5Categories.map(cat => ({
+    ...top5Categories.map(cat => ({// map retourne un tableau et pour obtenir une structure plate pour le front j'ai utiliser le ... pour décomposer le tab et injecter ces element dans waterfallItems 
       label: cat.name, amount: -cat.total, type: "cat", color: cat.color,
     })),
   ];
@@ -182,75 +187,66 @@ export async function FinancierService() {
     waterfallItems.push({ label: "Autres", amount: -autresTotal, type: "cat", color: "#B4B2A9" });
   waterfallItems.push({ label: "Non dépensé", amount: montantNonDepense, type: "reste" });
 
-  // ── Variance inter-comptes par catégorie ────────────────────
-  const varianceParCategorie = (() => {
-  const comptesActifsIds = [...new Set(operations.map(op => String(op.IdAccount)))];
 
-  // 1) Regrouper les catégories par normalizedGroup
+ // Variance inter-comptes par catégorie
+  const comptesActifsIdsVariance = [...new Set(operations.map(op => String(op.IdAccount)))];//le spresad operator here turns le set en tab pour utiliser le map
+
   const groupsMap = new Map();
-
   for (const op of operations) {
     const groupKey = op?.IdCategory?.normalizedGroup || "OTHER";
-    const color = op?.IdCategory?.color || "#999999";
-    const icon = op?.IdCategory?.icon || "🏷️";
-    const name = groupKey; // ou un label plus joli si tu veux
-
     if (!groupsMap.has(groupKey)) {
       groupsMap.set(groupKey, {
         normalizedGroup: groupKey,
-        name,
-        color,
-        icon,
+        name:  groupKey,
+        color: op?.IdCategory?.color || "#999999",
+        icon:  op?.IdCategory?.icon  || "🏷️",
       });
     }
   }
-
   const groups = Array.from(groupsMap.values());
 
-  // 2) Calculer la variance inter-comptes pour chaque groupe
-  return groups.map((group) => {
-    const vals = comptesActifsIds.map((compteId) => {
-      return operations
-        .filter((op) =>
+  const varianceParCategorie = groups.map((group) => {
+
+    const vals = comptesActifsIdsVariance.map((compteId) => {
+      return operations.filter(op =>
           String(op.IdAccount) === String(compteId) &&
           (op?.IdCategory?.normalizedGroup || "OTHER") === group.normalizedGroup
         )
         .reduce((sum, op) => sum + Number(op.amount ?? 0), 0);
-    }).filter((v) => v > 0);
+    }).filter(v => v > 0);
 
     if (vals.length < 2) {
       return {
         normalizedGroup: group.normalizedGroup,
-        name: group.name,
-        color: group.color,
-        icon: group.icon,
-        cv: null,
-        moy: null,
-        stabilite: "insufficient",
-        nbComptes: vals.length,
+        name:       group.name,
+        color:      group.color,
+        icon:       group.icon,
+        cv:         null,
+        moy:        null,
+        stabilite:  "insufficient",
+        nbComptes:  vals.length,
       };
     }
 
-    const moy = vals.reduce((s, v) => s + v, 0) / vals.length;
-    const variance = vals.reduce((s, v) => s + Math.pow(v - moy, 2), 0) / vals.length;
-    const ecartType = Math.sqrt(variance);
-    const cv = moy > 0 ? Math.round((ecartType / moy) * 100) : 0;
+    const moy= vals.reduce((s, v) => s + v, 0) / vals.length;
+    const variance= vals.reduce((s, v) => s + Math.pow(v - moy, 2), 0) / vals.length;
+    const ecartType= Math.sqrt(variance);
+    const cv= moy > 0 ? Math.round((ecartType / moy) * 100) : 0;
 
     return {
       normalizedGroup: group.normalizedGroup,
-      name: group.name,
-      color: group.color,
-      icon: group.icon,
+      name:       group.name,
+      color:      group.color,
+      icon:       group.icon,
       cv,
-      moy: Math.round(moy),
-      stabilite: cv > 60 ? "instable" : cv > 35 ? "variable" : "stable",
-      nbComptes: vals.length,
+      moy:        Math.round(moy),
+      stabilite:  cv > 60 ? "instable" : cv > 35 ? "variable" : "stable",
+      nbComptes:  vals.length,
     };
   })
   .sort((a, b) => (b.cv ?? -1) - (a.cv ?? -1))
   .slice(0, 6);
-})();
-    // ── Score santé moyen + dépassements ────────────────────────
+  // ── Score santé moyen + dépassements ────────────────────────
   const tousLesComptes = await Account.find().lean();
   const totalComptes = tousLesComptes.length || 1;
 
@@ -278,28 +274,37 @@ export async function FinancierService() {
       : 0;
 
     // ── Distribution scores ─────────────────────────────────────
-  const scoresDistribution = {
-    "0-25": 0,
-    "26-50": 0,
-    "51-75": 0,
-    "76-100": 0,
-  };
+    const scoresDistribution = {
+      "0-25": 0,
+      "26-50": 0,
+      "51-75": 0,
+      "76-100": 0,
+    };
+    const comptes = await Account.find(
+      { _id: { $in: comptesActifsIds } },
+        
+    ).lean();
+    console.log("Structure duck complète :", JSON.stringify(comptes[0]?.duck, null, 2));
+    console.log("Comptes actifs trouvés pour distribution des scores :", comptes.length);
 
-  for (const compteId of comptesActifsIds) {
-    const healthData = await buildAccountHealth(compteId);
-    if (!healthData) continue;
+    for (const compte of comptes) {
+      const score = compte.Duck?._healthScore;
+      console.log(`Compte ${compte._id} - Score santé :`, score);
+      if (score == null) continue;
+      /*const healthData = await buildAccountHealth(compteId);
+      if (!healthData) continue;
 
-    const score = healthData.healthScore;
+      const score = healthData.healthScore;*/
 
-    if (score <= 25) scoresDistribution["0-25"]++;
-    else if (score <= 50) scoresDistribution["26-50"]++;
-    else if (score <= 75) scoresDistribution["51-75"]++;
-    else scoresDistribution["76-100"]++;
-  }
+      if (score <= 25) scoresDistribution["0-25"]++;
+      else if (score <= 50) scoresDistribution["26-50"]++;
+      else if (score <= 75) scoresDistribution["51-75"]++;
+      else scoresDistribution["76-100"]++;
+    }
 
-  const distributionScores = Object.entries(scoresDistribution).map(
-    ([range, count]) => ({ range, count })
-  );
+    const distributionScores = Object.entries(scoresDistribution).map(
+      ([range, count]) => ({ range, count })
+    );
 
   // ── Objectifs ───────────────────────────────────────────────
   const objectifsAtteints = await Goal.countDocuments({ isAchieved: true, updatedAt: { $gte: debutMois } });
@@ -326,11 +331,24 @@ export async function FinancierService() {
 
   return {
     kpis: {
-      totalDepensePlateforme, moyenneDepensesParCompte, topCategorie,
-      pctDepassement, montantNonDepense, objectifsAtteints, montantTotalObjectifs,
-      tauxExecution, tauxEpargne, scoreSanteMoy, concentrationTop2, totalBudgets,
+      totalDepensePlateforme,
+      moyenneDepensesParCompte, 
+      topCategorie,
+      pctDepassement, 
+      montantNonDepense, 
+      objectifsAtteints, 
+      montantTotalObjectifs,
+      tauxExecution, 
+      tauxEpargne, 
+      scoreSanteMoy, 
+      concentrationTop2, 
+      totalBudgets,
     },
-    top5Categories, budgetVsReel, distributionScores,
-    evolutionMois, waterfallItems, varianceParCategorie,
+    top5Categories,
+    budgetVsReel, 
+    distributionScores,
+    evolutionMois, 
+    waterfallItems, 
+    varianceParCategorie,
   };
 }

@@ -1,8 +1,5 @@
-// backend/service/premiumCoach/budgetRebalancer.js
-// ─────────────────────────────────────────────────────────────────────────────
 // Reçoit le payload unifié + coachingMode + goalProtection.
-// Lit UNIQUEMENT les champs du payload — ne recalcule rien.
-// ─────────────────────────────────────────────────────────────────────────────
+//Pour chaque catégorie, dit : "réduire", "geler", "maintenir" ou "augmenter" selon le mode
 
 import {
   COACHING_MODES,
@@ -11,7 +8,7 @@ import {
   SAVINGS_GROUPS,
 } from "./Premiumconstants.js";
 
-// ─── Utilitaires ─────────────────────────────────────────────────────────────
+// Utilitaires 
 const STRUCTURAL_GROUPS = new Set(["HOUSING", "BILLS", "SAVINGS"]);
 
 const DAILY_PILOTABLE_GROUPS = new Set([
@@ -41,7 +38,6 @@ function safeDivide(a, b) {
   if (!y) return 0;
   return x / y;
 }
-
 
 function round2(n) {
   return Math.round((Number(n) || 0) * 100) / 100;
@@ -105,7 +101,7 @@ function getPersonaModifiers(personaCluster, group) {
   }
 }
 
-// ─── Méta d'une catégorie ─────────────────────────────────────────────────────
+// Métadonnee d'une catégorie 
 
 function buildCategoryMeta(category) {
   const group = normalizeGroup(category.normalizedGroup);
@@ -161,7 +157,7 @@ function buildTotals(recommendations = [], spendableAmount = 0) {
   };
 }
 
-// ─── Multiplicateurs par mode et risque ───────────────────────────────────────
+// Multiplicateurs par mode et risque
 
 function getRiskMultiplier(riskLevel) {
   if (riskLevel === "high" || riskLevel === "critical") return 0.75;
@@ -196,7 +192,7 @@ function getModeAdjustments(mode) {
   }
 }
 
-// ─── Recommandation par catégorie ─────────────────────────────────────────────
+//Recommandation par catégorie 
 
 function computeCategoryRecommendation({
   category,
@@ -220,7 +216,7 @@ function computeCategoryRecommendation({
 
   const overspent = spent > originalBudget;
 
-  // ── Catégories structurelles : pas de pilotage quotidien ─────────────
+  // Catégories structurelles : pas de pilotage quotidien 
   if (isStructuralGroup(meta.group)) {
     const housingRatio =
       meta.group === "HOUSING"
@@ -314,7 +310,7 @@ function computeCategoryRecommendation({
     housingRatio: null,
   };
 }
-
+// a reviser sa et l'export
 function rebalanceToAvailableAmount(recommendations, available) {
   const structuralItems = recommendations.filter(
     (item) => item.adviceMode === "structural"
@@ -331,7 +327,7 @@ function rebalanceToAvailableAmount(recommendations, available) {
 
   const flexibleAvailable = Math.max(0, safeNum(available) - structuralTotal);
 
-  // ── minimum protégé pour certaines catégories essentielles pilotables
+  // minimum protégé pour certaines catégories essentielles pilotables
   const ESSENTIAL_FLOORS = {
     FOOD_HOME: 10,
     TRANSPORT: 10,
@@ -412,8 +408,7 @@ function rebalanceToAvailableAmount(recommendations, available) {
   ];
 }
 
-// ─── Résumé des actions ───────────────────────────────────────────────────────
-
+// Résumé des actions 
 
 function buildSummary(recommendations = []) {
   const actionable = recommendations.filter(

@@ -1,8 +1,5 @@
-// controllers/vaultController.js
 import { getDuckState } from "../../service/index.js";
 
-// GET /api/duck/:accountId
-// Appelé par le dashboard au chargement — retourne l'état actuel du duck.
 export async function getDuck(req, res) {
   try {
     const { accountId } = req.params;
@@ -17,6 +14,3 @@ export async function getDuck(req, res) {
   }
 }
 
-// ── Ajouter dans ton router ───────────────────────────────────────────────────
-// import { getDuck } from "../controllers/duckController.js";
-// router.get("/duck/:accountId", authMiddleware, getDuck);
