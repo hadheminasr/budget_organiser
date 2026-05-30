@@ -22,12 +22,8 @@ import Note from "./pages/User/Note";
 import Report from "./pages/User/Report";
 import CoachBudgetPage from "./pages/User/CoachBudgetV1";
 import PremiumDashboardPage from "./pages/User/premium";
-// imports
+
 import DuckCompanion from "../src/components/Duck/DuckCompanion";
-
-
-
-
 
 import AdminLayout from "./layout/AdminLayout";
 import AdminDash from "./pages/Admin/AdminDash";
@@ -37,11 +33,6 @@ import FirstLogin from "./pages/User/FirstLoginPage";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./context/AuthContext";
 import { useDuck } from "./hooks/useDuck";
-
-
-
-
-
 
 const UserAccountProfileGuard = ({ children }) => {
   const { user } = useAuth();
@@ -101,6 +92,7 @@ const RedirectAuthenticatedUser = ({ children }) => {
 function App() {
   const { isCheckingAuth, user, isAuthenticated } = useAuth();
   const accountId = user?.accountId;
+  const location = useLocation();
   
   const showDuck =
   isAuthenticated &&
@@ -180,14 +172,6 @@ function App() {
             </RedirectAuthenticatedUser>
           }
         />
-		{/*<Route
-		path="/user"
-		element={
-			<ProtectedRoute>
-			<UserDash />
-			</ProtectedRoute>
-		}
-		/>*/}
     <Route
       path="/user"
       element={
@@ -198,26 +182,26 @@ function App() {
         </ProtectedRoute>
       }
     >
-  <Route index element={<Navigate to="UserDash" replace />} />
-  <Route path="userDash"   element={<UserDash duck={duck}/>} />
-  <Route path="account"      element={<Account />} />
-  <Route path="partage" element={<Share />} />
-  <Route path="operations" element={<Operations duck={duck} />} />
-  <Route path="categories" element={<Categories />} />
-  <Route path="goals" element={<Goals />} />
-  <Route path="history" element={<History />} />
-  <Route path="note" element={<Note />} />
-  <Route path="report" element={<Report />} />
-  <Route path="first-login" element={<FirstLogin duck={duck} />} />
-  <Route path="coach" element={<CoachBudgetPage />} />
-  <Route path="premium" element={<PremiumDashboardPage />} />
+      <Route index element={<Navigate to="UserDash" replace />} />
+      <Route path="userDash"   element={<UserDash duck={duck}/>} />
+      <Route path="account"      element={<Account />} />
+      <Route path="partage" element={<Share />} />
+      <Route path="operations" element={<Operations duck={duck} />} />
+      <Route path="categories" element={<Categories />} />
+      <Route path="goals" element={<Goals />} />
+      <Route path="history" element={<History />} />
+      <Route path="note" element={<Note />} />
+      <Route path="report" element={<Report />} />
+      <Route path="first-login" element={<FirstLogin duck={duck} />} />
+      <Route path="coach" element={<CoachBudgetPage />} />
+      <Route path="premium" element={<PremiumDashboardPage />} />
 
-</Route>
+    </Route>
 
 
        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+    <Route path="*" element={<Navigate to="/" replace />} />
+</Routes>
  {/* ── DuckCompanion ─────────────────────────────────────────────────────
            EN DEHORS des Routes → visible sur toutes les pages user
            Conditionnel : seulement si user connecté + vérifié + a un compte    */}

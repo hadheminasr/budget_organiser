@@ -1,58 +1,23 @@
-// BIInsights.jsx
-// Constats analytiques automatiques — pas du coaching, des faits
-// Props: insights = [{ type: 'positive'|'negative'|'warning'|'neutral', text }]
+import { Check, AlertCircle, AlertTriangle, MinusCircle } from 'lucide-react';
 
 const insightConfig = {
   positive: {
     bg: "#EAF3DE", border: "#C0DD97", text: "#27500A",
-    Icon: () => (
-      <svg style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} viewBox="0 0 16 16" fill="none">
-        <path d="M3 8l4 4 6-7" stroke="#3B6D11" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    Icon: () => <Check size={16} color="#3B6D11" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />,
   },
   negative: {
     bg: "#FCEBEB", border: "#F7C1C1", text: "#791F1F",
-    Icon: () => (
-      <svg style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6" stroke="#A32D2D" strokeWidth="1.2" />
-        <line x1="8" y1="5" x2="8" y2="9" stroke="#A32D2D" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="8" cy="11.5" r=".8" fill="#A32D2D" />
-      </svg>
-    ),
+    Icon: () => <AlertCircle size={16} color="#A32D2D" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />,
   },
   warning: {
     bg: "#FAEEDA", border: "#FAC775", text: "#633806",
-    Icon: () => (
-      <svg style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} viewBox="0 0 16 16" fill="none">
-        <path d="M8 2.5L14 13H2L8 2.5Z" stroke="#854F0B" strokeWidth="1.2" strokeLinejoin="round" />
-        <line x1="8" y1="7" x2="8" y2="10" stroke="#854F0B" strokeWidth="1.4" strokeLinecap="round" />
-        <circle cx="8" cy="11.5" r=".7" fill="#854F0B" />
-      </svg>
-    ),
+    Icon: () => <AlertTriangle size={16} color="#854F0B" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />,
   },
   neutral: {
     bg: "#F1EFE8", border: "#D3D1C7", text: "#444441",
-    Icon: () => (
-      <svg style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6" stroke="#5F5E5A" strokeWidth="1.2" />
-        <line x1="5.5" y1="8" x2="10.5" y2="8" stroke="#5F5E5A" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
+    Icon: () => <MinusCircle size={16} color="#5F5E5A" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />,
   },
 };
-
-// Highlight les valeurs en gras dans le texte — ex: "**14.2%**" → <strong>14.2%</strong>
-function InsightText({ text }) {
-  const parts = text.split(/\*\*(.*?)\*\*/g);
-  return (
-    <>
-      {parts.map((p, i) =>
-        i % 2 === 1 ? <strong key={i}>{p}</strong> : p
-      )}
-    </>
-  );
-}
 
 export default function BIInsights({ insights = [] }) {
   if (!insights.length) return null;
@@ -80,7 +45,7 @@ export default function BIInsights({ insights = [] }) {
               }}
             >
               <cfg.Icon />
-              <InsightText text={insight.text} />
+              <span>{insight.text}</span>
             </div>
           );
         })}

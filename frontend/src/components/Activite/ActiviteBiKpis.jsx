@@ -52,13 +52,13 @@ const KPI_CONFIG = [
     getChangeType: (v) => (v >= 70 ? "positive" : v >= 45 ? "neutral" : "negative"),
   },
   {
-    key: "scoreRetention",
-    title: "Score de rétention",
-    suffix: "",
-    sub: "stabilité sur 8 semaines",
+    key: "tauxRetention",
+    title: "Taux de rétention",
+    suffix: "%",
+    sub: "activité conservée sur 30j",
     icon: ShieldCheck,
     iconColor: "blue",
-    getChange: (v) => `score ${v ?? 0}/100`,
+    getChange: (v) => `${v ?? 0}% de rétention`,
     getChangeType: (v) => (v >= 70 ? "positive" : v >= 50 ? "neutral" : "negative"),
   },
   {

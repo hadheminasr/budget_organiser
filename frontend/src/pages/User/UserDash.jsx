@@ -48,6 +48,7 @@ export default function UserDash({ duck }) {
   const consumed      = data.totalDepense ?? 0;
   const remaining     = data.reste ?? 0;
   const consumedPct   = totalBudget > 0 ? Math.round((consumed / totalBudget) * 100) : 0;
+  const operations = data.operationMois || [];
 
   const today         = new Date().getDate();
   const daysInMonth   = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();

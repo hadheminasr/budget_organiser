@@ -1,60 +1,53 @@
 import { Account } from "../models/Account.js";
 import { Operation } from "../models/Operation.js";
 import { Category } from "../models/Category.js";
-
+import { Goal } from "../models/Goal.js";
+import {
+  computeBudgetCompliance,
+  computeHealthScore,
+} from "../utils/buildHealthScore.js"
 
 export async function ControleService(filters = {}) {
   const { status, badge, search } = filters;
-
-  //récupérer tous les comptes
+  //récupérer tous comptes
   const accounts = await Account.find()
     .populate("Users", "name familyName email")
     .lean(); // .lean() retourne des objets JS simples, plus rapide
-
   //date de début du mois en cours
   const now = new Date();
   const debutMois = new Date(now.getFullYear(), now.getMonth(), 1);
-
   //date d'il y a 7 jours
   const il7Jours = new Date();
-  il7Jours.setDate(il7Jours.getDate() - 7);
-
+  il7Jours.setDate(il7Jours.getDate() - 7);//sert a l'anomalie et inactivité
   //construire les données pour chaque compte
   const rows = await Promise.all(
-    accounts.map(async (account) => {
+      accounts.map(async (account) => {
       const accountId = account._id;
-
       // opérations non archivées de ce compte
       const operations = await Operation.find({
         IdAccount: accountId,
         archived:  false,
       }).lean();
-
       // opérations des 7 derniers jours
       const ops7jours = operations.filter(
         op => new Date(op.date) >= il7Jours
       );
-
       // opérations du mois en cours
       const opsMois = operations.filter(
         op => new Date(op.date) >= debutMois
       );
-
       // est-ce que le compte a eu une activité ces 7 jours 
       const estActif7j = ops7jours.length > 0;
-
       // catégories du compte
       const categories = await Category.find({
         AccountId: accountId
       }).lean();
-
       // dépassement budget pour chaque catégorie
       // on compare ce qui a été dépensé vs le budget
       let aDepasseBudget = false;
       for (const cat of categories) {
         const budget = Number(cat.budget ?? 0);
-        if (budget <= 0) continue; // pas de budget défini → on skip
-
+        if (budget <= 0) continue; // pas de budget défini donc skip
         // total dépensé dans cette catégorie ce mois
         const totalDepenseCat = opsMois
           .filter(op => String(op.IdCategory) === String(cat._id))
@@ -65,37 +58,78 @@ export async function ControleService(filters = {}) {
           break; // un seul dépassement suffit
         }
       }
-
-      // anomalie — dépense anormalement élevée
+      // anomalie (dépense anormalement élevée)
       // on calcule la moyenne et l'écart-type de toutes les dépenses
       const montants = operations.map(op => Number(op.amount ?? 0));
-      
       const moyenne = montants.length > 0
         ? montants.reduce((s, v) => s + v, 0) / montants.length
         : 0;
 
       const ecartType = montants.length > 1
         ? Math.sqrt(
-            montants.reduce((s, v) => s + (v - moyenne) ** 2, 0) / montants.length
+            montants.reduce((s, v) => s + (v - moyenne) ** 2, 0) / montants.length//**= equivalent pow dans le js moderne */
           )
         : 0;
 
-      const seuilAnomalie = moyenne + 2 * ecartType;
+      const seuilAnomalie = moyenne + 2 * ecartType;//regle empirique de la loi normale 
 
       // est-ce qu'une dépense récente dépasse le seuil ?
       const aAnomalie = ops7jours.some(
         op => Number(op.amount) > seuilAnomalie && seuilAnomalie > 0
       );
+      // score santé  sur 100
+      // ── Données nécessaires pour computeHealthScore ──────────────
 
-      // score santé — sur 100
-      // commence à 100 et on retire des points selon les problèmes
-      let scoreSante = 100;
-      if (!estActif7j)     scoreSante -= 30; // inactif
-      if (aDepasseBudget)  scoreSante -= 25; // dépassement budget
-      if (aAnomalie)       scoreSante -= 35; // anomalie détectée
-      if (account.isBlocked) scoreSante -= 10; // compte bloqué
-      scoreSante = Math.max(0, Math.min(100, scoreSante)); // entre 0 et 100
+      // 1. complianceRate — via l'utilitaire
+      const compliance = computeBudgetCompliance({
+        categories,   // déjà récupérées plus haut dans le service
+        operations: opsMois,  // opérations du mois courant
+      });
 
+      // 2. execRate — % du budget consommé
+      const totalBudgetCompte = categories.reduce(
+        (sum, cat) => sum + Number(cat.budget ?? 0), 0
+      );
+      const totalDepenseCompte = opsMois.reduce(
+        (sum, op) => sum + Number(op.amount ?? 0), 0
+      );
+      const execRate = totalBudgetCompte > 0
+        ? Math.round((totalDepenseCompte / totalBudgetCompte) * 100)
+        : 0;
+
+      // 3. savRate — % non dépensé
+      const montantNonDepense = Math.max(0, totalBudgetCompte - totalDepenseCompte);
+      const savRate = totalBudgetCompte > 0
+        ? Math.round((montantNonDepense / totalBudgetCompte) * 100)
+        : 0;
+
+      // 4. avgGoalPct — % moyen d'atteinte des objectifs
+      const goalsCompte = await Goal.find({
+        AccountId: accountId,
+        isActive: true,
+      }).lean();
+
+      const avgGoalPct = goalsCompte.length > 0
+        ? Math.round(
+            goalsCompte.reduce((sum, goal) => {
+              const target  = Number(goal.targetAmount  ?? 0);
+              const current = Number(goal.currentAmount ?? 0);
+              if (target <= 0) return sum;
+              return sum + Math.min(100, (current / target) * 100);
+            }, 0) / goalsCompte.length
+          )
+        : 0;
+
+      // ── computeHealthScore ───────────────────────────────────────
+      const healthResult = computeHealthScore({
+        complianceRate: compliance.complianceRate,
+        execRate,
+        savRate,
+        avgGoalPct,
+      });
+
+      const scoreSante = healthResult.healthScore;
+    
       // badges — liste des problèmes détectés
       const badges = [];
       if (aDepasseBudget)    badges.push("budget");

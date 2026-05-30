@@ -3,9 +3,9 @@ import { useActivite } from "../../hooks/useActivite";
 
 import ActiviteBiKpis         from "../../components/Activite/ActiviteBiKpis";
 import { EngagementSegmentation } from "../../components/Activite/EngagementSegmentation";
-import { ActivityHeatmap }        from "../../components/Activite/ActivityHeatmap";
+
 import { VelociteChart }           from "../../components/Activite/VelociteChart";
-import { RetentionCurve }         from "../../components/Activite/RetentionCurve";
+
 import { UsageDepthChart }        from "../../components/Activite/UsageDepthChart";
 import { HourlyDistribution }     from "../../components/Activite/HourlyDistribution";
 
@@ -31,14 +31,23 @@ export default function ActiviteComportement() {
     segmentation,
     segmentEvolution,
     profondeurUsage,
-    opsParJour,
+    
     opsParSemaine,
-    retentionCurve,
+    
     parHeure,
   } = data;
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Header */}
+<div className="flex flex-col gap-1">
+  <h1 className="text-2xl font-bold text-slate-800">
+    Activité & comportement
+  </h1>
+  <p className="text-sm text-slate-500">
+    Suivi décisionnel de l’activité récente, de l’engagement des comptes et de la fréquence d’utilisation de la plateforme.
+  </p>
+</div>
 
       {/* ── 8 KPIs BI ─────────────────────────────────────── */}
       <ActiviteBiKpis kpis={kpis} />
@@ -51,13 +60,13 @@ export default function ActiviteComportement() {
 
       {/* ── Heatmap + Vélocité ────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <ActivityHeatmap data={opsParJour} />
+        
         <VelociteChart   data={opsParSemaine} />
       </div>
 
       {/* ── Rétention + Profondeur d'usage ────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <RetentionCurve data={retentionCurve} />
+        
         <UsageDepthChart data={profondeurUsage} />
       </div>
 

@@ -16,13 +16,14 @@ export default function CumulativeAreaChart({ dailyData = {}, locale = "fr-TN" }
     budget = 0,
   } = dailyData;
 
+  //recalculer les données projetées si elles ne sont pas fournies
   const fallbackProjected =
     days.length > 0
       ? days.map((d) => Math.round(budget * (d / days.length)))
       : [];
 
   const projectedData = projected.length ? projected : fallbackProjected;
-
+  //tranforme les 3 tableau parallele en 1 sel tableau d'objets pour recharts
   const chartData = days.map((day, index) => ({
     day,
     real: real[index] ?? 0,

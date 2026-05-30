@@ -1,16 +1,21 @@
-import { ResponsiveContainer, Treemap, Tooltip } from "recharts";
+//SVG:Scalable Vector Graphics = Graphiques vectoriels redimensionnables (technologie pour dessiner des fprmes dans page web)
+import { ResponsiveContainer,
+         Treemap,//transformer une liste de catégories en rectangles proportionnels à leur valeur
+         Tooltip //info bulle : hover
+        } from "recharts";
 
+//par defaut recharts peut dessiner les rectangles tout seul mais cette fct  personnalise l'affichage d ec haque resctangle
 function CustomizedContent(props) {
   const {
-    x,
-    y,
+    x,//position horizontale du rectangle
+    y,//position verticale du rectangle
     width,
     height,
     name,
     value,
     color,
   } = props;
-
+  //cas de rec trop petit pour afficher le nom et la valeur, on affiche juste un rectangle simple sans texte
   if (width < 60 || height < 36) {
     return (
       <g>
@@ -20,7 +25,7 @@ function CustomizedContent(props) {
   }
 
   return (
-    <g>
+    <g>{/*g est un conteneur graphique qui peut contenir des formes et du texte*/}
       <rect x={x} y={y} width={width} height={height} fill={color || "#8884d8"} rx={10} />
       <text x={x + 10} y={y + 18} fill="#fff" fontSize={12} fontWeight="600">
         {name}
@@ -36,8 +41,9 @@ export default function CategoryTreemapChart({ data = [] }) {
   const safeData = Array.isArray(data) ? data : [];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm h-[360px]">
+    <div className="w-full h-[260px] sm:h-[300px] overflow-hidden bg-white p-5 shadow-sm h-[360px]">
       <div className="mb-4">
+        
         <h3 className="text-base font-semibold text-slate-800">
           Treemap des catégories
         </h3>

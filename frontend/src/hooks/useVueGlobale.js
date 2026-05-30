@@ -11,6 +11,9 @@ export default function useVueGlobale() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    //isMounted est une sécurité pour éviter un setState après que la page est quittéee
+    //ce qui peut arriver si la requête prend du temps et que l'utilisateur navigue ailleurs
+    //Cela évite des erreurs de type "Can't perform a React state update on an unmounted component"
     let isMounted = true;
 
     const load = async () => {
@@ -40,7 +43,7 @@ export default function useVueGlobale() {
     };
 
     load();
-
+    //cleanup
     return () => {
       isMounted = false;
     };

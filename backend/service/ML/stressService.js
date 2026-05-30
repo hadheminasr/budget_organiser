@@ -1,28 +1,25 @@
 import path from "path";
-import { spawn } from "child_process";
+import { spawn } from "child_process";//outil qui peux lancer des programmes externes (py)
 
-// Mets ici le même Python que celui qui a déjà joblib / pandas installés
+// chemin vers python installé sur PC
 const PYTHON_COMMAND = "C:/Users/DELL I5/Downloads/thonny-4.1.7-windows-portable/python.exe";
-
+//chemin du ficher python a exécuter
 const PYTHON_SCRIPT_PATH = path.resolve(
   "C:/Users/DELL I5/Desktop/ML_Budget_organiser/risk/predict_budget_stress.py"
 );
 
-// ─────────────────────────────────────────────────────────────
 // Interprétation Node.js du score
-// ─────────────────────────────────────────────────────────────
 function stressScoreToLevel(score) {
   if (score < 0.15) return "low";
   if (score < 0.9) return "medium";
   return "high";
 }
 
-// ─────────────────────────────────────────────────────────────
 // Fonction qui appelle Python
-// ─────────────────────────────────────────────────────────────
+
 export function runStressPredictionPython(featuresPayload) {
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify(featuresPayload);
+    const payload = JSON.stringify(featuresPayload);//ytansforme objet JS en texte json
 
     console.log("[Stress ML] python command =", PYTHON_COMMAND);
     console.log("[Stress ML] python script path =", PYTHON_SCRIPT_PATH);
@@ -31,8 +28,8 @@ export function runStressPredictionPython(featuresPayload) {
       stdio: ["ignore", "pipe", "pipe"],
     });
 
-    let stdout = "";
-    let stderr = "";
+    let stdout = "";//ce que python retoune en cas de succès
+    let stderr = "";//ce que python retoune en cas d'erreur
 
     py.stdout.on("data", (data) => {
       stdout += data.toString();
@@ -52,7 +49,7 @@ export function runStressPredictionPython(featuresPayload) {
       }
 
       try {
-        const parsed = JSON.parse(stdout.trim());
+        const parsed = JSON.parse(stdout.trim());//text json en objet js 
 
         if (!parsed.success) {
           return reject(
@@ -73,7 +70,7 @@ export function runStressPredictionPython(featuresPayload) {
 // ─────────────────────────────────────────────────────────────
 // TEMPORAIRE : payload de test / placeholder
 // Plus tard, on remplacera ça par un vrai mapping live
-// ─────────────────────────────────────────────────────────────
+// données métier réelles en features numériques ML
 export function buildStressFeaturesPayloadFromLiveData(payload) {
   const snap = payload?.financialSnapshot || {};
   const profile = payload?.userProfile || {};

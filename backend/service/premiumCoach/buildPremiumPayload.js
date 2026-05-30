@@ -2,16 +2,16 @@
 // moteurs premium. Chaque valeur est calculée ICI et UNE SEULE FOIS.
 // Les moteurs (resolveCoachingMode, budgetRebalancer, etc.) lisent ce payload
 // sans jamais recalculer ni redériver une valeur.
+
 import mongoose from "mongoose";
 import { Account }   from "../../models/Account.js";
 import { Category }  from "../../models/Category.js";
 import { Goal }      from "../../models/Goal.js";
 import { Operation } from "../../models/Operation.js";
 import { User }      from "../../models/User.js";
-import { getPersonaSignal } from "../ML/personaService.js";;
-import { getStressSignal } from "../ML/stressService.js";
-
-
+import { getPersonaSignal } from "../ML/personaService.js";
+import { getStressSignal }  from "../ML/stressService.js";
+import { computeBudgetCompliance, computeHealthScore } from "../../utils/buildHealthScore.js";
 import {
   RISK_SCORE_THRESHOLDS,
   ESSENTIAL_GROUPS,
@@ -20,19 +20,17 @@ import {
   THRESHOLDS,
 } from "./Premiumconstants.js";
 
-//  Utilitaires 
+// ─── Utilitaires ──────────────────────────────────────────────────────────────
+
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
 
-
-//exemple : getMonthBounds(new Date("2026-04-15"))
-// start = 2026-04-01
-// end   = 2026-05-01
+// exemple : getMonthBounds(new Date("2026-04-15"))
+// start = 2026-04-01 / end = 2026-05-01
 function getMonthBounds(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
   const end   = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   return { start, end };
 }
-
 
 function getDaysLeftInMonth(date = new Date()) {
   const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -43,8 +41,8 @@ function getDaysElapsedInMonth(date = new Date()) {
   return date.getDate() - 1; // jour 1 = 0 jours écoulés
 }
 
+// ─── Normalisation du style de conseil ───────────────────────────────────────
 
-//Normalisation du style de conseil
 export function normalizeAdviceStyle(raw) {
   const allowed = [
     ADVICE_STYLES.DIRECT,
@@ -52,13 +50,14 @@ export function normalizeAdviceStyle(raw) {
     ADVICE_STYLES.DETAILED,
     ADVICE_STYLES.CONCISE,
   ];
-
   return allowed.includes(raw) ? raw : ADVICE_STYLES.DIRECT;
 }
 
-// Priorité d'une catégorie
-// Les catégories essentielles (housing, bills, savings) ont une priorité plus élevée pour les conseils et le rééquilibrage.
-//exemple : buildCategoryPriority("HOUSING") → { isEssential: true, priorityScore: 5 } 
+// ─── Priorité d'une catégorie ─────────────────────────────────────────────────
+// Essentielles (HOUSING, BILLS…) → priorityScore 5
+// Flexibles (SHOPPING, EATING_OUT…) → priorityScore 2
+// Autres → priorityScore 3
+
 function buildCategoryPriority(normalizedGroup = "OTHER") {
   if (ESSENTIAL_GROUPS.includes(normalizedGroup))
     return { isEssential: true,  priorityScore: 5 };
@@ -67,8 +66,9 @@ function buildCategoryPriority(normalizedGroup = "OTHER") {
   return { isEssential: false, priorityScore: 3 };
 }
 
-// Calcul des dépenses par catégorie
-// Ajoute spentRate (0-100) utilisé par WeeklyPlanGenerator pour trier
+// ─── Calcul des dépenses par catégorie ───────────────────────────────────────
+// Ajoute spentRate (0–100+) utilisé par WeeklyPlanGenerator pour trier
+
 function computeSpentByCategory(categories = [], operations = []) {
   return categories.map((cat) => {
     const categoryId = String(cat._id);
@@ -85,8 +85,6 @@ function computeSpentByCategory(categories = [], operations = []) {
     const budget     = Number(cat.budget || 0);
     const remaining  = Math.max(0, budget - spent);
     const overspentBy= Math.max(0, spent - budget);
-
-    // spentRate : taux de consommation 0-100 (> 100 si dépassement)
     const spentRate  = budget > 0 ? round2((spent / budget) * 100) : 0;
 
     const { isEssential, priorityScore } = buildCategoryPriority(
@@ -99,16 +97,13 @@ function computeSpentByCategory(categories = [], operations = []) {
       icon:             cat.icon  || "📁",
       color:            cat.color || "#999999",
       normalizedGroup:  cat.normalizedGroup || "OTHER",
-
       budget:           round2(budget),
       spent:            round2(spent),
       remaining:        round2(remaining),
       overspentBy:      round2(overspentBy),
-      spentRate,                        // ← champ ajouté, utilisé par WeeklyPlanGenerator
-
+      spentRate,
       isOverspent:      spent > budget && budget > 0,
       isActiveThisMonth:relatedOps.length > 0,
-
       isEssential,
       priorityScore,
       operationsCount:  relatedOps.length,
@@ -126,89 +121,111 @@ function buildFinancialSnapshot(account, categoriesWithStats = [], operations = 
     (sum, op) => sum + Number(op.amount || 0), 0
   );
 
-  // remainingAmount = champ "reste" de l'account (argent disponible réel)
-  const remainingAmount = round2(Number(account?.reste ?? 0));
-
+  const remainingAmount     = round2(Number(account?.reste ?? 0));
   const overspentCategories = categoriesWithStats.filter((c) => c.isOverspent);
   const projectedOverspend  = overspentCategories.reduce(
     (sum, c) => sum + Number(c.overspentBy || 0), 0
   );
-
   const totalCategoryRemaining = categoriesWithStats.reduce(
     (sum, cat) => sum + Number(cat.remaining || 0), 0
   );
 
-  const daysElapsed       = getDaysElapsedInMonth(now);
-  const daysLeftInMonth   = getDaysLeftInMonth(now);
-  const totalDaysInMonth  = daysElapsed + daysLeftInMonth + 1;
+  const daysElapsed      = getDaysElapsedInMonth(now);
+  const daysLeftInMonth  = getDaysLeftInMonth(now);
+  const totalDaysInMonth = daysElapsed + daysLeftInMonth + 1;
 
-  // Taux de combustion quotidien et projection fin de mois
   const dailyBurnRate         = daysElapsed > 0 ? round2(totalSpent / daysElapsed) : 0;
   const projectedMonthlySpend = round2(dailyBurnRate * totalDaysInMonth);
 
   return {
-    solde:                  round2(Number(account?.solde || 0)),
-    reste:                  round2(Number(account?.reste || 0)),
-    totalBudget:            round2(totalBudget),
-    totalSpent:             round2(totalSpent),
-    totalCategoryRemaining: round2(totalCategoryRemaining),
-    remainingAmount,                      // source de vérité pour tous les moteurs
-    overspentCategoriesCount: overspentCategories.length,
-    projectedOverspend:     round2(projectedOverspend),
+    solde:                   round2(Number(account?.solde || 0)),
+    reste:                   round2(Number(account?.reste || 0)),
+    totalBudget:             round2(totalBudget),
+    totalSpent:              round2(totalSpent),
+    totalCategoryRemaining:  round2(totalCategoryRemaining),
+    remainingAmount,
+    overspentCategoriesCount:overspentCategories.length,
+    projectedOverspend:      round2(projectedOverspend),
     dailyBurnRate,
     projectedMonthlySpend,
     daysElapsed,
-    daysLeftInMonth,                      // calculé ici, pas dans les moteurs
+    daysLeftInMonth,
     totalDaysInMonth,
   };
 }
 
-// ─── Score et risque ──────────────────────────────────────────────────────────
+// ─── Score santé unifié ───────────────────────────────────────────────────────
+// Remplace buildUnifiedScore — utilise computeHealthScore (même source que le dashboard)
+// Reçoit les données déjà calculées pour éviter tout recalcul
 
-function buildUnifiedScore(financialSnapshot) {
-  const {
-    totalBudget = 0,
-    totalSpent  = 0,
-    overspentCategoriesCount = 0,
-    remainingAmount = 0,
-  } = financialSnapshot;
+function buildScoringResult({ financialSnapshotBase, categoriesWithStats, mappedGoals, categories, operations }) {
 
-  if (totalBudget <= 0) {
-    return { score: 50, scoreTrend: "stable", source: "fallback" };
+  // Fallback si pas de budget défini
+  if (financialSnapshotBase.totalBudget <= 0) {
+    return {
+      healthScore: 50,
+      scoreTrend:  "stable",
+      scoreBreakdown: { discipline: 50, epargne: 0, objectifs: 0, regularite: 50 },
+      source: "fallback",
+    };
   }
 
-  const spendingRatio = totalSpent / totalBudget;
-  let score = 100;
+  // 1. complianceRate — % de catégories qui respectent leur budget
+  const { complianceRate } = computeBudgetCompliance({ categories, operations });
 
-  if      (spendingRatio > 1.2) score -= 45;
-  else if (spendingRatio > 1)   score -= 35;
-  else if (spendingRatio > 0.9) score -= 20;
-  else if (spendingRatio > 0.75)score -= 10;
+  // 2. execRate — % du budget total consommé (ex: 85 = 85% consommé)
+  const execRate = round2(
+    (financialSnapshotBase.totalSpent / financialSnapshotBase.totalBudget) * 100
+  );
 
-  score -= overspentCategoriesCount * 8;
-  if (remainingAmount <= 0) score -= 10;
+  // 3. savRate — % du budget alloué à l'épargne (catégories SAVINGS)
+  const savingsCategories  = categoriesWithStats.filter(c => c.normalizedGroup === "SAVINGS");
+  const totalSavingsBudget = savingsCategories.reduce((s, c) => s + c.budget, 0);
+  const savRate = round2((totalSavingsBudget / financialSnapshotBase.totalBudget) * 100);
 
-  score = Math.max(0, Math.min(100, score));
+  // 4. avgGoalPct — avancement moyen des objectifs actifs (0–100)
+  const avgGoalPct = mappedGoals.length > 0
+    ? round2(
+        mappedGoals.reduce((s, g) =>
+          s + (g.targetAmount > 0 ? (g.currentAmount / g.targetAmount) * 100 : 0), 0
+        ) / mappedGoals.length
+      )
+    : 0;
 
-  let scoreTrend = "stable";
-  if (score >= 70) scoreTrend = "improving";
-  if (score <= 40) scoreTrend = "declining";
+  const { healthScore, breakdown } = computeHealthScore({
+    complianceRate,
+    execRate,
+    savRate,
+    avgGoalPct,
+    isFirstEvaluation: financialSnapshotBase.daysElapsed <= 1,
+  });
 
-  return { score: round2(score), scoreTrend, source: "fallback" };
+  const scoreTrend = healthScore >= 70 ? "improving"
+                   : healthScore <= 40 ? "declining"
+                   : "stable";
+
+  return {
+    healthScore,
+    scoreTrend,
+    scoreBreakdown: breakdown,
+    source: "buildHealthScore",
+  };
 }
 
+// ─── Niveau de risque ─────────────────────────────────────────────────────────
+
 function buildRiskLevel(score) {
-  if (score >= RISK_SCORE_THRESHOLDS.LOW)    return "low";
-  if (score >= RISK_SCORE_THRESHOLDS.MEDIUM) return "medium";
+  if (score >= RISK_SCORE_THRESHOLDS.LOW)    return "low";    // >= 70
+  if (score >= RISK_SCORE_THRESHOLDS.MEDIUM) return "medium"; // >= 40
   return "high";
 }
 
 // ─── Mapping des objectifs ────────────────────────────────────────────────────
 
 function mapGoal(goal, now) {
-  const currentAmount    = Number(goal.currentAmount || 0);
-  const targetAmount     = Number(goal.targetAmount  || 0);
-  const remainingToTarget= Math.max(0, targetAmount - currentAmount);
+  const currentAmount     = Number(goal.currentAmount || 0);
+  const targetAmount      = Number(goal.targetAmount  || 0);
+  const remainingToTarget = Math.max(0, targetAmount - currentAmount);
 
   let daysLeft = null;
   if (goal.TargetDate) {
@@ -222,7 +239,6 @@ function mapGoal(goal, now) {
       const monthsLeft = Math.max(1, Math.ceil(daysLeft / 30));
       requiredMonthlyContribution = Math.ceil(remainingToTarget / monthsLeft);
     } else {
-      // Objectif sans date : contribution suggérée = 10 % du restant
       requiredMonthlyContribution = Math.ceil(remainingToTarget * 0.1);
     }
   }
@@ -231,25 +247,25 @@ function mapGoal(goal, now) {
 
   let urgency = "low";
   if (daysLeft !== null) {
-    if (daysLeft <= THRESHOLDS.GOAL_URGENCY_CRITICAL_DAYS) urgency = "critical";
-    else if (daysLeft <= THRESHOLDS.GOAL_URGENCY_HIGH_DAYS)   urgency = "high";
-    else if (daysLeft <= THRESHOLDS.GOAL_URGENCY_MEDIUM_DAYS) urgency = "medium";
+    if      (daysLeft <= THRESHOLDS.GOAL_URGENCY_CRITICAL_DAYS) urgency = "critical";
+    else if (daysLeft <= THRESHOLDS.GOAL_URGENCY_HIGH_DAYS)     urgency = "high";
+    else if (daysLeft <= THRESHOLDS.GOAL_URGENCY_MEDIUM_DAYS)   urgency = "medium";
   } else if (remainingToTarget <= 100) urgency = "high";
   else if   (remainingToTarget <= 300) urgency = "medium";
 
   return {
-    goalId:                       goal._id,
-    name:                         goal.name  || "Objectif",
-    icon:                         goal.icon  || "🎯",
-    currentAmount:                round2(currentAmount),
-    targetAmount:                 round2(targetAmount),
-    remainingToTarget:            round2(remainingToTarget),
-    targetDate:                   goal.TargetDate || null,
+    goalId:                      goal._id,
+    name:                        goal.name || "Objectif",
+    icon:                        goal.icon || "🎯",
+    currentAmount:               round2(currentAmount),
+    targetAmount:                round2(targetAmount),
+    remainingToTarget:           round2(remainingToTarget),
+    targetDate:                  goal.TargetDate || null,
     daysLeft,
     urgency,
-    requiredMonthlyContribution:  round2(requiredMonthlyContribution),
+    requiredMonthlyContribution: round2(requiredMonthlyContribution),
     isUrgent,
-    isAchieved:                   Boolean(goal.isAchieved),
+    isAchieved:                  Boolean(goal.isAchieved),
   };
 }
 
@@ -273,13 +289,13 @@ export async function buildPremiumPayload(accountId) {
   const now = new Date();
   const { start, end } = getMonthBounds(now);
 
-  // ── Chargement DB ──────────────────────────────
+  // ── 1. Chargement DB ────────────────────────────────────────────────────────
   const account = await Account.findById(accountId).lean();
   console.log("Account trouvé :", account ? "OUI" : "NON");
   if (!account) throw new Error("Compte introuvable");
 
   const [categories, goals, operations] = await Promise.all([
-    Category.find({ AccountId: account ._id }).lean(),
+    Category.find({ AccountId: account._id }).lean(),
     Goal.find({ IdAccount: account._id, isArchived: { $ne: true } }).lean(),
     Operation.find({
       IdAccount: account._id,
@@ -295,20 +311,30 @@ export async function buildPremiumPayload(accountId) {
     ownerUser = await User.findById(account.Users[0]).lean();
   }
 
-  // ── Calculs ────────────────────────────────────
-  const categoriesWithStats    = computeSpentByCategory(categories, operations);
-  const financialSnapshotBase  = buildFinancialSnapshot(account, categoriesWithStats, operations, now);
-  const unifiedScore           = buildUnifiedScore(financialSnapshotBase);
-  const riskLevel              = buildRiskLevel(unifiedScore.score);
+  // ── 2. Calculs de base ──────────────────────────────────────────────────────
+  const categoriesWithStats   = computeSpentByCategory(categories, operations);
+  const financialSnapshotBase = buildFinancialSnapshot(account, categoriesWithStats, operations, now);
 
-  const activeGoals     = goals.filter((g) => !g.isAchieved);
-  const mappedGoals     = activeGoals.map((g) => mapGoal(g, now));
-  const urgentGoals     = mappedGoals.filter((g) => g.isUrgent);
-  const primaryGoal     = pickPrimaryGoal(mappedGoals);
+  const activeGoals        = goals.filter((g) => !g.isAchieved);
+  const mappedGoals        = activeGoals.map((g) => mapGoal(g, now));
+  const urgentGoals        = mappedGoals.filter((g) => g.isUrgent);
+  const primaryGoal        = pickPrimaryGoal(mappedGoals);
   const totalGoalRemaining = mappedGoals.reduce(
     (sum, g) => sum + Number(g.remainingToTarget || 0), 0
   );
 
+  // ── 3. Score santé unifié ───────────────────────────────────────────────────
+  // Utilise computeHealthScore — même source que le dashboard admin
+  const { healthScore, scoreTrend, scoreBreakdown, source: scoreSource } = buildScoringResult({
+    financialSnapshotBase,
+    categoriesWithStats,
+    mappedGoals,
+    categories,
+    operations,
+  });
+  const riskLevel = buildRiskLevel(healthScore);
+
+  // ── 4. Profil utilisateur ───────────────────────────────────────────────────
   const accountType = Array.isArray(account.Users) && account.Users.length > 1
     ? "shared"
     : "personal";
@@ -325,8 +351,8 @@ export async function buildPremiumPayload(accountId) {
     membersCount:        Array.isArray(account.Users) ? account.Users.length : 0,
   };
 
+  // ── 5. Signaux ML (Python) ──────────────────────────────────────────────────
   let personaSignal = null;
-
   try {
     personaSignal = await getPersonaSignal(accountId);
     console.log("[Persona ML] signal =", personaSignal);
@@ -334,97 +360,88 @@ export async function buildPremiumPayload(accountId) {
     console.error("[Persona ML] prediction failed:", err.message);
   }
 
-    let stressSignal = null;
-
+  let stressSignal = null;
   try {
     stressSignal = await getStressSignal({
       financialSnapshot: {
         ...financialSnapshotBase,
-        score: unifiedScore.score,
-        scoreTrend: unifiedScore.scoreTrend,
+        score:      healthScore,   // ← healthScore, pas unifiedScore
+        scoreTrend,
         riskLevel,
       },
       userProfile: profile,
-      goals: mappedGoals,
-      goalProtection: {
-        status: "not_computed_yet",
-      },
+      goals:       mappedGoals,
+      goalProtection: { status: "not_computed_yet" },
     });
-
     console.log("[Stress ML] signal =", stressSignal);
   } catch (err) {
     console.error("[Stress ML] prediction failed:", err.message);
   }
 
-  // ── Payload final ──────────────────────────────
+  // ── 6. Payload final ────────────────────────────────────────────────────────
   // RÈGLE : tous les moteurs lisent CE payload. Aucune valeur n'est recalculée ailleurs.
   return {
     account: {
-      accountId:     account._id,
-      accountName:   account.name || "Compte",
-      accountType:   profile.accountType,
-      membersCount:  profile.membersCount,
-      codePartage:   account.codePartage || null,
-      solde:         round2(Number(account.solde || 0)),
-      reste:         round2(Number(account.reste || 0)),
-      lastResetMonth:account.lastResetMonth || null,
+      accountId: account._id,
+      accountName:account.name || "Account",
+      accountType: profile.accountType,
+      membersCount:profile.membersCount,
+      codePartage: account.codePartage || null,
+      solde:round2(Number(account.solde || 0)),
+      reste:round2(Number(account.reste || 0)),
+      lastResetMonth: account.lastResetMonth || null,
     },
-
     userProfile: profile,
-
-    // Source de vérité financière 
+    // Source de vérité financière — lue par tous les moteurs, jamais recalculée
     financialSnapshot: {
       ...financialSnapshotBase,
-      score:unifiedScore.score,
-      scoreTrend: unifiedScore.scoreTrend,
+      score:healthScore, 
+      scoreTrend,
+      scoreBreakdown,// détail des 4 dimensions
       riskLevel,
-      // daysLeftInMonth est déjà dans financialSnapshotBase — pas de doublon
     },
 
-    categories: categoriesWithStats,   // inclut spentRate
+    categories: categoriesWithStats,  // inclut spentRate, isOverspent, priorityScore
 
-    goals:       mappedGoals,
+    goals:mappedGoals,
     primaryGoal,
 
     operations: operations.map((op) => ({
-      operationId:     op._id,
-      amount:          round2(Number(op.amount || 0)),
-      date:            op.date      || null,
-      createdAt:       op.createdAt || null,
-      categoryId:      op?.IdCategory?._id || op?.IdCategory || null,
-      categoryName:    op?.IdCategory?.name            || "Autre",
+      operationId:op._id,
+      amount:round2(Number(op.amount || 0)),
+      date:op.date      || null,
+      createdAt:op.createdAt || null,
+      categoryId:op?.IdCategory?._id || op?.IdCategory || null,
+      categoryName:op?.IdCategory?.name || "Autre",
       normalizedGroup: op?.IdCategory?.normalizedGroup || "OTHER",
     })),
 
-        mlSignals: {
+    mlSignals: {
       clusterLabel:      personaSignal?.clusterLabel ?? null,
-      personaCluster:    personaSignal?.clusterId ?? null,
-
-      stressScore:       stressSignal?.stressScore ?? null,
-      stressLevel:       stressSignal?.stressLevel ?? null,
-
-      riskProbability:   stressSignal?.stressScore ?? null,
-      stressProbability: stressSignal?.stressScore ?? null,
-
+      personaCluster:    personaSignal?.clusterId    ?? null,
+      stressScore:       stressSignal?.stressScore   ?? null,
+      stressLevel:       stressSignal?.stressLevel   ?? null,
+      riskProbability:   stressSignal?.stressScore   ?? null,
+      stressProbability: stressSignal?.stressScore   ?? null,
       source: {
         persona: personaSignal?.source ?? "not_connected_yet",
-        stress:  stressSignal?.source ?? "not_connected_yet",
+        stress:  stressSignal?.source  ?? "not_connected_yet",
       },
     },
 
-    // ─ Meta : compteurs et flags calculés une fois ─
+    // métadonnées : compteurs et flags calculés une seule fois — lus par l'orchestrateur
     meta: {
-      monthStart:           start,
-      monthEnd:             end,
-      goalsCount:           mappedGoals.length,           // ← renommé (était activeGoalsCount)
-      hasActiveGoal:        mappedGoals.length > 0,       // ← nouveau flag
-      urgentGoalsCount:     urgentGoals.length,
-      totalGoalRemaining:   round2(totalGoalRemaining),
-      categoriesCount:      categoriesWithStats.length,
+      monthStart:start,
+      monthEnd:end,
+      goalsCount:mappedGoals.length,
+      hasActiveGoal:mappedGoals.length > 0,
+      urgentGoalsCount:urgentGoals.length,
+      totalGoalRemaining:round2(totalGoalRemaining),
+      categoriesCount:categoriesWithStats.length,
       activeCategoriesCount:categoriesWithStats.filter((c) => c.isActiveThisMonth).length,
-      isSharedAccount:      profile.accountType === "shared",
-      scoreSource:          unifiedScore.source,
-      generatedAt:          now.toISOString(),
+      isSharedAccount:profile.accountType === "shared",
+      scoreSource,
+      generatedAt: now.toISOString(),
     },
   };
 }

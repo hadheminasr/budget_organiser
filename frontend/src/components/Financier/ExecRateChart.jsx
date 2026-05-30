@@ -37,5 +37,3 @@ export  default function ExecRateChart({ data = [] }) {
     </div>
   );
 }
- 
- 

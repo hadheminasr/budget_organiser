@@ -1,7 +1,6 @@
 // Orchestre le pipeline premium dans l'ordre :
 //   buildPremiumPayload → resolveCoachingMode → goalProtectionPlanner
 //   → budgetRebalancer → WeeklyPlanGenerator
-//
 // RÈGLE : l'executiveSummary ne recalcule RIEN.
 // Chaque valeur est lue depuis payload.financialSnapshot, payload.meta,
 // ou les résultats des moteurs. Zero divergence.
@@ -12,7 +11,6 @@ import { budgetRebalancer }           from "./budgetRebalancer.js";
 import { generateWeeklyPlan }         from "./WeeklyPlanGenerator.js";
 
 export async function buildPremiumCoach(accountId) {
-
   // 1 Source de vérité unique : le payload unifié, construit une seule fois et partagé par tous les moteurs.
   const payload = await buildPremiumPayload(accountId);
   // 2 Mode de coaching 

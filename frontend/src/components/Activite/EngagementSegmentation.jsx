@@ -1,10 +1,12 @@
-// ─────────────────────────────────────────────────────────────
-// components/Activite/EngagementSegmentation.jsx
 // Barre de segmentation + stacked bar chart évolution 8 semaines
-// ─────────────────────────────────────────────────────────────
+//graphique en barres empilées :chaque barre est composée de plusieurs parties colorées
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Legend,
+  BarChart,
+  Bar,//série de barres 
+  XAxis,//axe horizontal:affiche les semaine 
+  YAxis,//axe vertical:affiche les pourcentages
+  Tooltip,//infobulle
+  ResponsiveContainer,
 } from "recharts";
  
 function CustomTooltip({ active, payload, label }) {
@@ -40,18 +42,18 @@ export function EngagementSegmentation({ segmentation = {}, evolution = [] }) {
         Répartition des comptes par niveau d'activité ce mois
       </p>
  
-      {/* Barre de segmentation */}
+      {/* Barre de segmentation actuelle */}
       <div className="flex h-7 rounded-md overflow-hidden gap-[1px] mb-2">
         {SEGMENTS.map(s => (
           <div
             key={s.key}
             className="flex items-center justify-center text-[10px] font-medium transition-all"
             style={{
-              width:      `${segmentation[s.key] ?? 0}%`,
+              width:`${segmentation[s.key] ?? 0}%`,
               background: s.color,
-              color:      "#fff",
-              minWidth:   segmentation[s.key] > 5 ? undefined : 0,
-              overflow:   "hidden",
+              color:"#fff",
+              //minWidth:segmentation[s.key] > 5 ? undefined : 0,
+              //overflow:"hidden",
             }}
           >
             {(segmentation[s.key] ?? 0) > 8 ? `${segmentation[s.key]}%` : ""}
@@ -71,6 +73,7 @@ export function EngagementSegmentation({ segmentation = {}, evolution = [] }) {
  
       {/* Stacked bar évolution */}
       <ResponsiveContainer width="100%" height={180}>
+        {/* on ne fait pas evolution.map(...) car recharts le fait automatiquement à l’intérieu */}
         <BarChart data={evolution} barCategoryGap="20%">
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#888780" }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 10, fill: "#888780" }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />

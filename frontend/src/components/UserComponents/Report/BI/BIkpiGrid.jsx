@@ -1,7 +1,3 @@
-// BIKpiGrid.jsx
-// 8 KPIs analytiques avec flèche delta vs mois précédent
-// Props: kpis = array of { label, value, delta, deltaLabel, deltaType: 'up'|'down'|'neutral', note }
-
 const DeltaArrow = ({ type }) => {
   if (type === "up")
     return (

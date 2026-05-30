@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-//Vidéos
 const REACTION_VIDEOS = {
   overspend:         "/assets/duck/reactions/overspend.mp4",
   welcome:           "/assets/duck/reactions/welcome.mp4",
@@ -41,31 +40,31 @@ const NEXT_STATE_NAMES = {
 const OVERLAY_REACTIONS = new Set([
   "levelup", "leveldown", "welcome", "overspend", "goal_achieved",
 ]);
-
-//Composant principal
+//ComposantPrincipal
 export default function DuckCompanion({ duck }) {
   const { data, activeReaction, activeMsg, closeModal, openModal } = duck;
   // "idle" | "bubble" | "overlay" | "stats"
-  const [mode, setMode] = useState("idle");
+  const [mode, setMode]=useState("idle");
 
-  const stateId   = data?.companionStateId ?? 0;
-  const color     = STATE_COLORS[stateId] ?? "#888780";
-  const idleVideo = STATE_VIDEOS[stateId] ?? STATE_VIDEOS[0];
-
+  const stateId=data?.companionStateId ?? 0;
+  const color=STATE_COLORS[stateId] ?? "#888780";
+  const idleVideo=STATE_VIDEOS[stateId] ?? STATE_VIDEOS[0];
   //Réagir aux changements de réaction
   useEffect(() => {
-    if (!activeReaction) {
-      // ne pas écraser "stats" si l'utilisateur a ouvert le popup manuellement
+    if (!activeReaction) {//arrive closemodal remet activeReaction à null
+      //ne pas écraser "stats" si l'utilisateur a ouvert le popup manuellement
       setMode((prev) => prev === "stats" ? "stats" : "idle");
       return;
     }
     setMode(OVERLAY_REACTIONS.has(activeReaction) ? "overlay" : "bubble");
   }, [activeReaction]);
 
+  //fonction fléchée pour gérer la fin des vidéos de réaction
   const handleBubbleEnd  = () => setMode("idle");
-  const handleOverlayEnd = () => { setMode("idle"); closeModal(); };
-
-  // Clic sur le duck idle = ouvre les stats
+  const handleOverlayEnd = () => { setMode("idle");
+                                   closeModal(); 
+                                  };
+  //Clic sur le duck idle = ouvre les stats
   const handleIdleClick = () => {
     openModal(); //signale à useDuck que le modal est ouvert
     setMode("stats");
@@ -76,7 +75,8 @@ export default function DuckCompanion({ duck }) {
     setMode("idle");
   };
 
-  // MODE IDLE
+  //MODE IDLE
+
   if (mode === "idle") {
     return (
       <div
@@ -85,14 +85,14 @@ export default function DuckCompanion({ duck }) {
           position:"fixed",
           bottom:"20px",
           right:"20px",
-          width:        "100px",
-          height:       "100px",
-          zIndex:       50,
-          cursor:       "pointer",
-          borderRadius: "50%",
-          overflow:     "hidden",
-          background:   "#ffffff",
-          boxShadow:    "0 2px 12px rgba(0,0,0,0.10)",
+          width:"100px",
+          height:"100px",
+          zIndex:50,
+          cursor:"pointer",
+          borderRadius:"50%",
+          overflow:"hidden",
+          background:"#ffffff",
+          boxShadow:"0 2px 12px rgba(0,0,0,0.10)",
         }}
       >
         <video key={idleVideo} src={idleVideo} autoPlay loop muted playsInline
@@ -101,9 +101,8 @@ export default function DuckCompanion({ duck }) {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
   // MODE BUBBLE — bulle discrète, coin bas-droite (goal_contribution)
-  // ─────────────────────────────────────────────────────────────────────────
+
   if (mode === "bubble") {
     return (
       <div style={{
@@ -132,10 +131,7 @@ export default function DuckCompanion({ duck }) {
       </div>
     );
   }
-
-  // ─────────────────────────────────────────────────────────────────────────
   // MODE OVERLAY — plein écran, réaction importante
-  // ─────────────────────────────────────────────────────────────────────────
   if (mode === "overlay") {
     return (
       <div onClick={handleOverlayEnd} style={{
@@ -172,13 +168,16 @@ export default function DuckCompanion({ duck }) {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // MODE STATS — popup clic manuel (remplace DuckPopup + DuckWidget)
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  // MODE STATS — popup clic manuel 
+
   if (mode === "stats" && data) {
     return (
       <div
-        onClick={(e) => { if (e.target === e.currentTarget) handleStatsClose(); }}
+        onClick={(e) => { 
+          if (e.target === e.currentTarget) //e.currentTarget = élément qui possède le onClick
+            handleStatsClose(); 
+          }}
         style={{
           position:"fixed", inset:0, zIndex:200,
           display:"flex", alignItems:"center", justifyContent:"center",
@@ -192,16 +191,17 @@ export default function DuckCompanion({ duck }) {
           boxShadow:"0 8px 40px rgba(0,0,0,0.18)",
         }}>
           {/* Fermer */}
-          <button onClick={handleStatsClose} style={{
-            position:"absolute", top:"12px", right:"12px",
-            width:"28px", height:"28px", borderRadius:"50%", border:"none",
-            background:"var(--color-background-secondary,#f5f4ef)",
-            color:"var(--color-text-secondary,#666)",
-            fontSize:"13px", cursor:"pointer",
-            display:"flex", alignItems:"center", justifyContent:"center",
-          }}>✕</button>
+          <button 
+            onClick={handleStatsClose} 
+            style={{
+              position:"absolute", top:"12px", right:"12px",
+              width:"28px", height:"28px", borderRadius:"50%", border:"none",
+              background:"var(--color-background-secondary,#f5f4ef)",
+              color:"var(--color-text-secondary,#666)",
+              fontSize:"13px", cursor:"pointer",
+              display:"flex", alignItems:"center", justifyContent:"center",
+            }}>✕</button>
 
-          {/* Duck vidéo — idle en loop dans le popup */}
           <div style={{
             display:"flex", justifyContent:"center", marginBottom:"10px",
           }}>
@@ -216,7 +216,6 @@ export default function DuckCompanion({ duck }) {
             </div>
           </div>
 
-          {/* Bulle message */}
           <div style={{
             marginBottom:"16px",
             background:"var(--color-background-secondary,#f5f4ef)",
@@ -228,7 +227,6 @@ export default function DuckCompanion({ duck }) {
             {data.message}
           </div>
 
-          {/* Hearts */}
           <div style={{ display:"flex", justifyContent:"center", gap:"8px", marginBottom:"14px" }}>
             {[0,1,2,3,4].map((i) => (
               <span key={i} style={{ fontSize:"22px" }}>
@@ -237,7 +235,6 @@ export default function DuckCompanion({ duck }) {
             ))}
           </div>
 
-          {/* Barre progression */}
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }}>
             <span style={{ fontSize:"11px", color:"var(--color-text-tertiary,#999)" }}>
               Progression vers {NEXT_STATE_NAMES[stateId]}
@@ -257,13 +254,12 @@ export default function DuckCompanion({ duck }) {
             }} />
           </div>
 
-          {/* Stats */}
           <div style={{ borderTop:"0.5px solid var(--color-border-tertiary,rgba(0,0,0,.08))" }}>
             {[
-              ["État",                data.stateName],
-              ["Streak",             `${data.streak} mois consécutifs`],
+              ["État",data.stateName],
+              ["Streak",`${data.streak} mois consécutifs`],
               ["Total cœurs gagnés", `${data.totalHearts}`],
-              ["Mois évalué",        data.evaluatedMonth ?? "—"],
+              ["Mois évalué",data.evaluatedMonth ?? "—"],
             ].map(([label, value]) => (
               <div key={label} style={{
                 display:"flex", justifyContent:"space-between",

@@ -1,18 +1,18 @@
-import { useState } from "react";
 import { useControle } from "../../hooks/useControle";
 import { toggleBlock, deleteCompte } from "../../services/controleAPI";
 import { Search, Shield, ShieldOff, Trash2, RefreshCw, X, Users, Wallet, Calendar, Activity } from "lucide-react";
 import SharedCard from "../../SharedComponents/SharedCard";
 import SharedButton from "../../SharedComponents/SharedButton";
 import SharedInput from "../../SharedComponents/SharedInput";
+import { useState, useEffect } from "react";
 
 //badge coloré
 function Badge({ label }) {
   const colors = {
-    budget:   "bg-red-100 text-red-600",
-    anomalie: "bg-orange-100 text-orange-600",
-    inactif:  "bg-gray-100 text-gray-500",
-    bloqué:   "bg-purple-100 text-purple-600",
+    budget:"bg-red-100 text-red-600",
+    anomalie:"bg-orange-100 text-orange-600",
+    inactif:"bg-gray-100 text-gray-500",
+    bloqué:"bg-purple-100 text-purple-600",
   };
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${colors[label] ?? "bg-gray-100 text-gray-500"}`}>
@@ -21,7 +21,7 @@ function Badge({ label }) {
   );
 }
 
-// ── panel détail compte
+//panel détail compte
 function DetailPanel({ account, onClose, onToggle, onDelete, actionLoading }) {
   if (!account) return null;
 
@@ -152,13 +152,27 @@ export default function GestionControle() {
   const { data, loading, error, filters, setFilters, reload } = useControle();
   const [actionLoading, setActionLoading] = useState(null);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters(f => ({ ...f, search: searchInput }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleToggle = async (accountId, isBlocked) => {
     setActionLoading(accountId);
     try {
       await toggleBlock(accountId, isBlocked);
       await reload();
-      setSelectedAccount(null);
+      //setSelectedAccount(null);
+      // Met à jour le panel avec les nouvelles données au lieu de fermer
+      setSelectedAccount(prev =>
+        prev?._id === accountId
+          ? { ...prev, status: isBlocked ? "active" : "blocked" }
+          : prev
+      );
     } finally {
       setActionLoading(null);
     }
@@ -192,9 +206,9 @@ export default function GestionControle() {
 
   return (
     <div className="flex flex-col gap-6">
-
+      
       {/* ── KPIs */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-3 xl:grid-cols-5 gap-4">
         <SharedCard title="Total comptes"    value={kpis.totalComptes} icon={Users} iconColor="blue" />
         <SharedCard title="Comptes actifs"   value={kpis.comptesActifs}   icon={Shield}   iconColor="emerald"
           change="comptes non bloqués" changeType="positive" />
@@ -219,11 +233,11 @@ export default function GestionControle() {
         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 flex-1 min-w-48">
           <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
           <SharedInput
+            onChange={e => setSearchInput(e.target.value)}
             type="text"
             placeholder="Rechercher par nom ou email..."
-            value={filters.search}
-            onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
-            className="text-sm outline-none flex-1 bg-transparent"
+            value={searchInput}
+            className="text-sm outline-none flex-1 bg-transparent w-full"
           />
         </div>
 
@@ -246,7 +260,7 @@ export default function GestionControle() {
           <option value="inactif">Inactif</option>
           <option value="bloqué">Bloqué</option>
         </select>
-
+        {/** 
         <SharedButton
           variant="secondary"
           icon={<RefreshCw className="w-4 h-4" />}
@@ -254,6 +268,7 @@ export default function GestionControle() {
           className="!w-auto px-4 py-2">
           Actualiser
         </SharedButton>
+        */}
       </div>
 
       {/* ── TABLEAU */}

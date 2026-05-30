@@ -386,5 +386,130 @@
       "critical": "Alerte critique",
       "warning": "Attention"
     }
-  }
+  },
+  "coach": {
+  "title": "Coach Budget",
+  "subtitle": "Diagnostic personnalisé, recommandations et projection de fin de mois.",
+  "loading": "Chargement du Coach Budget…",
+  "retry": "Réessayer",
+  "noData": "Aucune donnée Coach Budget disponible pour le moment.",
+  "errorTitle": "Erreur de chargement",
+
+  "status": {
+    "alert":   { "title": "Situation critique",          "subtitle": "Le coach a détecté des signaux nécessitant une correction rapide." },
+    "warning": { "title": "Situation à surveiller",      "subtitle": "Votre budget reste globalement gérable, mais certains points demandent de l'attention." },
+    "good":    { "title": "Situation globalement saine", "subtitle": "Votre budget est sous contrôle selon les règles actuelles du coach." }
+  },
+
+  "mainLabel": "Règle principale",
+  "messageMain": "Message principal",
+  "messageGlobal": "Lecture globale",
+  "noSecondaryMessage": "Aucune précision complémentaire n'est disponible pour ce diagnostic.",
+
+  "kpi": {
+    "consumed":       "Budget consommé",
+    "consumedSub":    "Part du budget total déjà utilisée ce mois-ci.",
+    "remaining":      "Marge restante",
+    "remainingSub":   "Budget encore disponible avant la limite totale.",
+    "risk":           "Risque budgétaire",
+    "riskSub":        "Niveau de vigilance estimé par le coach.",
+    "healthScore":    "Score santé budget",
+    "healthScoreSub": "Score synthétique calculé à partir des règles détectées."
+  },
+
+  "risk": {
+    "high":   "Élevé",
+    "medium": "Modéré",
+    "low":    "Faible"
+  },
+
+  "projection": {
+    "title":          "Projection de fin de mois",
+    "subtitle":       "Basée sur le rythme actuel — Jour {{current}}/{{total}}",
+    "projected":      "Dépense projetée",
+    "projectedSub":   "Estimation si la tendance actuelle se maintient.",
+    "margin":         "Marge estimée fin de mois",
+    "marginSub":      "Budget résiduel projeté à fin de mois.",
+    "coachRead":      "Lecture du coach",
+    "safe":           "La trajectoire actuelle reste sous contrôle pour la fin du mois.",
+    "closeToLimit":   "La trajectoire actuelle reste proche de la limite budgétaire.",
+    "overBudget":     "Un dépassement de fin de mois est probable si le rythme actuel continue."
+  },
+
+  "alerts": {
+    "title":   "Alertes détectées",
+    "none":    "Aucune alerte critique détectée pour le moment."
+  },
+
+  "recommendations": {
+    "title":        "Recommandations du coach",
+    "immediate":    "Actions immédiates",
+    "immediateNone":"Aucune action urgente.",
+    "targeted":     "Actions ciblées",
+    "targetedNone": "Aucune action ciblée spécifique.",
+    "strategic":    "Actions stratégiques",
+    "strategicNone":"Aucune action stratégique spécifique."
+  },
+
+  "focus": {
+    "categoryTitle":    "Catégorie sensible",
+    "categoryNone":     "Aucune catégorie critique détectée.",
+    "categoryCaption":  "Cette catégorie est actuellement celle qui déséquilibre le plus votre budget.",
+    "overrun":          "Dépassement",
+    "consumption":      "Consommation",
+    "goalTitle":        "Objectif à relancer",
+    "goalNone":         "Aucun objectif actif à analyser.",
+    "goalCaption":      "Une contribution régulière peut améliorer l'avancement de cet objectif.",
+    "progress":         "Progression",
+    "currentAmount":    "Montant actuel",
+    "profileTitle":     "Profil de conseil",
+    "adviceStyle":      "Style de conseil",
+    "mainDifficulty":   "Difficulté principale",
+    "savingHabit":      "Habitude d'épargne",
+    "mainGoal":         "Objectif principal",
+    "notDefined":       "Non défini",
+    "notFilled":        "Non renseignée"
+  },
+
+  "severity": {
+    "low":    "Léger",
+    "medium": "Modéré",
+    "high":   "Élevé",
+    "none":   "Aucun"
+  },
+
+  "rules": {
+    "title":    "Détail du diagnostic",
+    "subtitle": "Règles déclenchées par le moteur V1 et leur niveau de priorité.",
+    "none":     "Aucune règle déclenchée.",
+    "colRule":  "Règle détectée",
+    "colType":  "Type",
+    "colPrio":  "Priorité",
+    "labels": {
+      "budget_global_depasse":      "Budget global dépassé",
+      "categorie_depassee":         "Catégorie dépassée",
+      "reste_critique":             "Reste critique",
+      "objectif_en_retard":         "Objectif en retard",
+      "tendance_hausse":            "Tendance à la hausse",
+      "budget_sous_controle":       "Budget sous contrôle",
+      "objectif_bonne_progression": "Bonne progression de l'objectif"
+    }
+  },
+
+  "profile": {
+    "direct":     "Direct",
+    "motivating": "Motivant",
+    "leisure":    "Loisirs / sorties",
+    "food":       "Alimentation",
+    "transport":  "Transport",
+    "shopping":   "Shopping / achats",
+    "often":      "Souvent",
+    "sometimes":  "Parfois",
+    "rarely":     "Rarement",
+    "never":      "Jamais",
+    "reach_goal": "Atteindre un objectif"
+  },
+
+  "narrativeNote": "Les messages d'analyse sont générés en français par le moteur de règles."
+}
 }
